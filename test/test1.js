@@ -22,9 +22,10 @@ describe("AStar", () => {
             {x: 4, y: 0, edges: [3,5]},
             {x: 5, y: 0, edges: [4]},
         ] )
-        if (!isBenchmark) console.log(res)
+        //if (!isBenchmark) console.log(res)
+        assert.deepEqual(res, [0,1,2,3,4,5])
     })
-    it("tgraph", () => {
+    it("tgraph with weight", () => {
         const res = astar.AStar(0, 5, [
             {x: 0, y: 0, edges: [1,2]},
             {x: 2, y: 2, edges: [3,4]},
@@ -33,6 +34,7 @@ describe("AStar", () => {
             {x: 6, y: -2, addlWeight: 10, edges: [5]},
             {x: 8, y: 0, edges: []},
         ] )
-        if (!isBenchmark) console.log(res)
+        //if (!isBenchmark) console.log(res)
+        assert.equal(res.indexOf(4), -1) // cannot contain a 4
     })
 })

@@ -8,6 +8,7 @@
   "devDependencies": {
     "@parcel/packager-ts": "2.7.0",
     "@parcel/transformer-typescript-types": "2.7.0",
+    "benchmark": "^2.1.4",
     "mocha": "^10.0.0",
     "parcel": "^2.7.0",
     "parcel-reporter-exec": "^0.0.7",
