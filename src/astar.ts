@@ -1,4 +1,5 @@
 import Heap from "heap-js";
+import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
 
 export type Node = {
     x: number;
@@ -135,4 +136,4 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
 
 //_astar(0, 1, (n) => 0);
 
-export { AStar };
+export { AStar, makeUint8ClampedArray, makeNodes };

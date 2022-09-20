@@ -20,7 +20,9 @@
     "test": "yarn build && mocha"
   },
   "dependencies": {
-    "heap-js": "^2.2.0"
+    "heap-js": "^2.2.0",
+    "jstracking": "^0.0.3",
+    "sharp": "^0.31.0"
   },
   "targets": {
     "main": {

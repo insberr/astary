@@ -1,14 +1,20 @@
 var assert = require('assert');
 var astar = require("..");
-
+/*
 const benchmark = require("benchmark");
+
 const bench = new benchmark.Suite;
 bench.on('cycle', function(event) {
     console.log(String(event.target));
   })
+*/
+
+// uncommented
 /*bench.on('complete', function() {
     console.log(this);
 })*/
+
+/*
 let isBenchmark = false;
 afterEach(function() { bench.add(this.currentTest.title, this.currentTest.fn) })
 after(() => { isBenchmark = true; console.log("benchmarking"); return bench.run({async: true}) } )
@@ -36,5 +42,15 @@ describe("AStar", () => {
         ] )
         //if (!isBenchmark) console.log(res)
         assert.equal(res.indexOf(4), -1) // cannot contain a 4
+    })
+})
+*/
+describe('makeGraph', () => {
+    it('should make a graph', async () => {
+        /*const res = await astar.makeUint8ClampedArray().then(a => {
+            return a;
+        })
+        console.log(res)*/
+        astar.makeNodes()
     })
 })
