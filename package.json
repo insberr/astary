@@ -17,9 +17,11 @@
   "scripts": {
     "build": "parcel build",
     "dev": "PARCEL_EXEC=\"yarn mocha\" parcel watch",
-    "test": "yarn build && mocha"
+    "test": "yarn build && mocha",
+    "prepack": "yarn build"
   },
   "dependencies": {
+    "canvas": "^2.10.1",
     "heap-js": "^2.2.0",
     "jstracking": "^0.0.3",
     "sharp": "^0.31.0"

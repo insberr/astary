@@ -1,20 +1,23 @@
 var assert = require('assert');
 var astar = require("..");
-/*
+
 const benchmark = require("benchmark");
 
 const bench = new benchmark.Suite;
 bench.on('cycle', function(event) {
     console.log(String(event.target));
   })
-*/
+bench.on("error", () => {
+    console.error("ruh roh!");
+})
+
 
 // uncommented
 /*bench.on('complete', function() {
     console.log(this);
 })*/
 
-/*
+
 let isBenchmark = false;
 afterEach(function() { bench.add(this.currentTest.title, this.currentTest.fn) })
 after(() => { isBenchmark = true; console.log("benchmarking"); return bench.run({async: true}) } )
@@ -44,13 +47,29 @@ describe("AStar", () => {
         assert.equal(res.indexOf(4), -1) // cannot contain a 4
     })
 })
-*/
-describe('makeGraph', () => {
+
+describe("random", () => {
+    it("should generate a random nodes (100 nodes, 10+ connections)", () => {
+        const d = astar.randomNodes(100,10)
+        assert.equal(d.length, 100)
+    })
+    it("random graph pathable (100 nodes, 10+ connections)", () => {
+        const d = astar.randomNodes(100,10)
+        try {
+        astar.AStar(0,99,d);
+        } catch (e) {
+            assert.fail(e)
+        }
+        
+    })
+})
+
+/*describe('makeGraph', () => {
     it('should make a graph', async () => {
         /*const res = await astar.makeUint8ClampedArray().then(a => {
             return a;
         })
-        console.log(res)*/
+        console.log(res)
         astar.makeNodes()
     })
-})
+})*/
