@@ -1,6 +1,6 @@
 var assert = require('assert');
 var astar = require("..");
-
+var fs = require("fs")
 const benchmark = require("benchmark");
 
 const bench = new benchmark.Suite;
@@ -11,7 +11,7 @@ bench.on("error", () => {
     console.error("ruh roh!");
 })
 
-
+const onek = JSON.parse(fs.readFileSync(__dirname + "/1k.json"))
 // uncommented
 /*bench.on('complete', function() {
     console.log(this);
@@ -45,6 +45,12 @@ describe("AStar", () => {
         ] )
         //if (!isBenchmark) console.log(res)
         assert.equal(res.indexOf(4), -1) // cannot contain a 4
+    })
+})
+
+describe("stress test", () => {
+    it("1k", () => {
+        astar.AStar(0,999,onek)
     })
 })
 
