@@ -114,6 +114,16 @@ describe("raycast", () => {
         ])
         astar.AStar(0,1, con);
     })
+    it("raycast negative test", () => {
+        const con = astar.Raycast([
+            {x: 0, y:0, edges:[]},
+            {x: 5, y:0, edges:[]},
+            {x: 10, y:0, edges: []},
+            {x: 5, y: 5, edges: []},
+            {x: 5, y:-10, edges: []}
+        ])
+        astar.AStar(0,4, con);
+    })
 })
 /*describe('makeGraph', () => {
     it('should make a graph', async () => {
