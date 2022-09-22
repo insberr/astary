@@ -1,5 +1,6 @@
 import Heap from "heap-js";
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
+import { generateNodes, nodeJSImageToImageData } from "./generateNodesFromPathImage";
 
 export type Node = {
     x: number;
@@ -136,4 +137,4 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
 
 //_astar(0, 1, (n) => 0);
 export * from "./random";
-export { AStar };
+export { AStar, generateNodes, nodeJSImageToImageData };

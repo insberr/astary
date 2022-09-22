@@ -9,9 +9,11 @@
     "@parcel/packager-ts": "2.7.0",
     "@parcel/transformer-typescript-types": "2.7.0",
     "benchmark": "^2.1.4",
+    "inkjet": "^3.0.0",
     "mocha": "^10.0.0",
     "parcel": "^2.7.0",
     "parcel-reporter-exec": "^0.0.7",
+    "pngjs2": "^2.0.0",
     "typescript": "^4.8.3"
   },
   "scripts": {
@@ -21,8 +23,11 @@
     "prepack": "yarn build"
   },
   "dependencies": {
+    "blob-detection-mser": "^0.0.11",
+    "blob-detection-ts": "^0.0.8",
     "canvas": "^2.10.1",
-    "heap-js": "^2.2.0"
+    "heap-js": "^2.2.0",
+    "image-sync": "^0.0.15"
   },
   "targets": {
     "main": {

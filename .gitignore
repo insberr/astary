@@ -128,3 +128,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+test/map.svg
+#test/graystylemap.png
+#out.png
+#testMap.png
+.DS_Store
