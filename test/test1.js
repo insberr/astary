@@ -22,7 +22,7 @@ const onek = JSON.parse(fs.readFileSync(__dirname + "/1k.json"))
 
 
 let isBenchmark = false;
-afterEach(function() { bench.add(this.currentTest.title, this.currentTest.fn) })
+afterEach(function() { this.currentTest.state != 'failed' ? bench.add(this.currentTest.title, this.currentTest.fn) : null })
 after(() => { isBenchmark = true; console.log("benchmarking"); return bench.run({async: true}) } )
 describe("AStar", () => {
     it("straight line", ()=>{
