@@ -12,12 +12,16 @@ type GridNode = {
 }
 
 export function Raycast(inp: Node[]): Node[] {
-    const w = inp.map((r) => r.x).reduce((x,y) => x > y ? x : y) + 1
-    const h = inp.map((r) => r.y).reduce((x,y) => x > y ? x : y) + 1
+    const sw = Math.abs(Math.min(...inp.map((r) => r.x)))
+    const w = Math.max(...inp.map((r) => r.x)) + 1 + sw
+    const sh = Math.abs(Math.min(...inp.map((r) => r.y)))
+    const h = Math.max(...inp.map((r) => r.y))+1+sh
+    console.log(w,h,sw,sh)
     //console.log(w,h)
     const matrix: GridNode[][] = Array.from({length: h}, () => Array.from({length:w},() => {return {id:GID.EMPTY}} ))
     inp.forEach((node, i) => {
-        matrix[node.y][node.x] = {id: GID.NODE, ref: i}
+        //console.log(node.x,node.y)
+        matrix[node.y+sh][node.x+sw] = {id: GID.NODE, ref: i}
     })
     const directions = [
         [0,1], //down
@@ -27,7 +31,7 @@ export function Raycast(inp: Node[]): Node[] {
     ]
     inp.forEach((node, i) => {
         directions.forEach((dir) => {
-            const tracker = {...node}
+            const tracker = {...node, x: node.x+sw, y: node.y+sh }
             //console.log(dir)
             while (true) {
                 tracker.x += dir[0]
@@ -41,6 +45,9 @@ export function Raycast(inp: Node[]): Node[] {
                     matrix[tracker.y][tracker.x] = { id: GID.PATH, ref: i }
                 } else if (d.id == GID.NODE) {
                     //console.log(i,"form connection to node",d.ref)
+                    if (inp[i].edges.includes(d.ref)) {
+                        break
+                    }
                     inp[d.ref].edges.push(i)
                     inp[i].edges.push(d.ref)
                     break;
@@ -50,7 +57,7 @@ export function Raycast(inp: Node[]): Node[] {
                         break
                     }
                     //console.log("create node at ",tracker.x,tracker.y, " and connect it with ",i,"&",d.ref)
-                    const ne = inp.push({x:tracker.x, y:tracker.y, edges: [i,d.ref]})-1
+                    const ne = inp.push({x:tracker.x-sw, y:tracker.y-sh, edges: [i,d.ref]})-1
                     inp[i].edges.push(ne)
                     inp[d.ref].edges.push(ne)
                     break

@@ -1152,6 +1152,7 @@ __metadata:
     parcel: ^2.7.0
     parcel-reporter-exec: ^0.0.7
     pngjs2: ^2.0.0
+    source-map-support: ^0.5.21
     typescript: ^4.8.3
   languageName: unknown
   linkType: soft
@@ -3340,7 +3341,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:~0.5.20":
+"source-map-support@npm:^0.5.21, source-map-support@npm:~0.5.20":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
   dependencies:

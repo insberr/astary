@@ -1,3 +1,4 @@
+require('source-map-support').install();
 var assert = require('assert');
 var astar = require("..");
 var fs = require("fs")
@@ -119,10 +120,8 @@ describe("raycast", () => {
             {x: 0, y:0, edges:[]},
             {x: 5, y:0, edges:[]},
             {x: 10, y:0, edges: []},
-            {x: 5, y: 5, edges: []},
             {x: 5, y:-10, edges: []}
         ])
-        astar.AStar(0,4, con);
     })
 })
 /*describe('makeGraph', () => {
