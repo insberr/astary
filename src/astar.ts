@@ -137,4 +137,5 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
 
 //_astar(0, 1, (n) => 0);
 export * from "./random";
+export * from "./raycast"
 export { AStar, generateNodes, nodeJSImageToImageData };

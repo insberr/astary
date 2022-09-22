@@ -2,6 +2,7 @@ var assert = require('assert');
 var astar = require("..");
 var fs = require("fs")
 const benchmark = require("benchmark");
+const { AssertionError } = require('assert');
 // const { createImageData } = require('canvas')
 var PNG = require('pngjs2').PNG;
 
@@ -82,7 +83,7 @@ describe("generate nodes from image", () => {
         //console.log(data);
 
         const nodes = astar.generateNodes({ data: img, width: 200, height: 200 });
-        console.log(nodes);
+        //console.log(nodes);
 
         //var img_png = new PNG({width: 200, height: 200});
         //img_png.data = Buffer.from(nodes.i.data);
@@ -95,6 +96,25 @@ describe("generate nodes from image", () => {
     })
 })
 
+describe("raycast", () => {
+    it("should connect nodes in line.", () => {
+        const con = astar.Raycast([
+            {x:0,y:0, edges:[]},
+            {x:10,y:0, edges:[]}
+        ])
+        assert.equal(con[0].edges.length, 1)
+        assert.equal(con[0].edges[0], 1)
+        assert.equal(con[1].edges.length, 1)
+        assert.equal(con[1].edges[0], 0)
+    })
+    it("should connect 2 nodes with a 3rd", ()=>{
+        const con = astar.Raycast([
+            {x:0,y:0, edges:[]},
+            {x:10,y:10, edges:[]}
+        ])
+        astar.AStar(0,1, con);
+    })
+})
 /*describe('makeGraph', () => {
     it('should make a graph', async () => {
         /*const res = await astar.makeUint8ClampedArray().then(a => {
