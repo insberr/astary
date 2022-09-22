@@ -16,7 +16,7 @@ export function Raycast(inp: Node[]): Node[] {
     const w = Math.max(...inp.map((r) => r.x)) + 1 + sw
     const sh = Math.abs(Math.min(...inp.map((r) => r.y)))
     const h = Math.max(...inp.map((r) => r.y))+1+sh
-    console.log(w,h,sw,sh)
+    //console.log(w,h,sw,sh)
     //console.log(w,h)
     const matrix: GridNode[][] = Array.from({length: h}, () => Array.from({length:w},() => {return {id:GID.EMPTY}} ))
     inp.forEach((node, i) => {
