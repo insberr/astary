@@ -24,11 +24,16 @@
     "prepack": "yarn build"
   },
   "dependencies": {
+    "@types/svg-parser": "^2.0.3",
+    "@types/svg-path-parser": "^1.1.3",
     "blob-detection-mser": "^0.0.11",
     "blob-detection-ts": "^0.0.8",
     "canvas": "^2.10.1",
+    "get-svg-colors": "^2.0.0",
     "heap-js": "^2.2.0",
-    "image-sync": "^0.0.15"
+    "image-sync": "^0.0.15",
+    "svg-parser": "^2.0.4",
+    "svg-path-parser": "^1.1.0"
   },
   "targets": {
     "main": {

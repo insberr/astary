@@ -1,36 +1,61 @@
-//import { Rect } from 'blob-detection-ts';
-import MSER from 'blob-detection-ts';
-import * as is from 'image-sync';
+import { Node } from './astar';
+import { parse } from 'svg-parser';
+import { parseSVG, makeAbsolute } from 'svg-path-parser';
+import * as fs from 'fs';
 
-export function nodeJSImageToImageData(imageData?: Uint8ClampedArray): ImageData {
-    // Dont use cause it doesnt work im pretty sure
-    const img = new ImageData(imageData || new Uint8ClampedArray(10), 10, 10);
-    return img;
+export type Path = { x: number, y: number, fill: string, d: any[] };
+export type Paths = Path[];
+export type Colors = {
+    walls: string[],
+    walkable: string[],
+    otherColorsToIgnore?: string[],
 }
 
-export function generateNodes(imageData: ImageData, nodeColorWeights?: [string, number][]): { r: unknown[], i: ImageData } {
-    const mser = new MSER({
-        delta: 0.05,
-        minArea: 0.0001,
-        maxArea: 0.0005,
-        maxVariation: 200,
-        minDiversity: 0.5
-    });
-    
-    const imgD = is.read('./test/graystylemap.png');
-    var rects = mser.extract(imgD || imageData).map(region => {
-        return region.rect;
+// Remember transparent areas are also considered walkable
+export function svgToPaths(svgAsString: string, colors: Colors, readFile?: string): Paths {
+    if (readFile) svgAsString = fs.readFileSync(readFile, 'utf8');
+
+    const filterColors = [...colors.walls, ...colors.walkable, ...(colors?.otherColorsToIgnore || [])]
+    console.log(filterColors)
+    // TODO: find the element fith all the fills and strokes and whatever
+    const parsed = parse(svgAsString).children.filter(c => {
+        if (c.tagName !== 'svg') {
+            return false;
+        }
+        return true;
+    })[0].children.filter(c => c.tagName === 'g')[0].children.filter(c => {
+        if (c.tagName !== 'path') {
+            return false;
+        }
+        if (c.properties?.fill) {
+            return true;
+        }
+    }).filter(c => !filterColors.includes(c.properties.fill)).map(c => {
+        const d = parseSVG(c.properties.d);
+        // TODO parse d for coords
+        makeAbsolute(d);
+        // console.log(d.filter(v => v.code === 'M' ));
+        const moveTo = d.filter(v => v.code === 'M' )[0];
+        // console.log(moveTo);
+
+        return { x: moveTo.x, y: moveTo.y, fill: c.properties.fill, d: d };
     });
 
-    rects = mser.mergeRects(rects);
-    
-    rects.map(function(rect){
-        var rgba = [42,240,69,255];
-        mser.drawRectOutline(rect, rgba, imgD || imageData)
-    });
+    return parsed;
+}
 
-    imgD.saveAs('./out.png');
+export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][]): Node[] {
+    const nodes: Node[] = [];
+    for (const path of paths) {
+        const node = {
+            x: path.x,
+            y: path.y,
+            addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
+            edges: [],
+        }
+        nodes.push(node)
+    }
 
     // Temporary
-    return { r: rects, i: imgD || imageData };
+    return nodes;
 }

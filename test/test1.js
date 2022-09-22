@@ -76,24 +76,9 @@ describe("random", () => {
 
 describe("generate nodes from image", () => {
     it("should make nodes from node points on image", () => {
-        const file = fs.readFileSync(__dirname + '/graystylemap.png');
-        //console.log(file)
-        const img = new Uint8ClampedArray(file, file.byteOffset, 200 * 200 * 4)//file, file.byteOffset, file.byteLength);
-        //console.log(img)
-        //const data = createImageData(img, 200, 200)
-        //console.log(data);
-
-        const nodes = astar.generateNodes({ data: img, width: 200, height: 200 });
-        //console.log(nodes);
-
-        //var img_png = new PNG({width: 200, height: 200});
-        //img_png.data = Buffer.from(nodes.i.data);
-        //img_png.pack().pipe(fs.createWriteStream('testMap2.png'))
-
-        // const file = fs.readFileSync(__dirname + '/map.svg');
-        // console.log(file)
-        // const img = new Uint8ClampedArray(file, file.byteOffset, file.byteLength);
-        // console.log(img)
+        const paths = astar.svgToPaths('', { walls: ['#000000'], walkable: ['#ffffff'] }, __dirname + '/graystyleMap.svg')
+        const nodes = astar.generateNodes(paths);
+        console.log(nodes);
     })
 })
 
