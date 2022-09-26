@@ -83,12 +83,9 @@ function edgeW(current: number, nei: number, nodes: Node[]): number {
 }
 function gInfinite(m: Map<number, number>, n: number): number {
     if (m.has(n)) {
-        const out = m.get(n);
-        if (out == undefined) {
-            return Infinity;
-        } else {
-            return out;
-        };
+        let out = m.get(n) ;
+        //@ts-ignore should never has() but not able to get()
+        return out;
     }
     return Infinity;
 }
