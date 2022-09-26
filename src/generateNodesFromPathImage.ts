@@ -57,8 +57,10 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
     const nodes: Node[] = [];
     for (const path of paths) {
         const node = {
-            x: Math.round(path.x),
-            y: Math.round(path.y),
+            x: path.x * 1000,
+            y: path.y * 1000,
+            ox: path.x,
+            oy: path.y,
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
             edges: [],
         }
@@ -70,5 +72,9 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
 }
 
 export function svgNodesRaycast(nodes: Node[]): Node[] {
-    return Raycast(nodes);
+    return Raycast(nodes).map(n => {
+        n.x = n.x / 1000;
+        n.y = n.y / 1000;
+        return n;
+    });
 }
