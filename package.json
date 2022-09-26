@@ -22,7 +22,7 @@
   "scripts": {
     "build": "parcel build",
     "dev": "PARCEL_EXEC=\"yarn mocha\" parcel watch",
-    "test": "yarn build && jest --coverage",
+    "test": "jest --coverage",
     "prepack": "yarn build"
   },
   "dependencies": {
