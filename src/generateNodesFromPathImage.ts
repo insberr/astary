@@ -1,10 +1,11 @@
 import { Node } from './astar';
-import { parse } from 'svg-parser';
-import { parseSVG, makeAbsolute } from 'svg-path-parser';
+import { ElementNode, parse } from 'svg-parser';
+import { Node as SVGNode } from 'svg-parser';
+import { parseSVG, makeAbsolute, MoveToCommand } from 'svg-path-parser';
 import { Raycast } from './raycast';
 import * as fs from 'fs';
 
-export type Path = { x: number, y: number, fill: string, d: any[] };
+export type Path = { x: number, y: number, fill: string | number, d: any[] };
 export type Paths = Path[];
 export type Colors = {
     walls: string[],
@@ -19,38 +20,47 @@ export function svgToPaths(svgAsString: string, colors: Colors, readFile?: strin
     const filterColors = [...colors.walls, ...colors.walkable, ...(colors?.otherColorsToIgnore || [])]
     //console.log(filterColors)
     // TODO: find the element fith all the fills and strokes and whatever
-    const parsed = parse(svgAsString).children.filter(c => {
-        if (c.tagName !== 'svg') {
+    const parsed = parse(svgAsString)
+    const svgElement = parsed.children.filter(c => {
+        if ((c as ElementNode).tagName !== 'svg') {
             return false;
         }
         return true;
-    })[0].children.filter(c => c.tagName === 'g')[0].children.filter(c => {
-        if (c.tagName !== 'path') {
+    })[0]
+    const svgGElements = (svgElement as ElementNode).children.filter(c => {
+        return (c as ElementNode).tagName === 'g'
+    })[0]
+    const elementPaths = (svgGElements as ElementNode).children.filter(c => {
+        if ((c as ElementNode).tagName !== 'path') {
             return false;
         }
-        if (c.properties?.fill) {
+        if ((c as ElementNode).properties?.fill) {
             return true;
         }
-    }).filter(c => !filterColors.includes(c.properties.fill)).map(c => {
-        const d = parseSVG(c.properties.d);
+    })
+    const pathFills = elementPaths.filter(c => !filterColors.includes(((c as SVGNode) as ElementNode)?.properties?.fill.toString() || ''))
+    const fillsToNodes = pathFills.map(c => {
+        const d = parseSVG((c as ElementNode)?.properties?.d.toString() || '');
         // TODO parse d for coords
         makeAbsolute(d);
         // console.log(d.filter(v => v.code === 'M' ));
-        const moveTo = d.filter(v => v.code === 'M' )[0];
+        const moveTo = d.filter(v => v.code === 'M' )[0] as MoveToCommand;
         // console.log(moveTo);
 
-        return { x: moveTo.x, y: moveTo.y, fill: c.properties.fill, d: d };
+        return { x: moveTo.x, y: moveTo.y, fill: (c as ElementNode)?.properties?.fill || 'why is this undefined', d: d };
     });
 
-    return parsed;
+    return fillsToNodes;
 }
 
 export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][]): Node[] {
     const nodes: Node[] = [];
     for (const path of paths) {
         const node = {
-            x: Math.round(path.x),
-            y: Math.round(path.y),
+            x: path.x * 1000,
+            y: path.y * 1000,
+            ox: path.x,
+            oy: path.y,
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
             edges: [],
         }
@@ -62,5 +72,9 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
 }
 
 export function svgNodesRaycast(nodes: Node[]): Node[] {
-    return Raycast(nodes);
+    return Raycast(nodes).map(n => {
+        n.x = n.x / 1000;
+        n.y = n.y / 1000;
+        return n;
+    });
 }

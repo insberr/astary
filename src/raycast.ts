@@ -57,7 +57,7 @@ export function Raycast(inp: Node[]): Node[] {
                         break
                     }
                     //console.log("create node at ",tracker.x,tracker.y, " and connect it with ",i,"&",d.ref)
-                    const ne = inp.push({x:tracker.x-sw, y:tracker.y-sh, edges: [i,d.ref]})-1
+                    const ne = inp.push({x:tracker.x-sw, y:tracker.y-sh, ox:tracker.x-sw, oy:tracker.y-sh, edges: [i,d.ref]})-1
                     inp[i].edges.push(ne)
                     inp[d.ref].edges.push(ne)
                     break

@@ -1,21 +1,27 @@
+let testContext: any;
+beforeEach(() => {
+    testContext = {};
+});
+
 require('source-map-support').install();
-var assert = require('assert');
-var astar = require("..");
-var fs = require("fs")
-const benchmark = require("benchmark");
-const { AssertionError } = require('assert');
+import * as astar from "../src/astar";
+import * as fs from 'fs'
+
+//import * as benchmark from 'benchmark'
+//const { AssertionError } = require('assert');
 // const { createImageData } = require('canvas')
 var PNG = require('pngjs2').PNG;
 
-const bench = new benchmark.Suite;
-bench.on('cycle', function(event) {
+//const bench = new benchmark.Suite;
+/*
+bench.on('cycle', function(event: any) {
     console.log(String(event.target));
   })
 bench.on("error", () => {
     console.error("ruh roh!");
-})
+})*/
 
-const onek = JSON.parse(fs.readFileSync(__dirname + "/1k.json"))
+const onek = JSON.parse(fs.readFileSync(__dirname + "/1k.json").toString())
 // uncommented
 /*bench.on('complete', function() {
     console.log(this);
@@ -23,8 +29,12 @@ const onek = JSON.parse(fs.readFileSync(__dirname + "/1k.json"))
 
 
 let isBenchmark = false;
-afterEach(function() { this.currentTest.state != 'failed' ? bench.add(this.currentTest.title, this.currentTest.fn) : null })
-after(() => { isBenchmark = true; console.log("benchmarking"); return bench.run({async: true}) } )
+/*fterEach(
+    () => { testContext.currentTest.state != 'failed' ? bench.add(testContext.currentTest.title, testContext.currentTest.fn) : null }
+)
+afterAll(
+    () => { isBenchmark = true; console.log("benchmarking"); return bench.run({async: true}) }
+)*/
 describe("AStar", () => {
     it("straight line", ()=>{
         const res = astar.AStar(0, 5, [
@@ -36,7 +46,7 @@ describe("AStar", () => {
             {x: 5, y: 0, edges: [4]},
         ] )
         //if (!isBenchmark) console.log(res)
-        assert.deepEqual(res, [0,1,2,3,4,5])
+        expect(res).toEqual([0,1,2,3,4,5])
     })
     it("tgraph with weight", () => {
         const res = astar.AStar(0, 5, [
@@ -48,7 +58,15 @@ describe("AStar", () => {
             {x: 8, y: 0, edges: []},
         ] )
         //if (!isBenchmark) console.log(res)
-        assert.equal(res.indexOf(4), -1) // cannot contain a 4
+        expect(res).not.toContain(4)// cannot contain a 4
+    })
+    it("should error without path", () => {
+        expect(() => {
+            astar.AStar(0,1,[
+                {x:0, y:0, edges:[]},
+                {x:1,y:1,edges:[]}
+            ])
+        }).toThrowError()
     })
 })
 
@@ -61,16 +79,11 @@ describe("stress test", () => {
 describe("random", () => {
     it("should generate a random nodes (100 nodes, 10+ connections)", () => {
         const d = astar.randomNodes(100,10)
-        assert.equal(d.length, 100)
+        expect(d).toHaveLength(100)
     })
     it("random graph pathable (100 nodes, 10+ connections)", () => {
         const d = astar.randomNodes(100,10)
-        try {
         astar.AStar(0,99,d);
-        } catch (e) {
-            assert.fail(e)
-        }
-        
     })
 })
 
@@ -99,10 +112,10 @@ describe("raycast", () => {
             {x:0,y:0, edges:[]},
             {x:10,y:0, edges:[]}
         ])
-        assert.equal(con[0].edges.length, 1)
-        assert.equal(con[0].edges[0], 1)
-        assert.equal(con[1].edges.length, 1)
-        assert.equal(con[1].edges[0], 0)
+        console.log(con)
+        expect(con[0].edges).toHaveLength(1)
+        expect(con[1].edges).toHaveLength(1)
+        
     })
     it("should connect 2 nodes with a 3rd", ()=>{
         const con = astar.Raycast([

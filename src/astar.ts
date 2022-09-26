@@ -5,6 +5,9 @@ import { generateNodes, svgToPaths } from "./generateNodesFromPathImage";
 export type Node = {
     x: number;
     y: number;
+    // o[x|y] is the original x or y value
+    ox?: number;
+    oy?: number
     addlWeight?: number;
     edges: number[];
 };
@@ -83,12 +86,9 @@ function edgeW(current: number, nei: number, nodes: Node[]): number {
 }
 function gInfinite(m: Map<number, number>, n: number): number {
     if (m.has(n)) {
-        const out = m.get(n);
-        if (out == undefined) {
-            return Infinity;
-        } else {
-            return out;
-        };
+        let out = m.get(n) ;
+        //@ts-ignore should never has() but not able to get()
+        return out;
     }
     return Infinity;
 }

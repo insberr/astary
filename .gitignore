@@ -134,3 +134,5 @@ test/map.svg
 #out.png
 #testMap.png
 .DS_Store
+
+benchmarks/
