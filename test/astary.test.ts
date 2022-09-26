@@ -87,9 +87,11 @@ describe("random", () => {
     })
 })
 
+const svg = fs.readFileSync(__dirname + '/graystyleMap.svg', 'utf8');
+
 describe("generate nodes from svg", () => {
     it("should make nodes from node points on image", () => {
-        const paths = astar.svgToPaths('', { walls: ['#000000'], walkable: ['#ffffff'] }, __dirname + '/graystyleMap.svg')
+        const paths = astar.svgToPaths(svg, { walls: ['#000000'], walkable: ['#ffffff'] })
         const nodes = astar.generateNodes(paths);
         console.log(nodes);
     })
@@ -97,7 +99,7 @@ describe("generate nodes from svg", () => {
 
 describe("generate nodes from svg then raycast", () => {
     it("should make nodes from node points on image, then raycast", () => {
-        const paths = astar.svgToPaths('', { walls: ['#000000'], walkable: ['#ffffff'] }, __dirname + '/graystyleMap.svg')
+        const paths = astar.svgToPaths(svg, { walls: ['#000000'], walkable: ['#ffffff'] })
         const nodes = astar.generateNodes(paths);
         // console.log(nodes);
 

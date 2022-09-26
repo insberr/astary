@@ -57,7 +57,13 @@ export function Raycast(inp: Node[]): Node[] {
                         break
                     }
                     //console.log("create node at ",tracker.x,tracker.y, " and connect it with ",i,"&",d.ref)
-                    const ne = inp.push({x:tracker.x-sw, y:tracker.y-sh, ox:tracker.x-sw, oy:tracker.y-sh, edges: [i,d.ref]})-1
+
+                    const thisNode = inp[i]
+                    const collideNode = inp[d.ref]
+                    const dx = ((thisNode?.dx || 0) > 0) ? (thisNode?.dx || 0) : (collideNode?.dx || 0);
+                    const dy = ((thisNode?.dy || 0) > 0) ? (thisNode?.dy || 0) : (collideNode?.dy || 0);
+
+                    const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, ox:tracker.x-sw, oy:tracker.y-sh, edges: [i,d.ref]})-1
                     inp[i].edges.push(ne)
                     inp[d.ref].edges.push(ne)
                     break

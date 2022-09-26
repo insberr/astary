@@ -6,6 +6,8 @@ export type Node = {
     x: number;
     y: number;
     // o[x|y] is the original x or y value
+    dx?: number;
+    dy?: number;
     ox?: number;
     oy?: number
     addlWeight?: number;

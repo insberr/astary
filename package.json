@@ -24,7 +24,7 @@
     "build": "parcel build",
     "dev": "PARCEL_EXEC=\"yarn mocha\" parcel watch",
     "test": "jest --coverage",
-    "bench": "yarn build && jest --projects jest-bench.config.json",
+    "bench": "jest --projects jest-bench.config.json",
     "prepack": "yarn build"
   },
   "dependencies": {

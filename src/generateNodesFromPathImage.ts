@@ -3,7 +3,6 @@ import { ElementNode, parse } from 'svg-parser';
 import { Node as SVGNode } from 'svg-parser';
 import { parseSVG, makeAbsolute, MoveToCommand } from 'svg-path-parser';
 import { Raycast } from './raycast';
-import * as fs from 'fs';
 
 export type Path = { x: number, y: number, fill: string | number, d: any[] };
 export type Paths = Path[];
@@ -14,9 +13,7 @@ export type Colors = {
 }
 
 // Remember transparent areas are also considered walkable
-export function svgToPaths(svgAsString: string, colors: Colors, readFile?: string): Paths {
-    if (readFile) svgAsString = fs.readFileSync(readFile, 'utf8');
-
+export function svgToPaths(svgAsString: string, colors: Colors): Paths {
     const filterColors = [...colors.walls, ...colors.walkable, ...(colors?.otherColorsToIgnore || [])]
     //console.log(filterColors)
     // TODO: find the element fith all the fills and strokes and whatever
@@ -57,8 +54,10 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
     const nodes: Node[] = [];
     for (const path of paths) {
         const node = {
-            x: path.x * 1000,
-            y: path.y * 1000,
+            x: +path.x.toFixed(),
+            y: +path.y.toFixed(),
+            dx: path.x - Math.floor(path.x),
+            dy: path.y - Math.floor(path.y),
             ox: path.x,
             oy: path.y,
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
