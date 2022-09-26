@@ -1,5 +1,4 @@
 let testContext: any;
-
 beforeEach(() => {
     testContext = {};
 });
@@ -60,6 +59,14 @@ describe("AStar", () => {
         ] )
         //if (!isBenchmark) console.log(res)
         expect(res).not.toContain(4)// cannot contain a 4
+    })
+    it("should error without path", () => {
+        expect(() => {
+            astar.AStar(0,1,[
+                {x:0, y:0, edges:[]},
+                {x:1,y:1,edges:[]}
+            ])
+        }).toThrowError()
     })
 })
 
