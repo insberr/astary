@@ -1,6 +1,7 @@
 import { Node } from './astar';
 import { parse } from 'svg-parser';
 import { parseSVG, makeAbsolute } from 'svg-path-parser';
+import { Raycast } from './raycast';
 import * as fs from 'fs';
 
 export type Path = { x: number, y: number, fill: string, d: any[] };
@@ -16,7 +17,7 @@ export function svgToPaths(svgAsString: string, colors: Colors, readFile?: strin
     if (readFile) svgAsString = fs.readFileSync(readFile, 'utf8');
 
     const filterColors = [...colors.walls, ...colors.walkable, ...(colors?.otherColorsToIgnore || [])]
-    console.log(filterColors)
+    //console.log(filterColors)
     // TODO: find the element fith all the fills and strokes and whatever
     const parsed = parse(svgAsString).children.filter(c => {
         if (c.tagName !== 'svg') {
@@ -48,8 +49,8 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
     const nodes: Node[] = [];
     for (const path of paths) {
         const node = {
-            x: path.x,
-            y: path.y,
+            x: Math.round(path.x),
+            y: Math.round(path.y),
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
             edges: [],
         }
@@ -58,4 +59,8 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
 
     // Temporary
     return nodes;
+}
+
+export function svgNodesRaycast(nodes: Node[]): Node[] {
+    return Raycast(nodes);
 }

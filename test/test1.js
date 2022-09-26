@@ -74,11 +74,22 @@ describe("random", () => {
     })
 })
 
-describe("generate nodes from image", () => {
+describe("generate nodes from svg", () => {
     it("should make nodes from node points on image", () => {
         const paths = astar.svgToPaths('', { walls: ['#000000'], walkable: ['#ffffff'] }, __dirname + '/graystyleMap.svg')
         const nodes = astar.generateNodes(paths);
         console.log(nodes);
+    })
+})
+
+describe("generate nodes from svg then raycast", () => {
+    it("should make nodes from node points on image, then raycast", () => {
+        const paths = astar.svgToPaths('', { walls: ['#000000'], walkable: ['#ffffff'] }, __dirname + '/graystyleMap.svg')
+        const nodes = astar.generateNodes(paths);
+        // console.log(nodes);
+
+        const newNodes = astar.Raycast(nodes);
+        console.log(newNodes)
     })
 })
 
