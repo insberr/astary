@@ -93,7 +93,7 @@ describe("generate nodes from svg", () => {
     it("should make nodes from node points on image", () => {
         const paths = astar.svgToPaths(svg, { walls: ['#000000'], walkable: ['#ffffff'] })
         const nodes = astar.generateNodes(paths);
-        console.log(nodes);
+        //console.log(nodes);
     })
 })
 
@@ -104,7 +104,7 @@ describe("generate nodes from svg then raycast", () => {
         // console.log(nodes);
 
         const newNodes = astar.Raycast(nodes);
-        console.log(newNodes)
+        //console.log(newNodes)
     })
 })
 
@@ -134,6 +134,30 @@ describe("raycast", () => {
             {x: 5, y:-10, edges: []}
         ])
     })
+    it("should do walls correctly", () => {
+        const con = astar.Raycast([
+            {x: 0, y:0, edges:[]},
+            {x: 0, y: 5, edges:[]},
+            {x: 10, y: 5, edges: []},
+            {x: 10, y:0, edges: []},
+
+        ], [
+            { x: 1, y: 0 }
+        ])
+        expect(con[0].edges).not.toContainEqual(3)
+        expect(con[0].edges).toContainEqual(1)
+    })
+    it("should handle walls in the middle of nowhere", () => {
+        const con = astar.Raycast([
+            {x:0,y:0,edges:[]},
+            {x:10,y:0,edges:[]}
+        ],
+            [{
+                x: -99,
+                y: 99
+            }]
+        )
+    }) 
 })
 /*describe('makeGraph', () => {
     it('should make a graph', async () => {

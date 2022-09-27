@@ -4,25 +4,49 @@ import type { Node } from "./astar"
 enum GID {
     EMPTY,
     NODE,
-    PATH
+    PATH,
+    WALL
 }
 type GridNode = {
     id: GID,
     ref?: any;
 }
 
-export function Raycast(inp: Node[]): Node[] {
-    const sw = Math.abs(Math.min(...inp.map((r) => r.x)))
-    const w = Math.max(...inp.map((r) => r.x)) + 1 + sw
-    const sh = Math.abs(Math.min(...inp.map((r) => r.y)))
-    const h = Math.max(...inp.map((r) => r.y))+1+sh
+export type Wall = {
+    x: number,
+    y: number
+    
+}
+
+export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
+    if (walls === undefined) {
+        walls = [];
+    }
+    inp.forEach((node, i) => {
+        //console.log(node.x,node.y)
+        if (node.x != Math.floor(node.x) || node.y != Math.floor(node.y)) {
+            console.warn("Decimal values are not supported in raycast and will be ignored")
+        }
+        inp[i].ox = node.x;
+        inp[i].oy = node.y;
+        inp[i].x = Math.floor(node.x);
+        inp[i].y = Math.floor(node.y);
+    })
+    const sw = Math.abs(Math.min(...[...inp,...walls].map((r) => r.x)))
+    const w = Math.max(...[...inp,...walls].map((r) => r.x)) + 1 + sw
+    const sh = Math.abs(Math.min(...[...inp,...walls].map((r) => r.y)))
+    const h = Math.max(...[...inp,...walls].map((r) => r.y))+1+sh
     //console.log(w,h,sw,sh)
     //console.log(w,h)
     const matrix: GridNode[][] = Array.from({length: h}, () => Array.from({length:w},() => {return {id:GID.EMPTY}} ))
+    walls.forEach(element => {
+        matrix[element.y+sh][element.x+sw] = {id:GID.WALL}
+    });
     inp.forEach((node, i) => {
         //console.log(node.x,node.y)
         matrix[node.y+sh][node.x+sw] = {id: GID.NODE, ref: i}
     })
+    
     const directions = [
         [0,1], //down
         [0,-1],//up
@@ -33,7 +57,7 @@ export function Raycast(inp: Node[]): Node[] {
         directions.forEach((dir) => {
             const tracker = {...node, x: node.x+sw, y: node.y+sh }
             //console.log(dir)
-            while (true) {
+            outer: while (true) {
                 tracker.x += dir[0]
                 tracker.y += dir[1]
                 if (tracker.x < 0 || tracker.x >= w || tracker.y < 0 || tracker.y >= h) {
@@ -41,37 +65,47 @@ export function Raycast(inp: Node[]): Node[] {
                     break;
                 }
                 const d = matrix[tracker.y][tracker.x]
-                if (d.id == GID.EMPTY) {
-                    matrix[tracker.y][tracker.x] = { id: GID.PATH, ref: i }
-                } else if (d.id == GID.NODE) {
-                    //console.log(i,"form connection to node",d.ref)
-                    if (inp[i].edges.includes(d.ref)) {
-                        break
-                    }
-                    inp[d.ref].edges.push(i)
-                    inp[i].edges.push(d.ref)
+                if (d == undefined) {
+                    console.warn("matrix was undefined, this should probably not happen")
                     break;
-                } else if (d.id == GID.PATH) {
-                    if (inp[i].edges.includes(d.ref)) {
-                        //console.log("link already formed: ",i,"&",d.ref)
-                        break
-                    }
-                    //console.log("create node at ",tracker.x,tracker.y, " and connect it with ",i,"&",d.ref)
-
-                    const thisNode = inp[i]
-                    const collideNode = inp[d.ref]
-                    const dx = ((thisNode?.dx || 0) > 0) ? (thisNode?.dx || 0) : (collideNode?.dx || 0);
-                    const dy = ((thisNode?.dy || 0) > 0) ? (thisNode?.dy || 0) : (collideNode?.dy || 0);
-
-                    const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, ox:tracker.x-sw, oy:tracker.y-sh, raycast:true, edges: [i,d.ref]})-1
-                    inp[i].edges.push(ne)
-                    inp[d.ref].edges.push(ne)
-                    break
                 }
+                switch (d.id) {
+                    case GID.EMPTY:
+                        matrix[tracker.y][tracker.x] = { id: GID.PATH, ref: i }
+                        break;
+                    case GID.NODE:
+                        //console.log(i,"form connection to node",d.ref)
+                        if (inp[i].edges.includes(d.ref)) {
+                            break outer;
+                        }
+                        inp[d.ref].edges.push(i)
+                        inp[i].edges.push(d.ref)
+                        break outer;
+                    case GID.PATH:
+                        if (inp[i].edges.includes(d.ref)) {
+                            //console.log("link already formed: ",i,"&",d.ref)
+                            break outer;
+                        }
+                        //console.log("create node at ",tracker.x,tracker.y, " and connect it with ",i,"&",d.ref)
+
+                        const thisNode = inp[i]
+                        const collideNode = inp[d.ref]
+                        const dx = ((thisNode?.dx || 0) > 0) ? (thisNode?.dx || 0) : (collideNode?.dx || 0);
+                        const dy = ((thisNode?.dy || 0) > 0) ? (thisNode?.dy || 0) : (collideNode?.dy || 0);
+
+                        const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, ox:tracker.x-sw, oy:tracker.y-sh, edges: [i,d.ref]})-1
+                        inp[i].edges.push(ne)
+                        inp[d.ref].edges.push(ne)
+                        break outer;
+                    case GID.WALL:
+                        break outer;
             }
+        }
         })
     })
     //console.log(inp)
     //console.log(matrix)
-    return inp
+    return inp.map((node) => {
+        return {...node, x: node.ox || 0, y: node.oy || 0}
+    })
 }
