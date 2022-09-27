@@ -147,6 +147,17 @@ describe("raycast", () => {
         expect(con[0].edges).not.toContainEqual(3)
         expect(con[0].edges).toContainEqual(1)
     })
+    it("should handle walls in the middle of nowhere", () => {
+        const con = astar.Raycast([
+            {x:0,y:0,edges:[]},
+            {x:10,y:0,edges:[]}
+        ],
+            [{
+                x: -99,
+                y: 99
+            }]
+        )
+    }) 
 })
 /*describe('makeGraph', () => {
     it('should make a graph', async () => {

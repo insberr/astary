@@ -22,10 +22,10 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
     if (walls === undefined) {
         walls = [];
     }
-    const sw = Math.abs(Math.min(...inp.map((r) => r.x)))
-    const w = Math.max(...inp.map((r) => r.x)) + 1 + sw
-    const sh = Math.abs(Math.min(...inp.map((r) => r.y)))
-    const h = Math.max(...inp.map((r) => r.y))+1+sh
+    const sw = Math.abs(Math.min(...[...inp,...walls].map((r) => r.x)))
+    const w = Math.max(...[...inp,...walls].map((r) => r.x)) + 1 + sw
+    const sh = Math.abs(Math.min(...[...inp,...walls].map((r) => r.y)))
+    const h = Math.max(...[...inp,...walls].map((r) => r.y))+1+sh
     //console.log(w,h,sw,sh)
     //console.log(w,h)
     const matrix: GridNode[][] = Array.from({length: h}, () => Array.from({length:w},() => {return {id:GID.EMPTY}} ))
