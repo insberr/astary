@@ -53,7 +53,8 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
         [1,0],//right
         [-1,0]//left
     ]
-    inp.filter(n => n.raycast === undefined || n.raycast === false).forEach((node, i) => {
+    inp.forEach((node, i) => {
+        if (node.raycast === true) return;
         directions.forEach((dir) => {
             const tracker = {...node, x: node.x+sw, y: node.y+sh }
             //console.log(dir)
@@ -93,7 +94,7 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
                         const dx = ((thisNode?.dx || 0) > 0) ? (thisNode?.dx || 0) : (collideNode?.dx || 0);
                         const dy = ((thisNode?.dy || 0) > 0) ? (thisNode?.dy || 0) : (collideNode?.dy || 0);
 
-                        const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, ox:tracker.x-sw, oy:tracker.y-sh, edges: [i,d.ref]})-1
+                        const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, raycast:true, edges: [i,d.ref]})-1
                         inp[i].edges.push(ne)
                         inp[d.ref].edges.push(ne)
                         break outer;
@@ -106,6 +107,6 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
     //console.log(inp)
     //console.log(matrix)
     return inp.map((node) => {
-        return {...node, x: node.ox || 0, y: node.oy || 0}
+        return {...node, x: node.ox || node.x, y: node.oy || node.y}
     })
 }
