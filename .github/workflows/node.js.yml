@@ -26,4 +26,11 @@ jobs:
     - run: yarn
     - run: yarn build
     - run: yarn test
+      id: test
+      continue-on-error: true
     - run: yarn bench
+      id: bench
+      continue-on-error: true
+    - name: fail if either benchmark or tests fail
+      if: steps.bench.outcome != 'success' || steps.test.outcome != 'success'
+      run: exit 1
