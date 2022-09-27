@@ -3,7 +3,7 @@ import type { Node } from "./astar"
 //mport { svgNodesRaycast } from "./generateNodesFromPathImage";
 
 
-enum GID {
+/*enum GID {
     EMPTY,
     NODE,
     PATH,
@@ -12,7 +12,7 @@ enum GID {
 type GridNode = {
     id: GID,
     ref?: any;
-}
+}*/
 
 export type Line = {
     sx: number,
@@ -164,7 +164,25 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
     if (_walls != undefined) {
         walls = _walls
     }
+    const xs = nodes.map((n) => n.x);
+    const ys = nodes.map((n) => n.y);
+    walls.forEach((w) => {
+        xs.push(w.ex,w.sx)
+        ys.push(w.ey,w.sy)
+    })
+
+    const minX = Math.min(...xs)
+    const maxX = Math.max(...xs)
+    const minY = Math.min(...ys)
+    const maxY = Math.max(...ys)
+
     nodes.forEach((node,i) => {
+        const mapEdges = [
+            {x: node.x, y: minY },
+            {x: node.x, y: maxY },
+            {x: minX, y: node.y },
+            {x: maxX, y: node.y }
+        ]
         const dirFilters: ((x:number,y:number)=>boolean)[] = [
             /* up    */ (x,y) => node.x == x && y > node.y,
             /* right */ (x,y) => node.y == y && x > node.x,
