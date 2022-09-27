@@ -1,5 +1,6 @@
 {
   "name": "astary",
+  "version": "0.0.2",
   "packageManager": "yarn@3.2.3",
   "source": "src/astar.ts",
   "main": "dist/astar.js",
