@@ -138,7 +138,7 @@ describe("raycast", () => {
             {x: 5, y:-10, edges: []}
         ])
     })
-    it("should do walls correctly", () => {
+    it("wall", () => {
         const con = astar.Raycast([
             {x: 0, y:0, edges:[]},
             {x: 0, y: 5, edges:[]},
@@ -146,7 +146,7 @@ describe("raycast", () => {
             {x: 10, y:0, edges: []},
 
         ], [
-            { x: 1, y: 0 }
+            { sx: 1, sy: 0, ex: 2, ey:1 }
         ])
         expect(con[0].edges).not.toContainEqual(3)
         expect(con[0].edges).toContainEqual(1)
@@ -157,8 +157,10 @@ describe("raycast", () => {
             {x:10,y:0,edges:[]}
         ],
             [{
-                x: -99,
-                y: 99
+                sx: -99,
+                sy: 99,
+                ex: -98,
+                ey: 98,
             }]
         )
     }) 
