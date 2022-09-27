@@ -171,10 +171,10 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
         ys.push(w.ey,w.sy)
     })
 
-    const minX = Math.min(...xs)
-    const maxX = Math.max(...xs)
-    const minY = Math.min(...ys)
-    const maxY = Math.max(...ys)
+    const minX = Math.min.apply(null,xs)
+    const maxX = Math.max.apply(null,xs)
+    const minY = Math.min.apply(null,ys)
+    const maxY = Math.max.apply(null,ys)
 
     nodes.forEach((node,i) => {
         const mapEdges = [
