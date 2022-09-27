@@ -29,7 +29,7 @@ export function Raycast(inp: Node[]): Node[] {
         [1,0],//right
         [-1,0]//left
     ]
-    inp.forEach((node, i) => {
+    inp.filter(n => n.raycast === undefined || n.raycast === false).forEach((node, i) => {
         directions.forEach((dir) => {
             const tracker = {...node, x: node.x+sw, y: node.y+sh }
             //console.log(dir)
@@ -63,7 +63,7 @@ export function Raycast(inp: Node[]): Node[] {
                     const dx = ((thisNode?.dx || 0) > 0) ? (thisNode?.dx || 0) : (collideNode?.dx || 0);
                     const dy = ((thisNode?.dy || 0) > 0) ? (thisNode?.dy || 0) : (collideNode?.dy || 0);
 
-                    const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, ox:tracker.x-sw, oy:tracker.y-sh, edges: [i,d.ref]})-1
+                    const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, ox:tracker.x-sw, oy:tracker.y-sh, raycast:true, edges: [i,d.ref]})-1
                     inp[i].edges.push(ne)
                     inp[d.ref].edges.push(ne)
                     break

@@ -11,6 +11,7 @@ export type Node = {
     ox?: number;
     oy?: number
     addlWeight?: number;
+    raycast?: boolean;
     edges: number[];
 };
 
