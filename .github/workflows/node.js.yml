@@ -25,12 +25,8 @@ jobs:
         cache: 'yarn'
     - run: yarn
     - run: yarn build
+      id: build
     - run: yarn test
-      id: test
-      continue-on-error: true
+      if: steps.build.outcome == "success"
     - run: yarn bench
-      id: bench
-      continue-on-error: true
-    - name: fail if either benchmark or tests fail
-      if: steps.bench.outcome != 'success' || steps.test.outcome != 'success'
-      run: exit 1
+      if: steps.build.outcome == "success"
