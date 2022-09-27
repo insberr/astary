@@ -13,9 +13,10 @@ type GridNode = {
 }
 
 export type Wall = {
-    x: number,
-    y: number
-    
+    sx: number,
+    sy: number
+    ex: number,
+    ey: number
 }
 
 export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
@@ -40,7 +41,13 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
     //console.log(w,h)
     const matrix: GridNode[][] = Array.from({length: h}, () => Array.from({length:w},() => {return {id:GID.EMPTY}} ))
     walls.forEach(element => {
-        matrix[element.y+sh][element.x+sw] = {id:GID.WALL}
+        const ydistance = element.sy - element.ey;
+        const xdistance = element.sx - element.ex;
+        for (let i =0; i < Math.abs(ydistance); i++) {
+            // this assumes the wall is vertical and the has no slope (no change in x)
+            matrix[(ydistance < 0 ? element.sy + i : element.sy - i)+sh][element.sx+sw] = {id:GID.WALL}
+            // const ii = walls.push({ x: w.sx, y: distance < 0 ? w.sy + i : w.sy - i });
+        }
     });
     inp.forEach((node, i) => {
         //console.log(node.x,node.y)
