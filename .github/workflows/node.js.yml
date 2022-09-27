@@ -27,6 +27,6 @@ jobs:
     - run: yarn build
       id: build
     - run: yarn test
-      if: steps.build.outcome == 'success'
+      if: always() && steps.build.outcome == 'success'
     - run: yarn bench
-      if: steps.build.outcome == 'success'
+      if: always() && steps.build.outcome == 'success'
