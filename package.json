@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "parcel build",
-    "dev": "PARCEL_EXEC=\"yarn mocha\" parcel watch",
+    "dev": "parcel watch",
     "test": "jest --coverage",
     "bench": "jest --projects jest-bench.config.json",
     "prepack": "yarn build"

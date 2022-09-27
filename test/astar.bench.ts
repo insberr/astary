@@ -1,6 +1,6 @@
 require("source-map-support").install()
 import { benchmarkSuite } from "jest-bench";
-import { AStar, randomNodes, Raycast } from ".."
+import { AStar, randomNodes, Raycast } from "../src/astar"
 const rng = (max: number) => Math.floor(Math.random()*max)
 let hundred = randomNodes(100,5)
 let thousand = randomNodes(1000,5)
@@ -29,5 +29,16 @@ benchmarkSuite("randomNodes", {
     },
     tenthousand() {
         randomNodes(10000,5)
+    }
+})
+benchmarkSuite("raycast", {
+    hundred() {
+        Raycast(Rhundred)
+    },
+    thousand() {
+        Raycast(Rthousand)
+    },
+    tenthousand() {
+        Raycast(Rtenthousand)
     }
 })
