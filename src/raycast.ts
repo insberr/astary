@@ -22,6 +22,16 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
     if (walls === undefined) {
         walls = [];
     }
+    inp.forEach((node, i) => {
+        //console.log(node.x,node.y)
+        if (node.x != Math.floor(node.x) || node.y != Math.floor(node.y)) {
+            console.warn("Decimal values are not supported in raycast and will be ignored")
+        }
+        inp[i].ox = node.x;
+        inp[i].oy = node.y;
+        inp[i].x = Math.floor(node.x);
+        inp[i].y = Math.floor(node.y);
+    })
     const sw = Math.abs(Math.min(...[...inp,...walls].map((r) => r.x)))
     const w = Math.max(...[...inp,...walls].map((r) => r.x)) + 1 + sw
     const sh = Math.abs(Math.min(...[...inp,...walls].map((r) => r.y)))
@@ -55,6 +65,10 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
                     break;
                 }
                 const d = matrix[tracker.y][tracker.x]
+                if (d == undefined) {
+                    console.warn("matrix was undefined, this should probably not happen")
+                    break;
+                }
                 switch (d.id) {
                     case GID.EMPTY:
                         matrix[tracker.y][tracker.x] = { id: GID.PATH, ref: i }
@@ -91,5 +105,7 @@ export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
     })
     //console.log(inp)
     //console.log(matrix)
-    return inp
+    return inp.map((node) => {
+        return {...node, x: node.ox || 0, y: node.oy || 0}
+    })
 }
