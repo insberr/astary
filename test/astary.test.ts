@@ -101,14 +101,27 @@ describe("generate nodes from svg then raycast", () => {
     it("should make nodes from node points on image, then raycast", () => {
         const paths = astar.svgToPaths(svg, { walls: ['#000000'], walkable: ['#ffffff'] })
         const nodes = astar.generateNodes(paths);
-        // console.log(nodes);
+        //console.log(nodes);
 
         const newNodes = astar.Raycast(nodes);
-        console.log(newNodes)
+        //console.log(newNodes)
 
         //console.log('raycast again');
         const again = astar.Raycast(newNodes);
         //console.log(again);
+    })
+})
+
+describe("generate nodes from svg then raycast with walls", () => {
+    it("should make nodes from node points on image, then raycast with walls so yeah", () => {
+        const paths = astar.svgToPaths(svg, { walls: ['#000000'], walkable: ['#ffffff'] })
+        const nodes = astar.generateNodes(paths);
+        const walls = astar.generateWalls(paths);
+        //console.log(nodes);
+        console.log(walls);
+
+        const raycastNodes = astar.Raycast(nodes, walls);
+        //console.log(raycastNodes)
     })
 })
 
