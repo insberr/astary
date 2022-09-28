@@ -1,6 +1,6 @@
 import Heap from "heap-js";
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
-import { generateNodes, svgToPaths } from "./generateNodesFromPathImage";
+import { generateNodes, generateWalls, svgToPaths } from "./generateNodesFromPathImage";
 
 export type Node = {
     x: number;
@@ -141,4 +141,4 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
 //_astar(0, 1, (n) => 0);
 export * from "./random";
 export * from "./raycast"
-export { AStar, generateNodes, svgToPaths };
+export { AStar, generateNodes, generateWalls, svgToPaths };
