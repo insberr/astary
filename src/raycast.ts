@@ -181,12 +181,14 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
         if (node.raycast) {
             return;
         }
+        // edges of the map
         const mapEdges = [
             {x: node.x, y: minY },
             {x: node.x, y: maxY },
             {x: minX, y: node.y },
             {x: maxX, y: node.y }
         ]
+        // filters to find points on raycasted line.
         const dirFilters: ((x:number,y:number)=>boolean)[] = [
             /* up    */ (x,y) => node.x == x && y > node.y,
             /* right */ (x,y) => node.y == y && x > node.x,
@@ -195,7 +197,9 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
         ]
         dirFilters.forEach(dirf => {
             function after(dPoint: {x:number, y:number}) {
+                // construct a line between us and the dPoint
                 const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
+                // 0 length lines are cringe
                 if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
                     return
                 }
@@ -205,6 +209,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                         continue;
                     }
                     const indl = colLines.indexOf(l)
+                    // do we colide with this line?
                     const col = LLI(dpointLine,l.l)
                     //console.log(l.ref,i,col)
                     if (col) {
@@ -212,6 +217,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                         if (nodes[i].edges.includes(l.ref)) {
                             return;
                         }
+                        // connect them with a 3rd
                         nodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
                         nodes[i].edges.push(nodes.length-1)
                         nodes[l.ref].edges.push(nodes.length-1)
@@ -224,40 +230,51 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                         
                     }
                 }
+                // add the dpointline.
                 colLines.push({l:dpointLine, ref: i})
             }
             const nodesOnLine = nodes.filter((n) => dirf(n.x,n.y))
+
             if (nodesOnLine.length == 0) {
+                // try to find an edge to create a line to
                 const ff = mapEdges.find((p) => {
                     //console.log("point",p,"dirf",dirf(p.x,p.y),"node",node,)
                     return dirf(p.x,p.y)
                 })
                 //console.log(ff)
                 if (!ff) {
+                    // node is on the edge
                     return;
                 }
-                after(ff)
+                after(ff) // gamer
                 return;
             }
             let con: Node
             if (nodes.length > 1) {
+                // find the closest node on line
                 con = nodesOnLine.reduce((p, n) => fastDist(p.x,p.y,node.x,node.y) > fastDist(n.x,n.y,node.x,node.y) ? n : p)
             } else {
+                // only 1 node, dont need to find it.
                 con = nodesOnLine[0]
             }
+            // construct a line between this node and the dest node
             const ln: Line = {
                 sx: node.x,
                 sy: node.y,
                 ex: con.x,
                 ey: con.y
             }
+            // find all the walls that intersect with our line
             const blocked = walls.find((w) => LLI(ln,w))
             if (blocked != undefined) {
                 //console.log("WALL")
+                // a wall collision!
                 const l = LLI(ln,blocked)
                 if (!l) {
+                    // this is imposible
                     throw new Error("IMPOSSIBLE")
                 }
+                // do cross lines
                 after(l)
                 return;
             }
@@ -265,6 +282,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             if (nodes[d].edges.includes(i)) {
                 return
             }
+            //connect the nodes
             nodes[i].edges.push(d)
             nodes[d].edges.push(i)
             after(con)
