@@ -196,7 +196,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             /* left. */ (x,y) => node.y == y && x < node.x
         ]
         dirFilters.forEach(dirf => {
-            function after(dPoint: {x:number, y:number}) {
+            function after(dPoint: {x:number, y:number}) { // pls replace with something better.
                 // construct a line between us and the dPoint
                 const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
                 // 0 length lines are cringe
