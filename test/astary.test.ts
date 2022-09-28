@@ -118,9 +118,9 @@ describe("generate nodes from svg then raycast with walls", () => {
         const nodes = astar.generateNodes(paths);
         const walls = astar.generateWalls(paths);
         //console.log(nodes);
-        console.log(walls);
+        //console.log(walls);
 
-        const raycastNodes = astar.Raycast(nodes, walls);
+        const raycastNodes = astar.Raycast(astar.Raycast(nodes, walls), walls);
         //console.log(raycastNodes)
     })
 })
