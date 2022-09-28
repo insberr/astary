@@ -23,7 +23,7 @@ const timeNodes: number[] = []
 const rayTimes: number[] = [];
 let failedRuns = 0;
 const timePathfind: number[] = []
-const average = (array: number[]) => array.reduce((a, b) => a + b) / array.length;
+const average = (array: number[]) => array.reduce((a, b) => a + (b || 0), 0) / array.length;
 let z: NodeJS.Timeout;
 const extraNodes: number[] = []
 const pathLengths: number[] = [];
@@ -59,9 +59,10 @@ async function doOP() {
     //a("adding child")
     //alert("nodes")
     const t1 = performance.now()
-    const _nodes = await randomNodes(amt, conAmt)
+    const _nodes = randomNodes(amt,conAmt)
     const t2 = performance.now()
     const _nodes2 = _nodes.map((r) => { return { ...r, edges: [] } })
+    //console.log(_nodes2)
 
     const t6 = performance.now()
     const nodes = await Raycast(_nodes2)
@@ -96,7 +97,7 @@ async function doOP() {
         ctx.stroke()
     })
     const t3 = performance.now()
-    const path = await AStar(Math.floor(Math.random() * amt), Math.floor(Math.random() * amt), nodes)
+    const path = await AStar(Math.floor(0.5 * amt), Math.floor(0.4 * amt), nodes)
     const t4 = performance.now()
     timePathfind.push(t4 - t3)
     timeNodes.push(t2 - t1)
@@ -146,9 +147,17 @@ const speed = params.get("slow") != null;
 async function main() {
     settings()
     while (true) {
-        await doOP();
+        try {
+            await doOP();
+        } catch (e) {
+            failedRuns += 1
+            console.error(e)
+            if (ele) {
+                ele.innerText = createMes()
+            }
+        }
         if (timePathfind.length == count) {
-        break;
+            break;
         } 
         await new Promise((r) => { setTimeout(r, speed ? 5000 : 1) })
     }

@@ -178,7 +178,9 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
     const maxY = Math.max.apply(null,ys)
     const colLines: {l: Line, ref: number}[] = []
     nodes.forEach((node,i) => {
-        
+        if (node.raycast) {
+            return;
+        }
         const mapEdges = [
             {x: node.x, y: minY },
             {x: node.x, y: maxY },
@@ -198,19 +200,30 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     return
                 }
                 //console.log("line",dpointLine)
-                colLines.forEach((l) => {
+                for (const l of colLines) {
                     if (l.ref == i) {
-                        return;
+                        continue;
                     }
+                    const indl = colLines.indexOf(l)
                     const col = LLI(dpointLine,l.l)
                     //console.log(l.ref,i,col)
                     if (col) {
                         //console.log("collision",l.ref,i)
-                        extraNodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
-                        nodes[i].edges.push(nodes.length+(extraNodes.length-1))
-                        nodes[l.ref].edges.push(nodes.length+(extraNodes.length-1))
+                        if (nodes[i].edges.includes(l.ref)) {
+                            return;
+                        }
+                        nodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
+                        nodes[i].edges.push(nodes.length-1)
+                        nodes[l.ref].edges.push(nodes.length-1)
+                        // mix and match the next 3 lines for different results
+                        colLines.splice(indl,1)
+                        colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        // i have no ideal
+                        return
+                        
                     }
-                })
+                }
                 colLines.push({l:dpointLine, ref: i})
             }
             const nodesOnLine = nodes.filter((n) => dirf(n.x,n.y))
@@ -257,6 +270,5 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             after(con)
         });
     })
-    nodes.push(...extraNodes)
     return nodes;
 }
