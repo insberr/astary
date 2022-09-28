@@ -26,7 +26,8 @@
     "dev": "parcel watch",
     "test": "jest --coverage",
     "bench": "jest --projects jest-bench.config.json",
-    "prepack": "yarn build"
+    "prepack": "yarn build",
+    "vis": "parcel serve visualize/index.html"
   },
   "dependencies": {
     "@types/svg-parser": "^2.0.3",
