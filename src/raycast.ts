@@ -276,7 +276,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     throw new Error("IMPOSSIBLE")
                 }
                 // do cross lines
-                after(l)
+                // after(l)
                 return;
             }
             const d = nodes.indexOf(con)
