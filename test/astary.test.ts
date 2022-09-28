@@ -87,7 +87,7 @@ describe("random", () => {
     })
 })
 
-const svg = fs.readFileSync(__dirname + '/graystyleMap.svg', 'utf8');
+const svg = fs.readFileSync(__dirname + '/New_Map_plain.svg', 'utf8');
 
 describe("generate nodes from svg", () => {
     it("should make nodes from node points on image", () => {
@@ -101,14 +101,14 @@ describe("generate nodes from svg then raycast", () => {
     it("should make nodes from node points on image, then raycast", () => {
         const paths = astar.svgToPaths(svg, { walls: ['#000000'], walkable: ['#ffffff'] })
         const nodes = astar.generateNodes(paths);
-        console.log(nodes);
+        // console.log(nodes);
 
         const newNodes = astar.Raycast(nodes);
         console.log(newNodes)
 
-        console.log('raycast again');
+        //console.log('raycast again');
         const again = astar.Raycast(newNodes);
-        console.log(again);
+        //console.log(again);
     })
 })
 
@@ -118,7 +118,7 @@ describe("raycast", () => {
             {x:0,y:0, edges:[]},
             {x:10,y:0, edges:[]}
         ])
-        console.log(con)
+        //console.log(con)
         expect(con[0].edges).toHaveLength(1)
         expect(con[1].edges).toHaveLength(1)
         
@@ -128,6 +128,7 @@ describe("raycast", () => {
             {x:0,y:0, edges:[]},
             {x:10,y:10, edges:[]}
         ])
+        //console.log(con)
         astar.AStar(0,1, con);
     })
     it("raycast negative test", () => {
@@ -150,6 +151,7 @@ describe("raycast", () => {
         ])
         expect(con[0].edges).not.toContainEqual(3)
         expect(con[0].edges).toContainEqual(1)
+        astar.AStar(0,3,con)
     })
     it("should handle walls in the middle of nowhere", () => {
         const con = astar.Raycast([
@@ -163,7 +165,21 @@ describe("raycast", () => {
                 ey: 98,
             }]
         )
-    }) 
+    })
+    it('should decimal', () => {
+        const con = astar.Raycast([
+            {x: 0, y:0, edges:[]},
+            {x: 0, y: 5, edges:[]},
+            {x: 10.3, y: 5, edges: []},
+            {x: 10.3, y: -5 , edges: []},
+
+        ], [
+            { sx: 1.04, sy: 3, ex: 2, ey:-5 }
+        ])
+        expect(con[0].edges).not.toContainEqual(3)
+        expect(con[0].edges).toContainEqual(1)
+        astar.AStar(0,3,con)
+    })
 })
 /*describe('makeGraph', () => {
     it('should make a graph', async () => {

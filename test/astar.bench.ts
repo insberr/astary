@@ -31,14 +31,3 @@ benchmarkSuite("randomNodes", {
         randomNodes(10000,5)
     }
 })
-benchmarkSuite("raycast", {
-    hundred() {
-        Raycast(Rhundred)
-    },
-    thousand() {
-        Raycast(Rthousand)
-    },
-    tenthousand() {
-        Raycast(Rtenthousand)
-    }
-})

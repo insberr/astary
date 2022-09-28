@@ -161,6 +161,7 @@ function fastDist(x1: number, y1: number, x2: number, y2: number) {
 }
 export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
     let walls: Line[] = []
+    const extraNodes: Node[] = [];
     if (_walls != undefined) {
         walls = _walls
     }
@@ -175,8 +176,9 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
     const maxX = Math.max.apply(null,xs)
     const minY = Math.min.apply(null,ys)
     const maxY = Math.max.apply(null,ys)
-
+    const colLines: {l: Line, ref: number}[] = []
     nodes.forEach((node,i) => {
+        
         const mapEdges = [
             {x: node.x, y: minY },
             {x: node.x, y: maxY },
@@ -190,8 +192,38 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             /* left. */ (x,y) => node.y == y && x < node.x
         ]
         dirFilters.forEach(dirf => {
+            function after(dPoint: {x:number, y:number}) {
+                const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
+                if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
+                    return
+                }
+                //console.log("line",dpointLine)
+                colLines.forEach((l) => {
+                    if (l.ref == i) {
+                        return;
+                    }
+                    const col = LLI(dpointLine,l.l)
+                    //console.log(l.ref,i,col)
+                    if (col) {
+                        //console.log("collision",l.ref,i)
+                        extraNodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
+                        nodes[i].edges.push(nodes.length+(extraNodes.length-1))
+                        nodes[l.ref].edges.push(nodes.length+(extraNodes.length-1))
+                    }
+                })
+                colLines.push({l:dpointLine, ref: i})
+            }
             const nodesOnLine = nodes.filter((n) => dirf(n.x,n.y))
             if (nodesOnLine.length == 0) {
+                const ff = mapEdges.find((p) => {
+                    //console.log("point",p,"dirf",dirf(p.x,p.y),"node",node,)
+                    return dirf(p.x,p.y)
+                })
+                //console.log(ff)
+                if (!ff) {
+                    return;
+                }
+                after(ff)
                 return;
             }
             let con: Node
@@ -206,9 +238,14 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                 ex: con.x,
                 ey: con.y
             }
-            const blocked = walls.some((w) => LLI(ln,w))
-            if (blocked) {
+            const blocked = walls.find((w) => LLI(ln,w))
+            if (blocked != undefined) {
                 //console.log("WALL")
+                const l = LLI(ln,blocked)
+                if (!l) {
+                    throw new Error("IMPOSSIBLE")
+                }
+                after(l)
                 return;
             }
             const d = nodes.indexOf(con)
@@ -217,7 +254,9 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             }
             nodes[i].edges.push(d)
             nodes[d].edges.push(i)
+            after(con)
         });
     })
-    return nodes
+    nodes.push(...extraNodes)
+    return nodes;
 }
