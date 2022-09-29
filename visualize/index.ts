@@ -45,6 +45,7 @@ if (!canva) {
 canva.id = "cring"
 canva.width = w+(padding*2);
 canva.height = h+(padding*2);
+canva.style.width = w+(padding*2)+"px";
 //alert("canvas created")
 
 const ctx = canva.getContext("2d")
@@ -64,10 +65,19 @@ async function doOP() {
     const _nodes2 = _nodes.map((r) => { return { ...r, edges: [] } })
     //console.log(_nodes2)
 
+    const walls = [{sx: 10, sy: 30, ex: 10, ey: 40}, {sx: 50, sy: 20, ex: 70, ey: 20}]
     const t6 = performance.now()
     const nodes = await Raycast(_nodes2)
     const t7 = performance.now()
     ctx.clearRect(0,0,canva.width,canva.height)
+    walls.forEach((wall) => {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "yellow";
+        ctx.beginPath();
+        ctx.moveTo(...scale(wall.sx, wall.sy));
+        ctx.lineTo(...scale(wall.ex, wall.ey));
+        ctx.stroke();
+    });
     //alert("nodesDone")
     ctx.strokeStyle = "red";
     ctx.lineWidth = 1
