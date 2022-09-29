@@ -204,6 +204,7 @@ describe("raycast", () => {
         ])
         expect(con).toHaveLength(3)
         expect(() => astar.AStar(0,1,con)).toThrowError()
+        expect(() => astar.AStar(0,2,con)).toThrowError()
     })
 })
 /*describe('makeGraph', () => {
