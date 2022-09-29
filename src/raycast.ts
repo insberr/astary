@@ -196,7 +196,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             /* left. */ (x,y) => node.y == y && x < node.x
         ]
         dirFilters.forEach(dirf => {
-            function after(dPoint: {x:number, y:number}) { // pls replace with something better.
+            function after(dPoint: {x:number, y:number}, isWall?: boolean) { // pls replace with something better.
                 // construct a line between us and the dPoint
                 const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
                 // 0 length lines are cringe
@@ -218,9 +218,12 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                             return;
                         }
                         // connect them with a 3rd
-                        nodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
-                        nodes[i].edges.push(nodes.length-1)
-                        nodes[l.ref].edges.push(nodes.length-1)
+                        if (isWall === undefined || !isWall) {
+                            nodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
+                            nodes[i].edges.push(nodes.length-1)
+                            nodes[l.ref].edges.push(nodes.length-1)
+                        }
+                        
                         // mix and match the next 3 lines for different results
                         colLines.splice(indl,1)
                         //colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
@@ -231,7 +234,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     }
                 }
                 // add the dpointline.
-                colLines.push({l:dpointLine, ref: i})
+                if (isWall === undefined || !isWall) colLines.push({l:dpointLine, ref: i})
             }
             const nodesOnLine = nodes.filter((n) => dirf(n.x,n.y))
 
@@ -265,17 +268,44 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                 ey: con.y
             }
             // find all the walls that intersect with our line
-            const blocked = walls.find((w) => LLI(ln,w))
-            if (blocked !== undefined) {
+            var blocked = walls.filter((w) => LLI(ln,w))
+            if (blocked.length > 0) {
+                blocked = blocked.sort((a, b) => {
+                    const x = ln.sx;
+                    const y = ln.sy;
+
+                    const ax1 = a.sx;
+                    const ay1 = a.sy;
+                    const ax2 = a.ex;
+                    const ay2 = a.ey;
+
+                    const bx1 = b.sx;
+                    const by1 = b.sy;
+                    const bx2 = b.ex;
+                    const by2 = b.ey;
+
+                    var adist = Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
+                    var bdist = Math.abs(((x * (by2 - by1)) - (y * (bx2 - bx1)) + (bx2 * by1) - (by2 * bx1))) / Math.sqrt(((by2 - by1) ^ 2) + ((bx2 - bx1) ^ 2));
+                    return adist - bdist;
+                })
+            }
+            if (blocked !== undefined && blocked.length>0) {
+                console.log("ln: ", ln, " Blocked: ", blocked)
+                //console.log(blocked)
                 //console.log("WALL")
                 // a wall collision!
-                const l = LLI(ln,blocked)
-                if (!l) {
-                    // this is imposible
-                    throw new Error("IMPOSSIBLE")
-                }
-                // do cross lines
-                after(l)
+                //blocked.forEach(b => {
+                var ls = blocked.map(b => LLI(ln, b))
+                //const l = LLI(ln,blocked[0])
+                ls.forEach(l => {
+                    if (!l) {
+                        // this is imposible
+                        throw new Error("IMPOSSIBLE")
+                    }
+                    // do cross lines
+                    after(l, true)
+                })
+                
                 return;
             } else {
                 const d = nodes.indexOf(con)

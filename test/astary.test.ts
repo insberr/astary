@@ -10,7 +10,7 @@ import * as fs from 'fs'
 //import * as benchmark from 'benchmark'
 //const { AssertionError } = require('assert');
 // const { createImageData } = require('canvas')
-var PNG = require('pngjs2').PNG;
+// var PNG = require('pngjs2').PNG;
 
 //const bench = new benchmark.Suite;
 /*
