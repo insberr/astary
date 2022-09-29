@@ -266,7 +266,6 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             }
             // find all the walls that intersect with our line
             const blocked = walls.find((w) => LLI(ln,w))
-            if (blocked !== undefined) console.log(blocked)
             if (blocked !== undefined) {
                 //console.log("WALL")
                 // a wall collision!
@@ -276,7 +275,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     throw new Error("IMPOSSIBLE")
                 }
                 // do cross lines
-                after(l)
+                //after(l)
                 return;
             } else {
                 const d = nodes.indexOf(con)
