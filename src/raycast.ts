@@ -223,8 +223,8 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                         nodes[l.ref].edges.push(nodes.length-1)
                         // mix and match the next 3 lines for different results
                         colLines.splice(indl,1)
-                        colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
-                        colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        //colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        //colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
                         // i have no ideal
                         return
                         
@@ -275,7 +275,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     throw new Error("IMPOSSIBLE")
                 }
                 // do cross lines
-                //after(l)
+                after(l)
                 return;
             } else {
                 const d = nodes.indexOf(con)
