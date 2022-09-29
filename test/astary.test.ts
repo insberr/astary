@@ -193,6 +193,18 @@ describe("raycast", () => {
         expect(con[0].edges).toContainEqual(1)
         astar.AStar(0,3,con)
     })
+    it("shouldnt connect through walls", () => {
+        const con = astar.Raycast([
+            {x:0, y:0, edges:[]},
+            {x: 10, y: 0, edges: []},
+            {x:5, y:5, edges:[]}
+        ],[
+            {sx: 3, sy: -20, ex: 3, ey: 20},
+            {sx: 7, sy: -20, ex: 7, ey: 20}
+        ])
+        expect(con).toHaveLength(3)
+        expect(() => astar.AStar(0,1,con)).toThrowError()
+    })
 })
 /*describe('makeGraph', () => {
     it('should make a graph', async () => {
