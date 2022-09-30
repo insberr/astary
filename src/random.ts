@@ -1,4 +1,4 @@
-import type { Node } from "./astar";
+import type { Node, Line } from "./astar";
 
 export function randomNodes(amt: number, mincon: number = 2): Node[] {
     const minDistance = 20;
@@ -30,5 +30,22 @@ export function randomNodes(amt: number, mincon: number = 2): Node[] {
         }
     }
     return xy.filter((r) => r.edges != undefined) as Node[];
+
+}
+
+export function randomWalls(amt: number, space: number, length: number): Line[] {
+    const xy: {sx: number, sy: number, ex: number, ey: number}[] = [];
+    for (let index = 0; index < amt; index++) {
+        const rx = Math.floor(Math.random()*space);
+        const ry = Math.floor(Math.random()*space);
+        const d = Math.floor(Math.random());
+        xy.push({
+            sx: rx,
+            sy: ry,
+            ex: d ? rx + length : rx,
+            ey: d ? ry : ry + length,
+        })
+    }
+    return xy;
 
 }

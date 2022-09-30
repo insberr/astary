@@ -159,6 +159,13 @@ function LLI(l1: Line, l2: Line) {
 function fastDist(x1: number, y1: number, x2: number, y2: number) {
     return Math.abs(x2-x1)+Math.abs(y1-y2)
 }
+function pointLineDist(x: number, y: number, l: Line) {
+    const ax1 = l.sx;
+    const ay1 = l.sy;
+    const ax2 = l.ex;
+    const ay2 = l.ey;
+    return Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
+}
 export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
     let walls: Line[] = []
     const extraNodes: Node[] = [];
@@ -199,18 +206,80 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
             function after(dPoint: {x:number, y:number}, isWall?: boolean) { // pls replace with something better.
                 // construct a line between us and the dPoint
                 const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
+                const dplWallCol = walls.filter((w) => LLI(dpointLine,w))
+                if (dplWallCol.length > 0) return;
                 // 0 length lines are cringe
                 if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
                     return
                 }
+                let distanceToCollision = 0;
+                let distancesToWalls = [0];
+                let wallBlocks: boolean[] = [];
                 //console.log("line",dpointLine)
                 for (const l of colLines) {
-                    if (l.ref == i) {
-                        continue;
-                    }
+                    
                     const indl = colLines.indexOf(l)
                     // do we colide with this line?
                     const col = LLI(dpointLine,l.l)
+
+                    
+
+                    // does this line collide with a wall?
+                    const wallCol = walls.filter(w => LLI(dpointLine,w))
+                    if (wallCol.length > 0) {
+                        const nearestWall = wallCol.sort((a, b) => {
+                            const x = dpointLine.sx;
+                            const y = dpointLine.sy;
+        
+                            const ax1 = a.sx;
+                            const ay1 = a.sy;
+                            const ax2 = a.ex;
+                            const ay2 = a.ey;
+        
+                            const bx1 = b.sx;
+                            const by1 = b.sy;
+                            const bx2 = b.ex;
+                            const by2 = b.ey;
+        
+                            var adist = Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
+                            var bdist = Math.abs(((x * (by2 - by1)) - (y * (bx2 - bx1)) + (bx2 * by1) - (by2 * bx1))) / Math.sqrt(((by2 - by1) ^ 2) + ((bx2 - bx1) ^ 2));
+                            return adist - bdist;
+                        })[0]
+
+                        //distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
+                        //distancesToWalls.push(pointLineDist(node.x, node.y, nearestWall));
+                    }
+                    
+                    if (col !== false) {
+                        distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
+                    } else {
+                        distanceToCollision = null;
+                    }
+                    wallCol.forEach(wc => {
+                        distancesToWalls.push(pointLineDist(node.x, node.y, wc));
+                    })
+
+                    wallBlocks = distancesToWalls.map(d => {
+                        if (distanceToCollision == null) return false;
+                        if (d > distanceToCollision) {
+                            return true;
+                        }
+                        return false;
+                    })
+
+                    if (distanceToCollision !== null && wallBlocks.filter(b => b === true).length > 0) {
+                        //wallBlocks = []
+                        distancesToWalls = []
+                        return;
+                    }
+
+                    if (l.ref == i) {
+                        continue;
+                    }
+
+                    // distence to nearest wall, distance to collison
+                    // is the wall before the collision
+
                     //console.log(l.ref,i,col)
                     if (col) {
                         //console.log("collision",l.ref,i)
@@ -290,7 +359,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                 })
             }
             if (blocked !== undefined && blocked.length>0) {
-                console.log("ln: ", ln, " Blocked: ", blocked)
+                //console.log("ln: ", ln, " Blocked: ", blocked)
                 //console.log(blocked)
                 //console.log("WALL")
                 // a wall collision!
