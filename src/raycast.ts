@@ -220,7 +220,158 @@ function reduceEnd(line: Line, r: number) {
     y: line.ey - (r * dy) / mag,
   };
 }
+/*unction calcIsInsideLineSegment(line1, line2, pnt) {
+  var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
+  if(L2 == 0) return false;
+  var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
 
-export function Raycast(nodes: Node[], walls: Line[], margin?: number) {
+  return (0 <= r) && (r <= 1);
+}*/
+function calcIsInsideLineSegment(line: Line, pnt: Point): boolean {
+  const line1 = {x: line.sx, y: line.sy}
+  const line2 = {x: line.ex, y: line.ey}
+  var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
+  if(L2 == 0) return false;
+  var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
 
+  return (0 <= r) && (r <= 1);
+}
+//#region Entry code
+
+
+type Entry = NodeE | WallE | RayE
+
+type NodeE = {
+  t: "node",
+  ref: number
+  c: Point
+} 
+type WallE = {
+  t: "wall",
+  ref: Line
+} 
+type RayE = {
+  t: "ray",
+  ref: number,
+  l: Line
+}
+type Point = {
+  x: number
+  y: number
+}
+function distance(entry: Entry, p: Point): number {
+  if (entry.t == "node") {
+    return fastDist(entry.c.x, entry.c.y, p.x, p.y)
+  }
+  else if (entry.t == "wall") {
+    return pointLineDist(p.x,p.y,entry.ref)
+  }
+  else if (entry.t == "ray") {
+    return pointLineDist(p.x, p.y, entry.l);
+  } else {
+    throw new Error("Unknown entry: "+entry)
+  }
+}
+
+function collide(entry1: Entry, entry2: Entry): boolean {
+  // This function could probably be optimized but idgaf
+  if (entry1.t == "node") {
+    if (entry2.t == "node") {
+      // Node Node Colision
+      return (entry1.c == entry2.c)
+    }
+    else if (entry2.t == "ray") {
+      return calcIsInsideLineSegment(entry2.l, entry1.c)
+    }
+    else if (entry2.t == "wall") {
+      return calcIsInsideLineSegment(entry2.ref, entry1.c)
+    }
+  }
+  else if (entry1.t == "wall") {
+    if (entry2.t == "node") {
+      return calcIsInsideLineSegment(entry1.ref, entry2.c)
+    } 
+    else if (entry2.t == "wall") {
+      return LLI(entry1.ref, entry2.ref) ? true : false
+    }
+    else if (entry2.t == "ray") {
+      return LLI(entry1.ref, entry2.l) ? true : false
+    }
+  }
+  else if (entry1.t == "ray") {
+    if (entry2.t == "node") {
+      return calcIsInsideLineSegment(entry1.l, entry2.c)
+    }
+    else if (entry2.t == "wall") {
+      return LLI(entry1.l, entry2.ref) ? true : false
+    }
+    else if (entry2.t == "ray") {
+      return LLI(entry1.l, entry2.l) ? true : false
+    }
+  }
+
+  throw new Error("Failed to compare "+entry1.t + " and "+entry2.t)
+}
+
+function constructNodeEntry(nid: number, nodes: Node[]): NodeE {
+  return {
+    t: "node",
+    ref: nid,
+    c: nodes[nid]
+  }
+}
+
+function constructWallEntry(wall: Line): WallE {
+  return {
+    t: "wall",
+    ref: wall
+  }
+}
+
+function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE {
+  const d = nodes[nid]
+  return {
+    t: "ray",
+    ref: nid,
+    l: { sx: d.x, sy: d.y, ex: dest.x, ey: dest.y}
+  }
+}
+
+//#endregion
+
+export function Raycast(nodes: Node[], walls: Line[]) {
+  // setup
+  const xs = nodes.map((n) => n.x);
+  const ys = nodes.map((n) => n.y);
+  walls.forEach((w) => {
+    xs.push(w.ex, w.sx);
+    ys.push(w.ey, w.sy);
+  });
+  const minX = Math.min.apply(null, xs);
+  const maxX = Math.max.apply(null, xs);
+  const minY = Math.min.apply(null, ys);
+  const maxY = Math.max.apply(null, ys);
+  const entries: Entry[] = []
+  nodes.forEach((node,i) => {
+    entries.push(constructNodeEntry(i,nodes))
+  })
+  walls.forEach((wall) => {
+    entries.push(constructWallEntry(wall))
+  })
+  // raycast time
+  nodes.forEach((node, i) => {
+    if (node.raycast) {
+      return;
+    }
+    // edges of the map
+    const edges: Point[] = [
+      { x: node.x, y: minY },
+      { x: node.x, y: maxY },
+      { x: minX,   y: node.y },
+      { x: maxX,   y: node.y },
+    ];
+    edges.forEach((n) => {
+      const ray = constructRayEntry(i,nodes,n)
+    })
+  })
 }
