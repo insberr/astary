@@ -221,6 +221,6 @@ function reduceEnd(line: Line, r: number) {
   };
 }
 
-export function Raycast(nodes: Node[], walls: Line[], margin: number) {
-    
+export function Raycast(nodes: Node[], walls: Line[], margin?: number) {
+
 }
