@@ -103,11 +103,11 @@ describe("generate nodes from svg then raycast", () => {
         const nodes = astar.generateNodes(paths);
         //console.log(nodes);
 
-        const newNodes = astar.Raycast(nodes);
+        const newNodes = astar.Raycast(nodes, [1, 2, 3]);
         //console.log(newNodes)
 
         //console.log('raycast again');
-        const again = astar.Raycast(newNodes);
+        const again = astar.Raycast(newNodes, [1, 2, 3]);
         //console.log(again);
     })
 })
@@ -120,7 +120,7 @@ describe("generate nodes from svg then raycast with walls", () => {
         //console.log(nodes);
         //console.log(walls);
 
-        const raycastNodes = astar.Raycast(nodes, walls);
+        const raycastNodes = astar.Raycast(nodes, [1, 2, 3], walls);
         //console.log(raycastNodes)
     })
 })
@@ -130,7 +130,7 @@ describe("raycast", () => {
         const con = astar.Raycast([
             {x:0,y:0, edges:[]},
             {x:10,y:0, edges:[]}
-        ])
+        ], [1, 2, 3])
         //console.log(con)
         expect(con[0].edges).toHaveLength(1)
         expect(con[1].edges).toHaveLength(1)
@@ -140,7 +140,7 @@ describe("raycast", () => {
         const con = astar.Raycast([
             {x:0,y:0, edges:[]},
             {x:10,y:10, edges:[]}
-        ])
+        ], [1, 2, 3])
         //console.log(con)
         astar.AStar(0,1, con);
     })
@@ -150,7 +150,7 @@ describe("raycast", () => {
             {x: 5, y:0, edges:[]},
             {x: 10, y:0, edges: []},
             {x: 5, y:-10, edges: []}
-        ])
+        ], [1, 2, 3])
     })
     it("wall", () => {
         const con = astar.Raycast([
@@ -159,7 +159,8 @@ describe("raycast", () => {
             {x: 10, y: 5, edges: []},
             {x: 10, y:0, edges: []},
 
-        ], [
+        ], [1, 2, 3],
+        [
             { sx: 1, sy: 0, ex: 2, ey:1 }
         ])
         expect(con[0].edges).not.toContainEqual(3)
@@ -170,7 +171,7 @@ describe("raycast", () => {
         const con = astar.Raycast([
             {x:0,y:0,edges:[]},
             {x:10,y:0,edges:[]}
-        ],
+        ], [1, 2, 3],
             [{
                 sx: -99,
                 sy: 99,
@@ -186,7 +187,7 @@ describe("raycast", () => {
             {x: 10.3, y: 5, edges: []},
             {x: 10.3, y: -5 , edges: []},
 
-        ], [
+        ], [1, 2, 3], [
             { sx: 1.04, sy: 3, ex: 2, ey:-5 }
         ])
         expect(con[0].edges).not.toContainEqual(3)
@@ -198,7 +199,7 @@ describe("raycast", () => {
             {x:0, y:0, edges:[]},
             {x: 10, y: 0, edges: []},
             {x:5, y:5, edges:[]}
-        ],[
+        ], [1, 2, 3], [
             {sx: 3, sy: -20, ex: 3, ey: 20},
             {sx: 7, sy: -20, ex: 7, ey: 20}
         ])
