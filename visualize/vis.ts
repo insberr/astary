@@ -27,7 +27,6 @@ const rayTimes: number[] = [];
 let failedRuns = 0;
 const timePathfind: number[] = []
 const average = (array: number[]) => array.reduce((a, b) => a + (b || 0), 0) / array.length;
-let z: NodeJS.Timeout;
 const extraNodes: number[] = []
 const pathLengths: number[] = [];
 function createMes() {
@@ -75,7 +74,7 @@ async function doOP() {
     // const walls = [{sx: 10, sy: 0, ex: 10, ey: 9}, {sx: 20, sy: 0, ex: 20, ey: 10}]
     const t6 = performance.now()
     // navigator.clipboard.writeText(JSON.stringify(_nodes2))
-    const nodes = await Raycast(_nodes2, nodeConnectionStyle as number[], walls)
+    const nodes = await Raycast(_nodes2, walls)
     console.log(nodes)
     const t7 = performance.now()
     ctx.clearRect(0,0,canva.width,canva.height)

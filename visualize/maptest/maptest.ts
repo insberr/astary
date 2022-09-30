@@ -87,13 +87,11 @@ async function render() {
 
         nodes = await Raycast(
             await generateNodes(svgPaths),
-            [],
             walls,
         );
     } else {
         nodes = await Raycast(
             nodes,
-            [],
             walls,
         );
     }
