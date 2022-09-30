@@ -164,9 +164,20 @@ function pointLineDist(x: number, y: number, l: Line) {
     const ay1 = l.sy;
     const ax2 = l.ex;
     const ay2 = l.ey;
-    return Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
+    return ((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1)) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
 }
-export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
+
+function nodeConnectionStyle(indl: number, colLines: {l: Line, ref: number}[], l: { l: Line, ref: number }, col: boolean | { x: number, y: number }, nodes: Node[], dpointLine: Line, enable: (number|string)[]) {
+    if (enable.length === 0) { console.log('Did you mean to leave the node connection style as none?'); return colLines; }
+    if (enable.includes(1) || enable.includes('splice')) colLines.splice(indl,1)
+    if (col === false) return colLines;
+    if (col === true) { console.log('col returned true in nodeConnectionStyle: This should not happen. EVER'); return colLines; }
+    if (enable.includes(2) || enable.includes('l')) colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
+    if (enable.includes(3) || enable.includes('dpoint')) colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
+    return colLines;
+}
+
+export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]): Node[] {
     let walls: Line[] = []
     const extraNodes: Node[] = [];
     if (_walls != undefined) {
@@ -207,21 +218,46 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                 // construct a line between us and the dPoint
                 const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
                 const dplWallCol = walls.filter((w) => LLI(dpointLine,w))
-                if (dplWallCol.length > 0) return;
+                if (dplWallCol.length > 0) {
+                    dplWallCol.forEach((w) => {
+                        const col = LLI(dpointLine,w);
+                        if (col === false) {
+                            throw new Error("This should never happen")
+                        }
+                        colLines.push({l: { ...dpointLine, ex: col.x, ey: col.y }, ref: i})
+                    })
+                    return;
+                }
                 // 0 length lines are cringe
                 if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
                     return
                 }
-                let distanceToCollision: number | null = 0;
-                let distancesToWalls = [0];
-                let wallBlocks: boolean[] = [];
+                //let distanceToCollision: number | null = 0;
+                //let distancesToWalls = 0;
+                //let wallBlocks: boolean[] = [];
                 //console.log("line",dpointLine)
                 for (const l of colLines) {
-                    
                     const indl = colLines.indexOf(l)
                     // do we colide with this line?
                     const col = LLI(dpointLine,l.l)
+                    
+                    /*
+                    if (col !== false) {
+                        distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
+                        //cosnt
+                        const wallCollision = LLI(l.l, walls.filter((w) => LLI(l.l,w))[0])
+                        if (wallCollision !== false) distancesToWalls = fastDist(node.x, node.y, wallCollision.x, wallCollision.y)
 
+                        console.log(distanceToCollision, distancesToWalls)
+                        if (distanceToCollision > distancesToWalls) {
+                            console.log('wall first')
+                        }
+                    } else {
+                        distanceToCollision = null;
+                    }
+                    */
+
+                    
                     
                     /*
                     // does this line collide with a wall?
@@ -295,9 +331,10 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                         }
                         
                         // mix and match the next 3 lines for different results
-                        colLines.splice(indl,1)
-                        //colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
-                        //colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        // colLines.splice(indl,1)
+                        // colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        // colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
+                        nodeConnectionStyle(indl, colLines, l, col, nodes, dpointLine, style)
                         // i have no ideal
                         return
                         
@@ -373,7 +410,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                         throw new Error("IMPOSSIBLE")
                     }
                     // do cross lines
-                    after(l, true)
+                    after(l)
                 })
                 
                 return;

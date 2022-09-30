@@ -139,7 +139,3 @@ export function generateWalls(paths: Paths): Line[] {
 
     return lines;
 }
-
-export function svgNodesRaycast(nodes: Node[]): Node[] {
-    return Raycast(nodes)
-}
