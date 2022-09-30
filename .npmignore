@@ -136,3 +136,4 @@ test/
 src/
 *.png
 benchmarks/
+visdist

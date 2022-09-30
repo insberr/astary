@@ -3,7 +3,7 @@ import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar } from "
 import _d from "data-url:./map.svg"; // might be a good idea to do a url and not bundle it in
 // @ts-ignore
 import _dt from "bundle-text:./map.svg";
-
+// having two imports means that the map svg is included twice in the bundle, maybe convert from text to data url?
 const d: string = _d;
 // can you import the file or like uh .. how to get svg as string ???
 //import eruda from "../eruda";

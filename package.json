@@ -27,7 +27,8 @@
     "test": "jest --coverage",
     "bench": "jest --projects jest-bench.config.json",
     "prepack": "yarn build",
-    "vis": "parcel serve visualize/index.html"
+    "vis": "parcel serve visualize/index.html --target vis",
+    "vis:build": "parcel build visualize/index.html --target vis"
   },
   "dependencies": {
     "@types/svg-parser": "^2.0.3",
@@ -42,6 +43,10 @@
     },
     "module": {
       "optimize": true
+    },
+    "vis": {
+      "distDir": "visdist",
+      "context": "browser"
     }
   }
 }

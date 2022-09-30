@@ -136,3 +136,4 @@ test/map.svg
 .DS_Store
 
 benchmarks/
+visdist
