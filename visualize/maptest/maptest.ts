@@ -3,7 +3,7 @@ import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar } from "
 // @ts-ignore
 import _dt from "bundle-text:./map.svg";
 
-const _d = 'data:image.svg+xml;base64,' + atob(_dt);
+const _d = 'data:image.svg+xml;base64,' + Buffer.from(_dt).toString('base64');
 // @ts-ignore
 //import _d from "data-url:./map.svg"; // might be a good idea to do a url and not bundle it in
 
