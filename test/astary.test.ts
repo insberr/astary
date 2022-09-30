@@ -119,11 +119,11 @@ describe("generate nodes from svg then raycast", () => {
     const nodes = astar.generateNodes(paths);
     //console.log(nodes);
 
-    const newNodes = astar.Raycast(nodes, [1, 2, 3]);
+    const newNodes = astar.Raycast(nodes,[]);
     //console.log(newNodes)
 
     //console.log('raycast again');
-    const again = astar.Raycast(newNodes, [1, 2, 3]);
+    const again = astar.Raycast(newNodes, []);
     //console.log(again);
   });
 });
@@ -139,7 +139,7 @@ describe("generate nodes from svg then raycast with walls", () => {
     //console.log(nodes);
     //console.log(walls);
 
-    const raycastNodes = astar.Raycast(nodes, [1, 2, 3], walls);
+    const raycastNodes = astar.Raycast(nodes, walls);
     //console.log(raycastNodes)
   });
 });
@@ -151,7 +151,7 @@ describe("raycast", () => {
         { x: 0, y: 0, edges: [] },
         { x: 10, y: 0, edges: [] },
       ],
-      [1, 2, 3]
+      []
     );
     //console.log(con)
     expect(con[0].edges).toHaveLength(1);
@@ -163,7 +163,7 @@ describe("raycast", () => {
         { x: 0, y: 0, edges: [] },
         { x: 10, y: 10, edges: [] },
       ],
-      [1, 2, 3]
+      []
     );
     //console.log(con)
     astar.AStar(0, 1, con);
@@ -176,7 +176,7 @@ describe("raycast", () => {
         { x: 10, y: 0, edges: [] },
         { x: 5, y: -10, edges: [] },
       ],
-      [1, 2, 3]
+      []
     );
   });
 
@@ -188,7 +188,6 @@ describe("raycast", () => {
         { x: 10.3, y: 5, edges: [] },
         { x: 10.3, y: -5, edges: [] },
       ],
-      [1, 2, 3],
       [{ sx: 1.04, sy: 3, ex: 2, ey: -5 }]
     );
     expect(con[0].edges).not.toContainEqual(3);
@@ -217,7 +216,6 @@ describe("raycast", () => {
           { x: 10, y: 0, edges: [] },
           { x: 5, y: 5, edges: [] },
         ],
-        [1, 2, 3],
         [
           { sx: 3, sy: -20, ex: 3, ey: 20 },
           { sx: 7, sy: -20, ex: 7, ey: 20 },
@@ -233,7 +231,6 @@ describe("raycast", () => {
           { x: 0, y: 0, edges: [] },
           { x: 10, y: 0, edges: [] },
         ],
-        [1, 2, 3],
         [
           {
             sx: -99,
@@ -254,7 +251,6 @@ describe("raycast", () => {
           { x: 10, y: 5, edges: [] },
           { x: 10, y: 0, edges: [] },
         ],
-        [1, 2, 3],
         [{ sx: 1, sy: 0, ex: 2, ey: 1 }]
       );
       expect(con[0].edges).not.toContainEqual(3);
@@ -268,7 +264,6 @@ describe("raycast", () => {
           { x: 5, y: 6, edges: [] },
           { x: 10, y: 0, edges: [] },
         ],
-        [1, 2, 3],
         [{ sx: 5, sy: 5, ex: 5, ey: -5 }]
       );
       const path = astar.AStar(0, 2, con);
@@ -286,7 +281,6 @@ describe("raycast", () => {
           { x: 10, y: 15, edges: [] },
           { x: 10, y: 5, edges: [] },
         ],
-        [1, 2, 3],
         [
           { sx: 7, sy: 7, ex: 7, ey: 12 },
           { sx: 7, sy: 12, ex: 12, ey: 12 },
@@ -305,7 +299,6 @@ describe("raycast", () => {
           { x: 10, y: 15, edges: [] },
           { x: 10, y: 5, edges: [] },
         ],
-        [1, 2, 3],
         [
           { sx: 7, sy: 7, ex: 7, ey: 12 },
           { sx: 7, sy: 12, ex: 12, ey: 12 },

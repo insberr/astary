@@ -176,7 +176,7 @@ function pointLineDist(x: number, y: number, l: Line) {
     Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2))
   );
 }
-
+/*
 function nodeConnectionStyle(
   indl: number,
   colLines: { l: Line; ref: number }[],
@@ -209,7 +209,7 @@ function nodeConnectionStyle(
       ref: nodes.length - 1,
     });
   return colLines;
-}
+}*/
 
 function reduceEnd(line: Line, r: number) {
   var dx = line.ex - line.sx;
@@ -228,14 +228,32 @@ function reduceEnd(line: Line, r: number) {
   return (0 <= r) && (r <= 1);
 }*/
 function calcIsInsideLineSegment(line: Line, pnt: Point): boolean {
-  const line1 = {x: line.sx, y: line.sy}
-  const line2 = {x: line.ex, y: line.ey}
+  const l1 ={x: line.sx, y:line.sy}
+  const l2 = {x: line.ex, y: line.ey}
+  const npoint = _calcNearestPointOnLine(l1,l2,pnt)
+  if (!npoint) {
+    return false
+  }
+  return _calcIsInsideLineSegment(l1,l2,npoint)
+}
+function _calcNearestPointOnLine(line1:Point, line2: Point, pnt: Point) {
+  var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
+  if(L2 == 0) return false;
+  var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
+
+  return {
+      x: line1.x + (r * (line2.x - line1.x)), 
+      y: line1.y + (r * (line2.y - line1.y))
+  };
+}
+function _calcIsInsideLineSegment(line1: Point, line2: Point, pnt:Point) {
   var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
   if(L2 == 0) return false;
   var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
 
   return (0 <= r) && (r <= 1);
 }
+
 //#region Entry code
 
 
@@ -337,6 +355,20 @@ function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE {
   }
 }
 
+function setRayEnd(entry: RayE, end: Point): RayE {
+  return {
+    ...entry,
+    l: {
+      ...entry.l,
+      ex: end.x,
+      ey: end.y
+    }
+  }
+}
+function shrinkRay(ray: RayE, amt: number): RayE {
+  const sPoint = reduceEnd(ray.l, amt)
+  return setRayEnd(ray, sPoint)
+}
 //#endregion
 
 export function Raycast(nodes: Node[], walls: Line[]) {
@@ -372,6 +404,44 @@ export function Raycast(nodes: Node[], walls: Line[]) {
     ];
     edges.forEach((n) => {
       const ray = constructRayEntry(i,nodes,n)
+      if (ray.l.sx == ray.l.ex && ray.l.sy == ray.l.ey) {
+        return;
+      }
+      // begin absolute chonker of a line
+      const hits = entries.filter((e) => collide(ray,e)).sort((a,b) => distance(a, node) - distance(b, node))
+      // end absolute chonker of a line
+      if (hits[0]?.ref == i) {
+        hits.shift()
+      }
+      if (hits.length == 0) {
+        entries.push(ray) // we dont hit anything
+        return
+      }
+      const hit = hits[0]
+      // we HIT SOMETHING!!
+      switch (hit.t) {
+        case "node": 
+          // we hit a node
+          const hid = hit.ref
+          if (nodes[i].edges.includes(hid)) {
+            break;
+          }
+          nodes[hid].edges.push(i)
+          nodes[i].edges.push(hid)
+          entries.push(shrinkRay(constructRayEntry(i,nodes, hit.c),0.001))
+          break;
+        case "wall":
+          const hitpos = LLI(hit.ref,ray.l)
+          if (!hitpos) {
+            throw new Error("This shouldnt be possible and is a bug")
+          }
+          entries.push(shrinkRay(constructRayEntry(i,nodes, hitpos),0.001))
+          // we hit a wall
+          break;
+        case "ray":
+          break;
+      }
     })
   })
+  return nodes;
 }
