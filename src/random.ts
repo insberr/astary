@@ -38,7 +38,7 @@ export function randomWalls(amt: number, space: number, length: number): Line[] 
     for (let index = 0; index < amt; index++) {
         const rx = Math.floor(Math.random()*space);
         const ry = Math.floor(Math.random()*space);
-        const d = Math.floor(Math.random());
+        const d = Math.floor(Math.random()*100) > 50 ? 1 : 0;
         xy.push({
             sx: rx,
             sy: ry,

@@ -212,7 +212,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                 if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
                     return
                 }
-                let distanceToCollision = 0;
+                let distanceToCollision: number | null = 0;
                 let distancesToWalls = [0];
                 let wallBlocks: boolean[] = [];
                 //console.log("line",dpointLine)
@@ -223,7 +223,7 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     const col = LLI(dpointLine,l.l)
 
                     
-
+                    /*
                     // does this line collide with a wall?
                     const wallCol = walls.filter(w => LLI(dpointLine,w))
                     if (wallCol.length > 0) {
@@ -270,8 +270,9 @@ export function Raycast(nodes: Node[], _walls?: Line[]): Node[] {
                     if (distanceToCollision !== null && wallBlocks.filter(b => b === true).length > 0) {
                         //wallBlocks = []
                         distancesToWalls = []
-                        return;
+                        //return;
                     }
+                    */
 
                     if (l.ref == i) {
                         continue;
