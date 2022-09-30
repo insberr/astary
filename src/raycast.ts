@@ -227,31 +227,35 @@ function reduceEnd(line: Line, r: number) {
 
   return (0 <= r) && (r <= 1);
 }*/
+
+function getPoints(line: Line): [Point, Point] {
+  return [
+    { x: line.sx, y: line.sy },
+    { x: line.ex, y: line.ey },
+  ];
+}
+
 function calcIsInsideLineSegment(line: Line, pnt: Point): boolean {
-  const l1 ={x: line.sx, y:line.sy}
-  const l2 = {x: line.ex, y: line.ey}
-  const npoint = _calcNearestPointOnLine(l1,l2,pnt)
-  if (!npoint) {
-    return false
-  }
-  return _calcIsInsideLineSegment(l1,l2,npoint)
-}
-function _calcNearestPointOnLine(line1:Point, line2: Point, pnt: Point) {
-  var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
-  if(L2 == 0) return false;
-  var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
+    const c = pnt;
+    const [a,b] = getPoints(line);
+    const crossproduct = (c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y)
 
-  return {
-      x: line1.x + (r * (line2.x - line1.x)), 
-      y: line1.y + (r * (line2.y - line1.y))
-  };
-}
-function _calcIsInsideLineSegment(line1: Point, line2: Point, pnt:Point) {
-  var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
-  if(L2 == 0) return false;
-  var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
+    // compare versus epsilon for floating point values, or != 0 if using integers
+    if (Math.abs(crossproduct) > Number.EPSILON) {
+        return false
+    }
 
-  return (0 <= r) && (r <= 1);
+    const dotproduct = (c.x - a.x) * (b.x - a.x) + (c.y - a.y)*(b.y - a.y)
+    if (dotproduct < 0) {
+        return false
+    }
+
+    const squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y)
+    if (dotproduct > squaredlengthba) {
+        return false
+    }
+
+    return true
 }
 
 //#region Entry code

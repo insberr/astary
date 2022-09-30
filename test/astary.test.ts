@@ -194,19 +194,6 @@ describe("raycast", () => {
     expect(con[0].edges).toContainEqual(1);
     astar.AStar(0, 3, con);
   });
-  it("should warn about no style", () => {
-    const l = jest.spyOn(console, "log").mockImplementation(() => {});
-    const con = astar.Raycast(
-      [
-        { x: 0, y: 0, edges: [] },
-        { x: 10, y: 10, edges: [] },
-      ],
-      []
-    );
-    expect(l).toBeCalledWith(
-      "Did you mean to leave the node connection style as none?"
-    );
-  });
 
   describe("walls", () => {
     it("shouldnt connect through walls", () => {
