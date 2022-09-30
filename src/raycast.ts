@@ -256,193 +256,113 @@ export function Raycast(
     ];
     // filters to find points on raycasted line.
     const dirFilters: ((x: number, y: number) => boolean)[] = [
-      /* up    */ (x, y) => node.x == x && y > node.y,
+      /* up    */ (x, y) => node.x == x && y < node.y,
       /* right */ (x, y) => node.y == y && x > node.x,
-      /* down  */ (x, y) => node.x == x && y < node.y,
+      /* down  */ (x, y) => node.x == x && y > node.y,
       /* left. */ (x, y) => node.y == y && x < node.x,
     ];
-    dirFilters.forEach((dirf) => {
-      function after(dPoint: { x: number; y: number }, isWall?: boolean) {
-        // pls replace with something better.
-        // construct a line between us and the dPoint
+    function after(dPoint: { x: number; y: number }, isWall?: boolean) {
+      // pls replace with something better.
+      // construct a line between us and the dPoint
 
-        const dpointLine = {
-          sx: node.x,
-          sy: node.y,
-          ex: dPoint.x,
-          ey: dPoint.y,
-        };
-        const dplWallCol = walls.filter((w) => LLI(dpointLine, w));
-
-        /*if (isWall) {
-                    colLines.push({l: dpointLine, ref: i})
-                    return;
-                }*/
-
-        if (dplWallCol.length > 0) {
-          //console.log(dpointLine, dplWallCol)
-          dplWallCol.forEach((w) => {
-            const col = LLI(dpointLine, w);
-
-            //console.log(dpointLine, col)
-            if (col === false) {
-              throw new Error("This should never happen");
-            }
-            const dir = reduceEnd(
-              { ...dpointLine, ex: col.x, ey: col.y },
-              0.0001
-            );
-
-            colLines.push({
-              l: { ...dpointLine, ex: dir.x, ey: dir.y },
-              ref: i,
-            });
-          });
-          return;
-        }
-        //console.log('no walls', dplWallCol)
-        // 0 length lines are cringe
-        if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
-          return;
-        }
-        //let distanceToCollision: number | null = 0;
-        //let distancesToWalls = 0;
-        //let wallBlocks: boolean[] = [];
-        //console.log("line",dpointLine)
-        for (const l of colLines) {
-          const indl = colLines.indexOf(l);
-          // do we colide with this line?
-          const col = LLI(dpointLine, l.l);
-
-          const lWallCol = walls.filter((w) => LLI(l.l, w));
-          if (lWallCol.length > 0) {
-            //console.log(dpointLine, dplWallCol)
-            lWallCol.forEach((w) => {
-              const col2 = LLI(l.l, w);
-
-              //console.log(l.l, col2)
-              if (col2 === false) {
-                throw new Error("This should never happen");
-              }
-              const dir = reduceEnd({ ...l.l, ex: col2.x, ey: col2.y }, 0.0001);
-
-              colLines.push({ l: { ...l.l, ex: dir.x, ey: dir.y }, ref: i });
-            });
-            continue;
-          }
-          /*
-                    if (col !== false) {
-                        distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
-                        //cosnt
-                        const wallCollision = LLI(l.l, walls.filter((w) => LLI(l.l,w))[0])
-                        if (wallCollision !== false) distancesToWalls = fastDist(node.x, node.y, wallCollision.x, wallCollision.y)
-
-                        console.log(distanceToCollision, distancesToWalls)
-                        if (distanceToCollision > distancesToWalls) {
-                            console.log('wall first')
-                        }
-                    } else {
-                        distanceToCollision = null;
-                    }
-                    */
-
-          /*
-                    // does this line collide with a wall?
-                    const wallCol = walls.filter(w => LLI(dpointLine,w))
-                    if (wallCol.length > 0) {
-                        const nearestWall = wallCol.sort((a, b) => {
-                            const x = dpointLine.sx;
-                            const y = dpointLine.sy;
-        
-                            const ax1 = a.sx;
-                            const ay1 = a.sy;
-                            const ax2 = a.ex;
-                            const ay2 = a.ey;
-        
-                            const bx1 = b.sx;
-                            const by1 = b.sy;
-                            const bx2 = b.ex;
-                            const by2 = b.ey;
-        
-                            var adist = Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
-                            var bdist = Math.abs(((x * (by2 - by1)) - (y * (bx2 - bx1)) + (bx2 * by1) - (by2 * bx1))) / Math.sqrt(((by2 - by1) ^ 2) + ((bx2 - bx1) ^ 2));
-                            return adist - bdist;
-                        })[0]
-
-                        //distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
-                        //distancesToWalls.push(pointLineDist(node.x, node.y, nearestWall));
-                    }
-                    
-                    if (col !== false) {
-                        distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
-                    } else {
-                        distanceToCollision = null;
-                    }
-                    wallCol.forEach(wc => {
-                        distancesToWalls.push(pointLineDist(node.x, node.y, wc));
-                    })
-
-                    wallBlocks = distancesToWalls.map(d => {
-                        if (distanceToCollision == null) return false;
-                        if (d > distanceToCollision) {
-                            return true;
-                        }
-                        return false;
-                    })
-
-                    if (distanceToCollision !== null && wallBlocks.filter(b => b === true).length > 0) {
-                        //wallBlocks = []
-                        distancesToWalls = []
-                        //return;
-                    }
-                    */
-
-          if (l.ref == i) {
-            continue;
-          }
-
-          // distence to nearest wall, distance to collison
-          // is the wall before the collision
-
-          //console.log(l.ref,i,col)
-          if (col) {
-            //console.log("collision",l.ref,i)
-            if (nodes[i].edges.includes(l.ref)) {
-              return;
-            }
-            // connect them with a 3rd
-            //if (isWall === undefined || !isWall) {
-            // console.log('so you made it this far')
-            nodes.push({
-              x: col.x,
-              y: col.y,
-              raycast: true,
-              edges: [i, l.ref],
-            });
-            nodes[i].edges.push(nodes.length - 1);
-            nodes[l.ref].edges.push(nodes.length - 1);
-            //}
-
-            // mix and match the next 3 lines for different results
-            // colLines.splice(indl,1)
-            // colLines.push({l: {...l.l, ex: col.x, ey: col.y}, ref: nodes.length-1})
-            // colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
-            nodeConnectionStyle(
-              indl,
-              colLines,
-              l,
-              col,
-              nodes,
-              dpointLine,
-              style
-            );
-            // i have no ideal
-            return;
-          }
-        }
-        // add the dpointline.
-        colLines.push({ l: dpointLine, ref: i });
+      const dpointLine = {
+        sx: node.x,
+        sy: node.y,
+        ex: dPoint.x,
+        ey: dPoint.y,
+      };
+      // 0 length lines are cringe
+      if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
+        return;
       }
+      // notes about walls: seem fine
+      //#region WALL COLLISION
+      const dplWallCol = walls.filter((w) => LLI(dpointLine, w)).sort((a, b) => { // sort by how close the colision point is to the node, closer the point, closer the line.
+        const c = LLI(dpointLine, a)
+        const d = LLI(dpointLine, b)
+        if (!c || !d) {
+          throw new Error("This should never happen.")
+        }
+        const distA = fastDist(node.x, node.y, c.x, c.y)
+        const distB = fastDist(node.x, node.y, d.x, d.y)
+        return distA - distB
+      });
+
+      if (dplWallCol.length > 0) {
+        //console.log(dpointLine, dplWallCol)
+        ((w) => { // todo: no
+          const col = LLI(dpointLine, w);
+
+          //console.log(dpointLine, col)
+          if (col === false) {
+            throw new Error("This should never happen");
+          }
+          const dir = reduceEnd(
+            { ...dpointLine, ex: col.x, ey: col.y },
+            0.0001
+          );
+
+          colLines.push({
+            l: { ...dpointLine, ex: dir.x, ey: dir.y },
+            ref: i,
+          });
+        })(dplWallCol[0]);
+        return;
+      }
+      //#endregion
+      // notes about rayray: broken.
+      //#region RAY RAY COLISION
+      const ncols = colLines.filter((l) => l.ref != i && LLI(dpointLine, l.l) ).sort((a, b) => { // sort by how close the colision point is to the node, closer the point, closer the line.
+        const c = LLI(dpointLine, a.l)
+        const d = LLI(dpointLine, b.l)
+        if (!c || !d) {
+          throw new Error("This should never happen.")
+        }
+        const distA = fastDist(node.x, node.y, c.x, c.y)
+        const distB = fastDist(node.x, node.y, d.x, d.y)
+        return distA - distB
+      });
+      if (ncols.length > 1) {
+        
+        const hit = ncols[0]
+        const col = LLI(dpointLine, hit.l);
+        //console.log(i, "hit", hit.ref)
+        //console.log(dpointLine, col)
+        if (col === false) {
+          throw new Error("This should never happen");
+        }
+        if (nodes[i].edges.includes(hit.ref)) {
+          //console.log("aready hit.")
+          return;
+        }
+
+        nodes.push({
+          x: col.x,
+          y: col.y,
+          raycast: true,
+          edges: [i, hit.ref],
+        });
+        nodes[i].edges.push(nodes.length - 1);
+        nodes[hit.ref].edges.push(nodes.length - 1);
+        //}
+
+        nodeConnectionStyle(
+          colLines.indexOf(hit),
+          colLines,
+          hit,
+          col,
+          nodes,
+          dpointLine,
+          style
+        );
+        // i have no ideal
+        
+        return;
+      }
+      //#endregion
+      colLines.push({ l: dpointLine, ref: i });
+    }
+    dirFilters.forEach((dirf) => {
       const nodesOnLine = nodes.filter((n) => dirf(n.x, n.y));
 
       if (nodesOnLine.length == 0) {
@@ -464,7 +384,7 @@ export function Raycast(
         // find the closest node on line
         con = nodesOnLine.reduce((p, n) =>
           fastDist(p.x, p.y, node.x, node.y) >
-          fastDist(n.x, n.y, node.x, node.y)
+            fastDist(n.x, n.y, node.x, node.y)
             ? n
             : p
         );
