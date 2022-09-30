@@ -164,7 +164,7 @@ export function LLI(l1: Line, l2: Line) {
   return intersect(l1.sx, l1.sy, l1.ex, l1.ey, l2.sx, l2.sy, l2.ex, l2.ey);
 }
 function fastDist(x1: number, y1: number, x2: number, y2: number) {
-  return x2 - x1 + (y1 - y2);
+  return Math.abs(x2-x1)+Math.abs(y2-y1)
 }
 function pointLineDist(x: number, y: number, l: Line) {
   const ax1 = l.sx;
