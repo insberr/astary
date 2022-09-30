@@ -157,7 +157,7 @@ function LLI(l1: Line, l2: Line) {
     return intersect(l1.sx,l1.sy,l1.ex,l1.ey,l2.sx,l2.sy,l2.ex,l2.ey)
 }
 function fastDist(x1: number, y1: number, x2: number, y2: number) {
-    return Math.abs(x2-x1)+Math.abs(y1-y2)
+    return (x2-x1)+(y1-y2)
 }
 function pointLineDist(x: number, y: number, l: Line) {
     const ax1 = l.sx;
@@ -176,6 +176,16 @@ function nodeConnectionStyle(indl: number, colLines: {l: Line, ref: number}[], l
     if (enable.includes(3) || enable.includes('dpoint')) colLines.push({l: {...dpointLine, ex: col.x, ey: col.y}, ref: nodes.length-1})
     return colLines;
 }
+
+function reduceEnd(line: Line, r: number) {
+    var dx = line.ex - line.sx;
+    var dy = line.ey - line.sy;
+    var mag = Math.hypot(dx, dy);
+    return {
+      x: line.ex - r * dx / mag,
+      y: line.ey - r * dy / mag
+    };
+  }
 
 export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]): Node[] {
     let walls: Line[] = []
@@ -216,18 +226,31 @@ export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]
         dirFilters.forEach(dirf => {
             function after(dPoint: {x:number, y:number}, isWall?: boolean) { // pls replace with something better.
                 // construct a line between us and the dPoint
+                
                 const dpointLine = {sx: node.x, sy: node.y, ex: dPoint.x, ey: dPoint.y}
                 const dplWallCol = walls.filter((w) => LLI(dpointLine,w))
+
+                /*if (isWall) {
+                    colLines.push({l: dpointLine, ref: i})
+                    return;
+                }*/
+
                 if (dplWallCol.length > 0) {
+                    //console.log(dpointLine, dplWallCol)
                     dplWallCol.forEach((w) => {
                         const col = LLI(dpointLine,w);
+                        
+                        //console.log(dpointLine, col)
                         if (col === false) {
                             throw new Error("This should never happen")
                         }
-                        colLines.push({l: { ...dpointLine, ex: col.x, ey: col.y }, ref: i})
+                        const dir = reduceEnd({ ...dpointLine, ex: col.x, ey: col.y }, 0.0001);
+                        
+                        colLines.push({l: { ...dpointLine, ex: dir.x, ey: dir.y }, ref: i})
                     })
                     return;
                 }
+                //console.log('no walls', dplWallCol)
                 // 0 length lines are cringe
                 if (dpointLine.sx == dpointLine.ex && dpointLine.sy == dpointLine.ey) {
                     return
@@ -241,6 +264,22 @@ export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]
                     // do we colide with this line?
                     const col = LLI(dpointLine,l.l)
                     
+                    const lWallCol = walls.filter((w) => LLI(l.l,w))
+                    if (lWallCol.length > 0) {
+                        //console.log(dpointLine, dplWallCol)
+                        lWallCol.forEach((w) => {
+                            const col2 = LLI(l.l,w);
+                            
+                            //console.log(l.l, col2)
+                            if (col2 === false) {
+                                throw new Error("This should never happen")
+                            }
+                            const dir = reduceEnd({ ...l.l, ex: col2.x, ey: col2.y }, 0.0001);
+                            
+                            colLines.push({l: { ...l.l, ex: dir.x, ey: dir.y }, ref: i})
+                        })
+                        continue;
+                    }
                     /*
                     if (col !== false) {
                         distanceToCollision = fastDist(node.x, node.y, (col as {x:number,y:number}).x, (col as {x:number,y:number}).y)
@@ -324,11 +363,12 @@ export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]
                             return;
                         }
                         // connect them with a 3rd
-                        if (isWall === undefined || !isWall) {
-                            nodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
-                            nodes[i].edges.push(nodes.length-1)
-                            nodes[l.ref].edges.push(nodes.length-1)
-                        }
+                        //if (isWall === undefined || !isWall) {
+                        // console.log('so you made it this far')
+                        nodes.push({x: col.x, y: col.y, raycast: true, edges: [i,l.ref]})
+                        nodes[i].edges.push(nodes.length-1)
+                        nodes[l.ref].edges.push(nodes.length-1)
+                        //}
                         
                         // mix and match the next 3 lines for different results
                         // colLines.splice(indl,1)
@@ -341,7 +381,7 @@ export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]
                     }
                 }
                 // add the dpointline.
-                if (isWall === undefined || !isWall) colLines.push({l:dpointLine, ref: i})
+                colLines.push({l:dpointLine, ref: i})
             }
             const nodesOnLine = nodes.filter((n) => dirf(n.x,n.y))
 
@@ -391,8 +431,8 @@ export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]
                     const bx2 = b.ex;
                     const by2 = b.ey;
 
-                    var adist = Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
-                    var bdist = Math.abs(((x * (by2 - by1)) - (y * (bx2 - bx1)) + (bx2 * by1) - (by2 * bx1))) / Math.sqrt(((by2 - by1) ^ 2) + ((bx2 - bx1) ^ 2));
+                    var adist: number = Math.abs(((x * (ay2 - ay1)) - (y * (ax2 - ax1)) + (ax2 * ay1) - (ay2 * ax1))) / Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2));
+                    var bdist: number = Math.abs(((x * (by2 - by1)) - (y * (bx2 - bx1)) + (bx2 * by1) - (by2 * bx1))) / Math.sqrt(((by2 - by1) ^ 2) + ((bx2 - bx1) ^ 2));
                     return adist - bdist;
                 })
             }
@@ -410,11 +450,12 @@ export function Raycast(nodes: Node[], style: (string|number)[], _walls?: Line[]
                         throw new Error("IMPOSSIBLE")
                     }
                     // do cross lines
-                    after(l)
+                    after(l, true)
                 })
                 
                 return;
             } else {
+                //console.log('uh')
                 const d = nodes.indexOf(con)
                 if (nodes[d].edges.includes(i)) {
                     return
