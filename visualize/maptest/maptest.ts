@@ -6,7 +6,7 @@ import _dt from "bundle-text:./map.svg";
 const _d = 'data:image/svg+xml;base64,' + Buffer.from(_dt).toString('base64');
 // @ts-ignore
 //import _d from "data-url:./map.svg"; // might be a good idea to do a url and not bundle it in
-console.log(_d)
+//console.log(_d)
 // having two imports means that the map svg is included twice in the bundle, maybe convert from text to data url?
 const d: string = _d;
 // can you import the file or like uh .. how to get svg as string ???
@@ -96,8 +96,8 @@ async function render() {
         );
     }
 
-    console.log("Nodes: ", nodes);
-    console.log("Walls: ", walls);
+    //console.log("Nodes: ", nodes);
+    //console.log("Walls: ", walls);
 
     nodes.forEach((node, i) => {
         ctx.moveTo(node.x, node.y);
