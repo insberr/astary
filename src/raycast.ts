@@ -387,7 +387,7 @@ export function Raycast(nodes: Node[], walls: Line[]) {
   const maxX = Math.max.apply(null, xs);
   const minY = Math.min.apply(null, ys);
   const maxY = Math.max.apply(null, ys);
-  const entries: Entry[] = []
+  const entries: Entry[] = [];
   nodes.forEach((node,i) => {
     entries.push(constructNodeEntry(i,nodes))
   })
@@ -443,6 +443,25 @@ export function Raycast(nodes: Node[], walls: Line[]) {
           // we hit a wall
           break;
         case "ray":
+            /*
+            // we hit a ray
+            
+            // ray collision pos
+            const rayCollidePos = LLI(hit.l,ray.l)
+            console.log(hit, ray.l, LLI(hit.l, ray.l))
+            //console.log(rayCollidePos)
+            if (!rayCollidePos) {
+              throw new Error("This shouldnt be possible and is a bug")
+            }
+            // create new entry for such line
+            entries.push(shrinkRay(constructRayEntry(i,nodes, rayCollidePos), 0.001))
+            // create a node at the collision, with entries for the nodes it connects to
+            // IDFK
+            const newNodeIndex = nodes.push({ x: rayCollidePos.x, y: rayCollidePos.y, raycast: true, edges: [i, ray.ref, hit.ref] })
+            nodes[i].edges.push(newNodeIndex - 1)
+            nodes[ray.ref].edges.push(newNodeIndex - 1)
+            nodes[hit.ref].edges.push(newNodeIndex - 1)
+            */
           break;
       }
     })

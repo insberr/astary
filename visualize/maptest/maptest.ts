@@ -96,7 +96,7 @@ async function render() {
         );
     }
 
-    //console.log("Nodes: ", nodes);
+    console.log("Nodes: ", nodes);
     //console.log("Walls: ", walls);
 
     nodes.forEach((node, i) => {
