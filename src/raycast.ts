@@ -1,4 +1,6 @@
 import type { Node } from "./astar";
+import type {Line, Entry, Point} from "./col"
+import { constructNodeEntry, constructWallEntry, constructRayEntry, collide, distance, shrinkRay, LLI } from "./col";
 //mport { svgNodesRaycast } from "./generateNodesFromPathImage";
 //mport { svgNodesRaycast } from "./generateNodesFromPathImage";
 
@@ -12,7 +14,7 @@ type GridNode = {
     id: GID,
     ref?: any;
 }*/
-
+/*
 export type Line = {
   sx: number;
   sy: number;
@@ -119,7 +121,7 @@ export function Raycast(inp: Node[], walls?: Line[]): Node[] {
     })
 }
 */
-
+/*
 // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
 // Determine the intersection point of two line segments
 // Return FALSE if the lines don't intersect
@@ -210,7 +212,7 @@ function nodeConnectionStyle(
     });
   return colLines;
 }*/
-
+/*
 function reduceEnd(line: Line, r: number) {
   var dx = line.ex - line.sx;
   var dy = line.ey - line.sy;
@@ -227,7 +229,7 @@ function reduceEnd(line: Line, r: number) {
 
   return (0 <= r) && (r <= 1);
 }*/
-
+/*
 function getPoints(line: Line): [Point, Point] {
   return [
     { x: line.sx, y: line.sy },
@@ -374,6 +376,7 @@ function shrinkRay(ray: RayE, amt: number): RayE {
   return setRayEnd(ray, sPoint)
 }
 //#endregion
+*/ // todo remove this entire block
 
 export function Raycast(nodes: Node[], walls: Line[]) {
   // setup

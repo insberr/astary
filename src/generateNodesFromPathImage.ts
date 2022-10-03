@@ -2,8 +2,8 @@ import { Node } from './astar';
 import { ElementNode, parse } from 'svg-parser';
 import { Node as SVGNode } from 'svg-parser';
 import { parseSVG, makeAbsolute, VerticalLineToCommandMadeAbsolute, HorizontalLineToCommandMadeAbsolute } from 'svg-path-parser';
-import { Raycast, Line } from './raycast';
-
+import { Raycast } from './raycast';
+import type { Line } from './col'
 export type CirclePath = { x: number, y: number, fill: string | number, d?: any[] };
 export type LinePath = { sx: number, sy: number, ex: number, ey: number, fill: string | number, d?: any[] }
 export type Paths = { circles: CirclePath[], lines: LinePath[] };
