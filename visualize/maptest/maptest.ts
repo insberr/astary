@@ -1,4 +1,4 @@
-import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar, HookData } from "../../src/astar";
+import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar, HookData, HookDataType } from "../../src/astar";
 
 // @ts-ignore
 import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
@@ -75,7 +75,7 @@ canva.addEventListener(
 );
 
 function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
-    console.log(data.info, data);
+    console.log(HookDataType[data.type], data);
     // render(false);
     if (ctx === null) return
     ctx.lineWidth = 4;

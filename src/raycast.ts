@@ -2,32 +2,26 @@ import type { Node } from "./astar";
 import type {Line, Entry, Point, RayE} from "./col"
 import { constructNodeEntry, constructWallEntry, constructRayEntry, collide, distance, shrinkRay, LLI } from "./col";
 
-export type HookDataRayConstructed = {
-    type: 'ray constructed',
+export enum HookDataType {
+    RayConstructed,
+    RayHits,
+    HitNode,
+}
+export type HookBase = {
+    type: HookDataType,
     node: Node,
     edge: Point,
     entries: Entry[],
     ray: RayE,
     info: string
 }
-export type HookDataRayHits = {
-    type: 'ray hits',
-    node: Node,
-    edge: Point,
-    entries: Entry[],
+export type HookDataRayConstructed = HookBase;
+export type HookDataRayHits = HookBase & {
     hits: Entry[],
-    ray: RayE,
-    info: string
 }
-export type HookDataHitNode = {
-    type: 'hit node',
-    node: Node,
-    edge: Point,
-    entries: Entry[],
+export type HookDataHitNode = HookBase & {
     hits: Entry[],
     hit: Entry,
-    ray: RayE,
-    info: string
 }
 export type HookData = HookDataRayConstructed | HookDataRayHits | HookDataHitNode
 
@@ -69,6 +63,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
       }
       
         if (_hook) _hook(nodes, walls,  {
+            type: HookDataType.RayConstructed,
             node: node,
             edge: n,
             entries: entries,
@@ -79,6 +74,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
       // begin absolute chonker of a line
       const hits = entries.filter((e) => collide(ray,e)).sort((a,b) => distance(a, node) - distance(b, node))
       if (_hook) _hook(nodes, walls, {
+        type: HookDataType.RayHits,
         node: node,
         edge: n,
         entries: entries,
@@ -101,6 +97,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
         case "node": 
         // idk you finish adding hooks
         if (_hook) _hook(nodes, walls, {
+            type: HookDataType.HitNode,
             node: node,
             edge: n,
             entries: entries,
