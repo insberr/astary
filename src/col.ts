@@ -48,7 +48,7 @@ function intersect(
 export function LLI(l1: Line, l2: Line) {
   return intersect(l1.sx, l1.sy, l1.ex, l1.ey, l2.sx, l2.sy, l2.ex, l2.ey);
 }
-function fastDist(x1: number, y1: number, x2: number, y2: number) {
+export function fastDist(x1: number, y1: number, x2: number, y2: number) {
   return Math.abs(x2 - x1) + Math.abs(y2 - y1)
 }
 function pointLineDist(x: number, y: number, l: Line) {
@@ -58,7 +58,7 @@ function pointLineDist(x: number, y: number, l: Line) {
   const ay2 = l.ey;
   return (
     (x * (ay2 - ay1) - y * (ax2 - ax1) + ax2 * ay1 - ay2 * ax1) /
-    Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2))
+    Math.sqrt(Math.abs(Math.pow(ay2 - ay1, 2) + Math.pow(ax2 - ax1, 2)))
   );
 }
 

@@ -1,18 +1,10 @@
 import type { Node } from "./astar";
 import type {Line} from "./col"
 export function randomNodes(amt: number, mincon: number = 2): Node[] {
-    const minDistance = 20;
     const xy: {x: number, y: number, edges?: number[]}[] = [];
     for (let index = 0; index < amt; index++) {
         const rx = Math.floor(Math.random()*amt);
         const ry = Math.floor(Math.random()*amt);
-        if (xy.some((n) => (Math.abs(n.x - rx) < minDistance) || (Math.abs(n.y - ry) < minDistance))) {
-            xy.push({
-                x: rx + minDistance,
-                y: ry + minDistance,
-            })
-            continue;
-        }
         xy.push({
             x: Math.floor(rx),
             y: Math.floor(ry)

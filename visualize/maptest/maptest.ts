@@ -1,5 +1,5 @@
 import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar, HookData, HookDataType } from "../../src/astar";
-
+import { distance } from 'mathjs';
 // @ts-ignore
 import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
 import { Entry, Line, Point, RayE } from "../../src/col";
@@ -37,6 +37,7 @@ canva.style.width = "100%";
 const ctx = canva.getContext("2d");
 ctx?.scale(dpi, dpi);
 
+let datas: any[] = [];
 let walls: { sx: number, sy: number, ex: number, ey: number }[] = [];
 let nodes: Node[] = [];
 
@@ -67,7 +68,7 @@ canva.addEventListener(
         // var y = ((e.clientY  - rect.top) / (rect.bottom  - rect.top) * canva.height);
 
         // console.log(x, y)
-        nodes.push({ x: x/dpi, y: y/dpi, edges: [] });
+        nodes.push({ x: +(x/dpi).toFixed(), y: +(y/dpi).toFixed(), edges: [] });
 
         render().then(() => {debounce = false});
     },
@@ -96,21 +97,29 @@ async function render(reRaycast: boolean = true) {
     ctx.clearRect(0, 0, w, h)
     ctx.drawImage(img, 0, 0);
 
-    if (reRaycast || nodes.length == 0 || walls.length == 0) {
-        const svgPaths = await svgToPaths(_dt, defaultFilterFunction);
+    if (reRaycast) {
+        if (nodes.length == 0 || walls.length == 0) {
+            const svgPaths = await svgToPaths(_dt, defaultFilterFunction);
 
-        walls = await generateWalls(svgPaths);
+            walls = await generateWalls(svgPaths);
 
-        nodes = await Raycast(
-            await generateNodes(svgPaths),
-            walls,
-            raycastHook
-        );
-    } else {
-        nodes = await Raycast(
-            nodes,
-            walls,
-        );
+            nodes = await Raycast(
+                await generateNodes(svgPaths),
+                walls,
+                (nodes: Node[], walls: Line[], data: HookData) => {
+                    datas.push({nodes, walls, data});
+                }
+            );
+        } else {
+            datas = [];
+            nodes = await Raycast(
+                nodes,
+                walls,
+                (nodes: Node[], walls: Line[], data: HookData) => {
+                    datas.push({nodes, walls, data});
+                }
+            );
+        }
     }
 
     // console.log("Nodes: ", nodes);
@@ -234,6 +243,34 @@ async function render(reRaycast: boolean = true) {
         }
     }
     */
+   drawDatas(datas);
+}
+
+async function drawDatas(datas: {nodes: Node[], walls: Line[], data: HookData}[]) {
+    if (!ctx) return;
+    // if (!speed) return;
+    for (const step of datas) {
+        
+        if (step.data.ray) {
+            if (!(step.nodes.indexOf(step.data.node) === 17)) continue;
+            console.log(HookDataType[step.data.type], step.data)
+            if (step.data.type !== HookDataType.HitWall) continue;
+            if (!step.data.collisionPos) {
+                console.log('collision pos is false, how? idk: ', step.data.collisionPos)
+                continue;
+            }
+            ctx.beginPath()
+            ctx.strokeStyle = "purple"
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
+            ctx.moveTo(step.data.node.x, step.data.node.y)
+            ctx.lineTo(step.data.collisionPos.x, step.data.collisionPos.y)
+            ctx.stroke()
+            ctx.globalAlpha = 1;
+        }
+        await new Promise((r) => { setTimeout(r, 1) })
+    }
+    
 }
 
 async function main() {

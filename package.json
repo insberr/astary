@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "heap-js": "^2.2.0",
+    "mathjs": "^11.2.1",
     "svg-parser": "^2.0.4",
     "svg-path-parser": "^1.1.0"
   },

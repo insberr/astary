@@ -1,5 +1,5 @@
 import type { Node } from "./astar";
-import type {Line, Entry, Point, RayE} from "./col"
+import {Line, Entry, Point, RayE, NodeE, WallE, fastDist} from "./col"
 import { constructNodeEntry, constructWallEntry, constructRayEntry, collide, distance, shrinkRay, LLI } from "./col";
 
 
@@ -88,22 +88,22 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
         return;
       }
       
-        if (_hook) _hook(nodes, walls,  {
+        if (_hook) _hook([...nodes], [...walls],  {
             type: HookDataType.RayConstructed,
             node: node,
             edge: n,
-            entries: entries,
+            entries: [...entries],
             ray: ray,
             info: 'edges.forEach => ray constructed'
         })
 
       // begin absolute chonker of a line
       const hits = entries.filter((e) => collide(ray,e)).sort((a,b) => distance(a, node) - distance(b, node))
-      if (_hook) _hook(nodes, walls, {
+      if (_hook) _hook([...nodes], [...walls], {
         type: HookDataType.RayHits,
         node: node,
         edge: n,
-        entries: entries,
+        entries: [...entries],
         hits: hits,
         ray: ray,
         info: 'edges.forEach => hits calculated'
@@ -122,14 +122,14 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
       switch (hit.t) {
         case "node": 
         // idk you finish adding hooks
-        if (_hook) _hook(nodes, walls, {
+        if (_hook) _hook([...nodes], [...walls], {
             type: HookDataType.HitNode,
             node: node,
             edge: n,
-            entries: entries,
-            hits: hits,
+            entries: [...entries],
+            hits: [...hits],
             ray: ray,
-            hit: hit,
+            hit: Object.assign({}, hit),
             info: 'edges.forEach => we hit a node'
         })
 
@@ -144,14 +144,14 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
           break;
         case "wall":
           const hitpos = LLI(hit.ref,ray.l)
-            if (_hook) _hook(nodes, walls, {
+            if (_hook) _hook([...nodes], [...walls], {
                 type: HookDataType.HitWall,
                 node: node,
                 edge: n,
-                entries: entries,
-                hits: hits,
+                entries: [...entries],
+                hits: [...hits],
                 ray: ray,
-                hit: hit,
+                hit: Object.assign({}, hit),
                 distance: distance(hit, node),
                 collisionPos: hitpos,
                 info: 'edges.forEach => we hit a wall'
