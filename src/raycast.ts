@@ -15,11 +15,15 @@ export type HookBase = {
     ray: RayE,
     info: string
 }
-export type HookDataRayConstructed = HookBase;
+export type HookDataRayConstructed = HookBase & {
+  type: HookDataType.RayConstructed
+};
 export type HookDataRayHits = HookBase & {
+    type: HookDataType.RayHits
     hits: Entry[],
 }
 export type HookDataHitNode = HookBase & {
+    type: HookDataType.HitNode
     hits: Entry[],
     hit: Entry,
 }
