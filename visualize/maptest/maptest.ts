@@ -1,7 +1,7 @@
 import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar } from "../../src/astar";
 
 // @ts-ignore
-import _dt from "bundle-text:./map.svg";
+import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
 
 const _d = 'data:image/svg+xml;base64,' + Buffer.from(_dt).toString('base64');
 // @ts-ignore
@@ -96,7 +96,7 @@ async function render() {
         );
     }
 
-    console.log("Nodes: ", nodes);
+    //console.log("Nodes: ", nodes);
     //console.log("Walls: ", walls);
 
     nodes.forEach((node, i) => {
@@ -146,11 +146,13 @@ async function render() {
     });
 
     walls.forEach((wall) => {
+        ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.strokeStyle = "blue";
         ctx.moveTo(wall.sx, wall.sy);
         ctx.lineTo(wall.ex, wall.ey);
         ctx.stroke();
+        ctx.lineWidth = 1;
     });
 
     const path = await AStar(1, 0, nodes);

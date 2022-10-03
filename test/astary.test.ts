@@ -97,7 +97,7 @@ describe("random", () => {
   });
 });
 
-const svg = fs.readFileSync(__dirname + "/New_Map_plain.svg", "utf8");
+const svg = fs.readFileSync(__dirname + "/BHS_Building_Map_SVG.svg", "utf8");
 
 describe("generate nodes from svg", () => {
   it("should make nodes from node points on image", () => {
