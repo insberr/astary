@@ -6,6 +6,7 @@ beforeEach(() => {
 require("source-map-support").install();
 import * as astar from "../src/astar";
 import * as fs from "fs";
+import { defaultFilterFunction } from "../src/generateNodesFromSVG";
 
 afterEach(() => {
   // restore the spy created with spyOn
@@ -101,10 +102,7 @@ const svg = fs.readFileSync(__dirname + "/BHS_Building_Map_SVG.svg", "utf8");
 
 describe("generate nodes from svg", () => {
   it("should make nodes from node points on image", () => {
-    const paths = astar.svgToPaths(svg, {
-      walls: ["#000000"],
-      walkable: ["#ffffff"],
-    });
+    const paths = astar.svgToPaths(svg, defaultFilterFunction);
     const nodes = astar.generateNodes(paths);
     //console.log(nodes);
   });
@@ -112,10 +110,7 @@ describe("generate nodes from svg", () => {
 
 describe("generate nodes from svg then raycast", () => {
   it("should make nodes from node points on image, then raycast", () => {
-    const paths = astar.svgToPaths(svg, {
-      walls: ["#000000"],
-      walkable: ["#ffffff"],
-    });
+    const paths = astar.svgToPaths(svg, defaultFilterFunction);
     const nodes = astar.generateNodes(paths);
     //console.log(nodes);
 
@@ -130,10 +125,7 @@ describe("generate nodes from svg then raycast", () => {
 
 describe("generate nodes from svg then raycast with walls", () => {
   it("should make nodes from node points on image, then raycast with walls so yeah", () => {
-    const paths = astar.svgToPaths(svg, {
-      walls: ["#000000"],
-      walkable: ["#ffffff"],
-    });
+    const paths = astar.svgToPaths(svg, defaultFilterFunction);
     const nodes = astar.generateNodes(paths);
     const walls = astar.generateWalls(paths);
     //console.log(nodes);

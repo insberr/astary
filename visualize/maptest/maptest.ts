@@ -3,6 +3,7 @@ import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar } from "
 // @ts-ignore
 import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
 import { Entry, Line, Point, RayE } from "../../src/col";
+import { defaultFilterFunction } from "../../src/generateNodesFromSVG";
 
 const _d = 'data:image/svg+xml;base64,' + Buffer.from(_dt).toString('base64');
 // @ts-ignore
@@ -96,10 +97,7 @@ async function render(reRaycast: boolean = true) {
     ctx.drawImage(img, 0, 0);
 
     if (reRaycast || nodes.length == 0 || walls.length == 0) {
-        const svgPaths = await svgToPaths(_dt, {
-            walls: ["#000000"],
-            walkable: ["#ffffff"]
-        });
+        const svgPaths = await svgToPaths(_dt, defaultFilterFunction);
 
         walls = await generateWalls(svgPaths);
 

@@ -1,9 +1,12 @@
 import { Node } from './astar';
-import { ElementNode, parse } from 'svg-parser';
+import { ElementNode, parse, RootNode } from 'svg-parser';
 import { Node as SVGNode } from 'svg-parser';
 import { parseSVG, makeAbsolute, VerticalLineToCommandMadeAbsolute, HorizontalLineToCommandMadeAbsolute } from 'svg-path-parser';
 import { Raycast } from './raycast';
 import type { Line } from './col'
+
+export { parseSVG, makeAbsolute };
+
 export type CirclePath = { x: number, y: number, fill: string | number, d?: any[] };
 export type LinePath = { sx: number, sy: number, ex: number, ey: number, fill: string | number, d?: any[] }
 export type Paths = { circles: CirclePath[], lines: LinePath[] };
@@ -13,19 +16,7 @@ export type Colors = {
     otherColorsToIgnore?: string[],
 }
 
-// Remember transparent areas are also considered walkable
-export function svgToPaths(svgAsString: string, colors: Colors, filterFn?: (svgData: SVGNode) => Paths): Paths {
-    // const filterColors = [...colors.walls, ...colors.walkable, ...(colors?.otherColorsToIgnore || [])]
-    //console.log(filterColors)
-    // TODO: find the element fith all the fills and strokes and whatever
-    const parsed = parse(svgAsString)
-    const svgElement = parsed.children.filter(c => {
-        if ((c as ElementNode).tagName !== 'svg') {
-            return false;
-        }
-        return true;
-    })[0]
-    
+export function defaultFilterFunction(svgElement: SVGNode): Paths {
     const svgGElements = (svgElement as ElementNode).children.filter(c => {
         return (c as ElementNode).tagName === 'g'
     }).filter(c => {
@@ -58,22 +49,6 @@ export function svgToPaths(svgAsString: string, colors: Colors, filterFn?: (svgD
         return true;
     })
 
-
-    // console.log(elementCircles)
-
-    /*const pathFills = elementCircles.filter(c => !filterColors.includes(((c as SVGNode) as ElementNode)?.properties?.fill.toString() || ''))
-    const fillsToNodes = pathFills.map(c => {
-        const d = parseSVG((c as ElementNode)?.properties?.d.toString() || '');
-        // TODO parse d for coords
-        makeAbsolute(d);
-        // console.log(d.filter(v => v.code === 'M' ));
-        const moveTo = d.filter(v => v.code === 'M' )[0] as MoveToCommand;
-        // console.log(moveTo);
-
-        return { x: moveTo.x, y: moveTo.y, fill: (c as ElementNode)?.properties?.fill || 'why is this undefined', d: d };
-    });
-    */
-
     const svgCirclesToPaths = elementCircles.map(c => {
         const cx = parseFloat((c as ElementNode)?.properties?.cx.toString() || '0');
         const cy = parseFloat((c as ElementNode)?.properties?.cy.toString() || '0');
@@ -101,16 +76,26 @@ export function svgToPaths(svgAsString: string, colors: Colors, filterFn?: (svgD
     return { circles: svgCirclesToPaths, lines: svgLinesToPaths };
 }
 
+// Remember transparent areas are also considered walkable
+export function svgToPaths(svgAsString: string, filterFn: (svgElement: SVGNode) => Paths): Paths {
+    const parsed = parse(svgAsString);
+
+    const svgElement = parsed.children.filter(c => {
+        if ((c as ElementNode).tagName !== 'svg') {
+            return false;
+        }
+        return true;
+    })[0];
+
+    return filterFn(svgElement);
+}
+
 export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][]): Node[] {
     const nodes: Node[] = [];
     for (const path of paths.circles) {
         const node = {
-            x: path.x, // +path.x.toFixed(),
-            y: path.y, // +path.y.toFixed(),
-            // dx: path.x - Math.floor(path.x),
-            // dy: path.y - Math.floor(path.y),
-            // ox: path.x,
-            // oy: path.y,
+            x: path.x,
+            y: path.y,
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
             edges: [],
         }
@@ -128,9 +113,6 @@ export function generateWalls(paths: Paths): Line[] {
             sy: path.sy,
             ex: path.ex,
             ey: path.ey,
-            // dx: path.ex - path.sx,
-            // dy: path.ey - path.sy,
-            // length: Math.sqrt(Math.pow(path.ex - path.sx, 2) + Math.pow(path.ey - path.sy, 2)),
         }
 
         lines.push(line)

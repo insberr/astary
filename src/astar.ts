@@ -1,6 +1,6 @@
 import Heap from "heap-js";
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
-import { generateNodes, generateWalls, svgToPaths } from "./generateNodesFromPathImage";
+import { generateNodes, generateWalls, svgToPaths } from "./generateNodesFromSVG";
 
 export type Node = {
     x: number;
