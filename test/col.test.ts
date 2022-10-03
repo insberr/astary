@@ -28,7 +28,22 @@ describe("collision", () => {
     })
     describe("line", () => {
         describe("point", () => {})
-        describe("line", () => {})
+        describe("line", () => {
+            describe("should return true when lines are overlapping", () => {
+                it('perp', () => {
+                    const l1 = col.constructWallEntry({sx: -2, sy: -2, ex: -2, ey: 4})
+                    const l2 = col.constructWallEntry({sx: -5, sy: 1, ex: 3, ey: 1})
+                    expect(col.collide(l1,l2)).toBe(true)
+                })
+            })
+            describe("should return false when lines dont touch", () => {
+                it("perp", () => {
+                    const l1 = col.constructWallEntry({sx: -2, sy: -1, ex: -2, ey: 2})
+                    const l2 = col.constructWallEntry({sx: -1, sy: 1, ex: 2, ey: 1})
+                    expect(col.collide(l1,l2)).toBe(false)
+                })
+            })
+        })
         describe("ray", () => {})
     })
     describe("ray", () => {
