@@ -7,7 +7,9 @@ export enum HookDataType {
     RayConstructed,
     RayHits,
     HitNode,
-    HitWall
+    HitWall,
+    HitRay,
+    HitRayNewNode,
 }
 export type HookBase = {
     type: HookDataType,
@@ -30,18 +32,21 @@ export type HookDataHitNode = HookBase & {
     hit: Entry,
 }
 export type HookDataHitWall = HookBase & {
+    type: HookDataType.HitWall
     hits: Entry[],
     hit: Entry,
     distance: number,
-    collisionPos: Point,
+    collisionPos: Point | boolean,
 }
 export type HookDataHitRay = HookBase & {
+    type: HookDataType.HitRay
     hits: Entry[],
     hit: Entry,
     distance: number,
     collisionPos: Point,
 }
 export type HookDataHitRayNewNode = HookBase & HookDataHitRay & {
+    type: HookDataType.HitRayNewNode
     newNode: Node,
 }
 export type HookData = HookDataRayConstructed | HookDataRayHits | HookDataHitNode | HookDataHitWall | HookDataHitRay | HookDataHitRayNewNode;
@@ -90,7 +95,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
             entries: entries,
             ray: ray,
             info: 'edges.forEach => ray constructed'
-        } as HookDataRayConstructed)
+        })
 
       // begin absolute chonker of a line
       const hits = entries.filter((e) => collide(ray,e)).sort((a,b) => distance(a, node) - distance(b, node))
@@ -102,7 +107,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
         hits: hits,
         ray: ray,
         info: 'edges.forEach => hits calculated'
-      } as HookDataRayHits)
+      })
 
       // end absolute chonker of a line
       if (hits[0]?.ref == i) {
@@ -126,7 +131,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
             ray: ray,
             hit: hit,
             info: 'edges.forEach => we hit a node'
-        } as HookDataHitNode)
+        })
 
           // we hit a node
           const hid = hit.ref
@@ -150,7 +155,7 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
                 distance: distance(hit, node),
                 collisionPos: hitpos,
                 info: 'edges.forEach => we hit a wall'
-            } as HookDataHitWall)
+            })
           if (!hitpos) {
             throw new Error("This shouldnt be possible and is a bug")
           }
