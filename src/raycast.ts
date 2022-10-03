@@ -1,5 +1,5 @@
 import type { Node } from "./astar";
-import type {Line, Entry, Point} from "./col"
+import type {Line, Entry, Point, RayE} from "./col"
 import { constructNodeEntry, constructWallEntry, constructRayEntry, collide, distance, shrinkRay, LLI } from "./col";
 //mport { svgNodesRaycast } from "./generateNodesFromPathImage";
 //mport { svgNodesRaycast } from "./generateNodesFromPathImage";
@@ -378,7 +378,7 @@ function shrinkRay(ray: RayE, amt: number): RayE {
 //#endregion
 */ // todo remove this entire block
 
-export function Raycast(nodes: Node[], walls: Line[]) {
+export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], walls: Line[], entries: Entry[], hits: Entry[] | null, edge: Point, anyLine: Line | null, ray: RayE | null, info: string) => void) {
   // setup
   const xs = nodes.map((n) => n.x);
   const ys = nodes.map((n) => n.y);
@@ -414,8 +414,13 @@ export function Raycast(nodes: Node[], walls: Line[]) {
       if (ray.l.sx == ray.l.ex && ray.l.sy == ray.l.ey) {
         return;
       }
+      
+      if (_hook) _hook(nodes, walls, entries, null, n, null, ray, 'edges.forEach => ray constructed')
+
       // begin absolute chonker of a line
       const hits = entries.filter((e) => collide(ray,e)).sort((a,b) => distance(a, node) - distance(b, node))
+      if (_hook) _hook(nodes, walls, entries, hits, n, null, ray, 'edges.forEach => hits calculated')
+
       // end absolute chonker of a line
       if (hits[0]?.ref == i) {
         hits.shift()
@@ -428,6 +433,9 @@ export function Raycast(nodes: Node[], walls: Line[]) {
       // we HIT SOMETHING!!
       switch (hit.t) {
         case "node": 
+        // idk you finish adding hooks
+        // if (_hook) _hook(nodes, walls, entries, hits, n, null, ray, 'edges.forEach => we hit a node')
+
           // we hit a node
           const hid = hit.ref
           if (nodes[i].edges.includes(hid)) {

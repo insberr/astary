@@ -2,6 +2,7 @@ import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar } from "
 
 // @ts-ignore
 import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
+import { Entry, Line, Point, RayE } from "../../src/col";
 
 const _d = 'data:image/svg+xml;base64,' + Buffer.from(_dt).toString('base64');
 // @ts-ignore
@@ -72,12 +73,29 @@ canva.addEventListener(
     false
 );
 
-async function render() {
+function raycastHook(nodes: Node[], walls: Line[], entries: Entry[], hits: Entry[] | null, edge: Point, anyLine: Line | null, ray: RayE | null, info: string) {
+    console.log(info);
+    // render(false);
+    if (ctx === null) return
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.strokeStyle = "purple";
+    ctx.moveTo(10, 10);
+    ctx.lineTo(100, 10);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+
+    ctx.fillStyle = 'white';
+    ctx.fillText(info, 50, 10);
+
+}
+
+async function render(reRaycast: boolean = true) {
     if (ctx === null) return;
     ctx.clearRect(0, 0, w, h)
     ctx.drawImage(img, 0, 0);
 
-    if (nodes.length == 0 || walls.length == 0) {
+    if (reRaycast || nodes.length == 0 || walls.length == 0) {
         const svgPaths = await svgToPaths(_dt, {
             walls: ["#000000"],
             walkable: ["#ffffff"]
@@ -88,6 +106,7 @@ async function render() {
         nodes = await Raycast(
             await generateNodes(svgPaths),
             walls,
+            raycastHook
         );
     } else {
         nodes = await Raycast(
