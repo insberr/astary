@@ -69,7 +69,7 @@ async function doOP() {
     //a("adding child")
     //alert("nodes")
     const t1 = performance.now()
-    const _nodes = randomNodes(amt as number,conAmt,0)
+    const _nodes = randomNodes(amt as number,conAmt)
     const t2 = performance.now()
     // const _nodes2 = [{ x: 5, y: 5, edges:[] }, { x: 15, y: 10, edges: [] }, { x: 25, y: 5, edges:[] }]
     const _nodes2 = _nodes.map((r) => { return { ...r, edges: [] } })
