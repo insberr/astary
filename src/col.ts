@@ -20,7 +20,7 @@ function intersect(
 ): false | { x: number; y: number } {
   // Check if none of the lines are of length 0
   if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
-    return false;
+    return x1 == x3 && x2 == x4 && y1 == y3 && y2 == y4 ? {x: x1, y: y1} : false;
   }
 
   const denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
@@ -61,40 +61,7 @@ function pointLineDist(x: number, y: number, l: Line) {
     Math.sqrt(((ay2 - ay1) ^ 2) + ((ax2 - ax1) ^ 2))
   );
 }
-/*
-function nodeConnectionStyle(
-  indl: number,
-  colLines: { l: Line; ref: number }[],
-  l: { l: Line; ref: number },
-  col: boolean | { x: number; y: number },
-  nodes: Node[],
-  dpointLine: Line,
-  enable: (number | string)[]
-) {
-  if (enable.length === 0) {
-    console.log("Did you mean to leave the node connection style as none?");
-    return colLines;
-  }
-  if (enable.includes(1) || enable.includes("splice")) colLines.splice(indl, 1);
-  if (col === false) return colLines;
-  if (col === true) {
-    console.log(
-      "col returned true in nodeConnectionStyle: This should not happen. EVER"
-    );
-    return colLines;
-  }
-  if (enable.includes(2) || enable.includes("l"))
-    colLines.push({
-      l: { ...l.l, ex: col.x, ey: col.y },
-      ref: nodes.length - 1,
-    });
-  if (enable.includes(3) || enable.includes("dpoint"))
-    colLines.push({
-      l: { ...dpointLine, ex: col.x, ey: col.y },
-      ref: nodes.length - 1,
-    });
-  return colLines;
-}*/
+
 
 function reduceEnd(line: Line, r: number) {
   var dx = line.ex - line.sx;
@@ -105,12 +72,7 @@ function reduceEnd(line: Line, r: number) {
     y: line.ey - (r * dy) / mag,
   };
 }
-/*unction calcIsInsideLineSegment(line1, line2, pnt) {
-  var L2 = ( ((line2.x - line1.x) * (line2.x - line1.x)) + ((line2.y - line1.y) * (line2.y - line1.y)) );
-  if(L2 == 0) return false;
-  var r = ( ((pnt.x - line1.x) * (line2.x - line1.x)) + ((pnt.y - line1.y) * (line2.y - line1.y)) ) / L2;
-  return (0 <= r) && (r <= 1);
-}*/
+
 
 function getPoints(line: Line): [Point, Point] {
   return [
@@ -120,6 +82,9 @@ function getPoints(line: Line): [Point, Point] {
 }
 
 function calcIsInsideLineSegment(line: Line, pnt: Point): boolean {
+  if (line.sx == line.ex && line.ey == line.sy) {
+    return line.sx == pnt.x && line.sy == pnt.y
+  }
   const c = pnt;
   const [a, b] = getPoints(line);
   const crossproduct = (c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y)
