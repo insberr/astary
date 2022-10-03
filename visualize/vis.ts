@@ -127,30 +127,34 @@ async function doOP() {
     })
     const t3 = performance.now()
     // const path = await AStar(Math.floor(0.5 * amt), Math.floor(0.4 * amt), nodes)
-    const path = await AStar(0, 2, nodes)
-    const t4 = performance.now()
-    timePathfind.push(t4 - t3)
-    timeNodes.push(t2 - t1)
-    pathLengths.push(path.length)
-    rayTimes.push(t7 - t6)
-    extraNodes.push(nodes.length - amt);
-    const f = nodes[path[0]]
-    const end = nodes[path[path.length - 1]]
-    ctx.strokeStyle = "lightblue"
-    ctx.fillStyle = "lightblue"
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.arc(scale(f.x, f.y)[0], scale(f.x, f.y)[1], 5, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.moveTo(...scale(end.x, end.y))
-    ctx.arc(scale(end.x, end.y)[0], scale(end.x, end.y)[1], 5, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.moveTo(...scale(f.x, f.y))
-    ctx.stroke()
-    path.forEach((i) => {
-        ctx.lineTo(...scale(nodes[i].x, nodes[i].y))
-    })
-    ctx.stroke()
+    try {
+        const path = await AStar(0, 2, nodes)
+        const t4 = performance.now()
+        timePathfind.push(t4 - t3)
+        timeNodes.push(t2 - t1)
+        pathLengths.push(path.length)
+        rayTimes.push(t7 - t6)
+        extraNodes.push(nodes.length - amt);
+        const f = nodes[path[0]]
+        const end = nodes[path[path.length - 1]]
+        ctx.strokeStyle = "lightblue"
+        ctx.fillStyle = "lightblue"
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(scale(f.x, f.y)[0], scale(f.x, f.y)[1], 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.moveTo(...scale(end.x, end.y))
+        ctx.arc(scale(end.x, end.y)[0], scale(end.x, end.y)[1], 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.moveTo(...scale(f.x, f.y))
+        ctx.stroke()
+        path.forEach((i) => {
+            ctx.lineTo(...scale(nodes[i].x, nodes[i].y))
+        })
+        ctx.stroke()
+    } catch (e) {
+        console.log(e)
+    }
     if (ele != undefined) {
         ele.innerText = createMes()
     }
@@ -186,11 +190,13 @@ async function drawDatas(datas: {nodes: Node[], walls: Line[], entries: Entry[],
             ctx.beginPath()
             ctx.strokeStyle = "purple"
             ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
             ctx.moveTo(...scale(step.ray.l.sx, step.ray.l.sy))
             ctx.lineTo(...scale(step.ray.l.ex, step.ray.l.ey))
             ctx.stroke()
+            ctx.globalAlpha = 1;
         }
-        await new Promise((r) => { setTimeout(r, 1) })
+        await new Promise((r) => { setTimeout(r, 10) })
     }
     
 }
