@@ -1,4 +1,4 @@
-import { randomNodes, AStar, Raycast, randomWalls } from "../src/astar";
+import { randomNodes, AStar, Raycast, randomWalls, Node, Line, Entry, Point, RayE } from "../src/astar";
 //import { createGzip } from "zlib";
 const params = new URLSearchParams(window.location.search)
 function intParam(name: string, defaul: number | number[]): number | number[] {
@@ -20,7 +20,7 @@ const h = intParam("h",800) as number;
 
 const nodeConnectionStyle = intParam('cstl', [1, 2, 3]) as number[];
 const conAmt = 1;
-const padding = 32;
+const padding = 0;
 const ele = document.getElementById("mes")
 const timeNodes: number[] = []
 const rayTimes: number[] = [];
@@ -44,21 +44,27 @@ const canva = document.getElementsByTagName("canvas")[0];
 if (!canva) {
     throw new Error("of")
 }
+
+
 canva.id = "cring"
 canva.width = w+(padding*2);
 canva.height = h+(padding*2);
 canva.style.width = w+(padding*2)+"px";
+canva.style.height = h+(padding*2)+"px"
 //alert("canvas created")
 
-const ctx = canva.getContext("2d")
+const dt = document.getElementById("data")
+let datas: any[] = []
 
+
+const ctx = canva.getContext("2d")
+const scale: (x: number, y: number) => [number, number] = (x, y) => { return [((x / amt) * w)+padding, ((y / amt) * h)+padding] }
 async function doOP() {
     if (!ctx) {
         alert("unable to establish canvas context!")
         throw new Error("Cnva")
     }
     //alert("canvas context")
-    const scale: (x: number, y: number) => [number, number] = (x, y) => { return [((x / amt) * w)+padding, ((y / amt) * h)+padding] }
     //a("adding child")
     //alert("nodes")
     const t1 = performance.now()
@@ -74,7 +80,9 @@ async function doOP() {
     // const walls = [{sx: 10, sy: 0, ex: 10, ey: 9}, {sx: 20, sy: 0, ex: 20, ey: 10}]
     const t6 = performance.now()
     // navigator.clipboard.writeText(JSON.stringify(_nodes2))
-    const nodes = await Raycast(_nodes2, walls)
+    const nodes = await Raycast(_nodes2, walls, (nodes: Node[], walls: Line[], entries: Entry[], hits: Entry[] | null, edge: Point, anyLine: Line | null, ray: RayE | null, info: string) => {
+        datas.push({nodes,walls,entries,hits,edge,anyLine,ray,info})
+    })
     console.log(nodes)
     const t7 = performance.now()
     ctx.clearRect(0,0,canva.width,canva.height)
@@ -145,6 +153,9 @@ async function doOP() {
     if (ele != undefined) {
         ele.innerText = createMes()
     }
+    if (dt) {
+        //dt.innerText = JSON.stringify(datas,null)
+    }
 }
 
 function settings() {
@@ -165,22 +176,57 @@ function settings() {
     s.innerHTML += "light blue: start/end;<br />"
 }
 const speed = params.get("slow") != null;
+
+async function drawDatas(datas: {nodes: Node[], walls: Line[], entries: Entry[], hits: Entry[] | null, edge: Point, anyLine: Line | null, ray: RayE | null, info: string}[]) {
+    if (!ctx) return;
+    if (!speed) return;
+    for (const step of datas) {
+        if (step.ray) {
+            ctx.beginPath()
+            ctx.strokeStyle = "purple"
+            ctx.lineWidth = 1;
+            ctx.moveTo(...scale(step.ray.l.sx, step.ray.l.sy))
+            ctx.lineTo(...scale(step.ray.l.ex, step.ray.l.ey))
+            ctx.stroke()
+        }
+        await new Promise((r) => { setTimeout(r, 1) })
+    }
+    
+}
+
+async function dof() {
+    datas = [];
+    try {
+        await doOP();
+    } catch (e) {
+        failedRuns += 1
+        console.error(e)
+        if (ele) {
+            ele.innerText = createMes()
+        }
+        if (dt) {
+            //dt.innerText = JSON.stringify(datas,null)
+        }
+    }
+    drawDatas(datas)
+    //console.log(datas)
+}
 async function main() {
     settings()
-    while (true) {
-        try {
-            await doOP();
-        } catch (e) {
-            failedRuns += 1
-            console.error(e)
-            if (ele) {
-                ele.innerText = createMes()
-            }
-        }
+    if (speed) {
+        const butt = document.createElement("button")
+        butt.className = "btn btn-primary"
+        butt.addEventListener("click", dof)
+        butt.innerText = "next"
+        document.body.appendChild(butt)
+        dof()
+    }
+    while (!speed) {
+        dof();
         if (timePathfind.length == count) {
             break;
         } 
-        await new Promise((r) => { setTimeout(r, speed ? 5000 : 1) })
+        await new Promise((r) => { setTimeout(r, 1) })
     }
     
 }

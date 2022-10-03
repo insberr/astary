@@ -11,10 +11,11 @@ export function randomNodes(amt: number, mincon: number = 2): Node[] {
                 x: rx + minDistance,
                 y: ry + minDistance,
             })
+            continue;
         }
         xy.push({
-            x: Math.floor(Math.random()*amt),
-            y: Math.floor(Math.random()*amt)
+            x: Math.floor(rx),
+            y: Math.floor(ry)
         })
     }
     for (let indux = 0; indux < amt; indux++) {
