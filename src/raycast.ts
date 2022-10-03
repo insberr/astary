@@ -2,7 +2,36 @@ import type { Node } from "./astar";
 import type {Line, Entry, Point, RayE} from "./col"
 import { constructNodeEntry, constructWallEntry, constructRayEntry, collide, distance, shrinkRay, LLI } from "./col";
 
-export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], walls: Line[], entries: Entry[], hits: Entry[] | null, edge: Point, anyLine: Line | null, ray: RayE | null, info: string) => void) {
+export type HookDataRayConstructed = {
+    type: 'ray constructed',
+    node: Node,
+    edge: Point,
+    entries: Entry[],
+    ray: RayE,
+    info: string
+}
+export type HookDataRayHits = {
+    type: 'ray hits',
+    node: Node,
+    edge: Point,
+    entries: Entry[],
+    hits: Entry[],
+    ray: RayE,
+    info: string
+}
+export type HookDataHitNode = {
+    type: 'hit node',
+    node: Node,
+    edge: Point,
+    entries: Entry[],
+    hits: Entry[],
+    hit: Entry,
+    ray: RayE,
+    info: string
+}
+export type HookData = HookDataRayConstructed | HookDataRayHits | HookDataHitNode
+
+export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], walls: Line[], data: HookData) => void) {
   // setup
   const xs = nodes.map((n) => n.x);
   const ys = nodes.map((n) => n.y);
@@ -39,11 +68,24 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
         return;
       }
       
-      if (_hook) _hook(nodes, walls, entries, null, n, null, ray, 'edges.forEach => ray constructed')
+        if (_hook) _hook(nodes, walls,  {
+            node: node,
+            edge: n,
+            entries: entries,
+            ray: ray,
+            info: 'edges.forEach => ray constructed'
+        } as HookDataRayConstructed)
 
       // begin absolute chonker of a line
       const hits = entries.filter((e) => collide(ray,e)).sort((a,b) => distance(a, node) - distance(b, node))
-      if (_hook) _hook(nodes, walls, entries, hits, n, null, ray, 'edges.forEach => hits calculated')
+      if (_hook) _hook(nodes, walls, {
+        node: node,
+        edge: n,
+        entries: entries,
+        hits: hits,
+        ray: ray,
+        info: 'edges.forEach => hits calculated'
+      } as HookDataRayHits)
 
       // end absolute chonker of a line
       if (hits[0]?.ref == i) {
@@ -58,7 +100,15 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
       switch (hit.t) {
         case "node": 
         // idk you finish adding hooks
-        // if (_hook) _hook(nodes, walls, entries, hits, n, null, ray, 'edges.forEach => we hit a node')
+        if (_hook) _hook(nodes, walls, {
+            node: node,
+            edge: n,
+            entries: entries,
+            hits: hits,
+            ray: ray,
+            hit: hit,
+            info: 'edges.forEach => we hit a node'
+        } as HookDataHitNode)
 
           // we hit a node
           const hid = hit.ref
