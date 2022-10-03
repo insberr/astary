@@ -2,10 +2,12 @@ import type { Node } from "./astar";
 import type {Line, Entry, Point, RayE} from "./col"
 import { constructNodeEntry, constructWallEntry, constructRayEntry, collide, distance, shrinkRay, LLI } from "./col";
 
+
 export enum HookDataType {
     RayConstructed,
     RayHits,
     HitNode,
+    HitWall
 }
 export type HookBase = {
     type: HookDataType,
@@ -27,7 +29,22 @@ export type HookDataHitNode = HookBase & {
     hits: Entry[],
     hit: Entry,
 }
-export type HookData = HookDataRayConstructed | HookDataRayHits | HookDataHitNode
+export type HookDataHitWall = HookBase & {
+    hits: Entry[],
+    hit: Entry,
+    distance: number,
+    collisionPos: Point,
+}
+export type HookDataHitRay = HookBase & {
+    hits: Entry[],
+    hit: Entry,
+    distance: number,
+    collisionPos: Point,
+}
+export type HookDataHitRayNewNode = HookBase & HookDataHitRay & {
+    newNode: Node,
+}
+export type HookData = HookDataRayConstructed | HookDataRayHits | HookDataHitNode | HookDataHitWall | HookDataHitRay | HookDataHitRayNewNode;
 
 export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], walls: Line[], data: HookData) => void) {
   // setup
@@ -122,6 +139,18 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
           break;
         case "wall":
           const hitpos = LLI(hit.ref,ray.l)
+            if (_hook) _hook(nodes, walls, {
+                type: HookDataType.HitWall,
+                node: node,
+                edge: n,
+                entries: entries,
+                hits: hits,
+                ray: ray,
+                hit: hit,
+                distance: distance(hit, node),
+                collisionPos: hitpos,
+                info: 'edges.forEach => we hit a wall'
+            } as HookDataHitWall)
           if (!hitpos) {
             throw new Error("This shouldnt be possible and is a bug")
           }
