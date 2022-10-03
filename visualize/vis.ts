@@ -47,10 +47,8 @@ if (!canva) {
 
 
 canva.id = "cring"
-canva.width = w+(padding*2);
-canva.height = h+(padding*2);
-canva.style.width = w+(padding*2)+"px";
-canva.style.height = h+(padding*2)+"px"
+canva.width = w
+canva.height = h
 //alert("canvas created")
 
 const dt = document.getElementById("data")
@@ -58,12 +56,15 @@ let datas: any[] = []
 
 
 const ctx = canva.getContext("2d")
-const scale: (x: number, y: number) => [number, number] = (x, y) => { return [((x / amt) * w)+padding, ((y / amt) * h)+padding] }
+
+console.log(w/amt, h/amt)
+const scale: (x: number, y: number) => [number, number] = (x, y) => { return [(x/amt)*w,(y/amt)*h] }
 async function doOP() {
     if (!ctx) {
         alert("unable to establish canvas context!")
         throw new Error("Cnva")
     }
+    ctx.scale(1,1) // maybe scale so we dont have to use a scale function?
     //alert("canvas context")
     //a("adding child")
     //alert("nodes")
