@@ -96,20 +96,38 @@ async function render() {
         );
     }
 
-    //console.log("Nodes: ", nodes);
-    //console.log("Walls: ", walls);
+    // console.log("Nodes: ", nodes);
+    // console.log("Walls: ", walls);
 
-    nodes.forEach((node, i) => {
+    walls.forEach((wall) => {
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.strokeStyle = "blue";
+        ctx.moveTo(wall.sx, wall.sy);
+        ctx.lineTo(wall.ex, wall.ey);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+    });
+
+    nodes.forEach((node, i) => { 
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
-            ctx.strokeStyle = node?.raycast ? "red" : "green";
+            ctx.strokeStyle = nodes[edge].raycast ? "red" : "green";
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(nodes[edge].x, nodes[edge].y);
             ctx.stroke();
+            ctx.lineWidth = 1;
+
+            ctx.fillStyle = 'white';
+            const dist = Math.sqrt(Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2));
+            const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
+            // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
+            //ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
         });
     });
-    
+
     nodes.forEach((node, i) => {
         ctx.fillStyle = node?.raycast ? "red" : "green";
         ctx.strokeStyle = node?.raycast ? "red" : "green";
@@ -119,7 +137,7 @@ async function render() {
         ctx.fill();
         ctx.stroke();
     });
-    
+
 
     nodes.forEach((node, i) => {
         /*
@@ -135,7 +153,7 @@ async function render() {
         }
         */
 
-        ctx.fillStyle = 'black';// "gray";
+        ctx.fillStyle = 'white';// "gray";
         // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
         ctx.fillText(
             /* `${i} - [${node.x}, ${node.y}] : ${node.edges}`, */
@@ -145,36 +163,60 @@ async function render() {
         );
     });
 
-    walls.forEach((wall) => {
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.strokeStyle = "blue";
-        ctx.moveTo(wall.sx, wall.sy);
-        ctx.lineTo(wall.ex, wall.ey);
-        ctx.stroke();
+    try {
+        const path = await AStar(1, 0, nodes);
+        // console.log(path)
+        const f = nodes[path[0]]
+        const end = nodes[path[path.length - 1]]
+        ctx.strokeStyle = "yellow"
+        ctx.fillStyle = "yellow"
+        ctx.lineWidth = 2
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath()
+        ctx.arc(f.x, f.y, 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.moveTo(end.x, end.y)
+        ctx.arc(end.x, end.y, 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.moveTo(f.x, f.y)
+        ctx.stroke()
+        path.forEach((i) => {
+            ctx.lineTo(nodes[i].x, nodes[i].y)
+        })
+        ctx.stroke()
+        ctx.globalAlpha = 1;
         ctx.lineWidth = 1;
-    });
+    } catch (e) {
+        console.log(e)
+    }
 
-    const path = await AStar(1, 0, nodes);
-    console.log(path)
-    const f = nodes[path[0]]
-    const end = nodes[path[path.length - 1]]
-    ctx.strokeStyle = "yellow"
-    ctx.fillStyle = "yellow"
-    ctx.lineWidth = 4
-    ctx.beginPath()
-    ctx.arc(f.x, f.y, 5, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.moveTo(end.x, end.y)
-    ctx.arc(end.x, end.y, 5, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.moveTo(f.x, f.y)
-    ctx.stroke()
-    path.forEach((i) => {
-        ctx.lineTo(nodes[i].x, nodes[i].y)
-    })
-    ctx.stroke()
-    ctx.lineWidth = 1;
+    // grid, great for debugging
+    /*
+    for (let iw = 0; iw < w; iw += 50) {
+        ctx.strokeStyle = "gray"
+        ctx.beginPath();
+        ctx.moveTo(iw, 0);
+        ctx.lineTo(iw, h);
+        ctx.stroke();
+
+        for (let ih = 0; ih < h; ih += 50) {
+            ctx.beginPath();
+            ctx.moveTo(0, ih);
+            ctx.lineTo(w, ih);
+            ctx.stroke();
+
+            
+            if (ih%100 === 0 && iw%100 === 0) {
+                ctx.beginPath()
+                ctx.arc(iw, ih, 2, 0, Math.PI * 2)
+                ctx.fill()
+
+                ctx.fillStyle = 'white';
+                ctx.fillText(`[${iw.toString()}, ${ih.toString()}]`, iw, ih);
+            }
+        }
+    }
+    */
 }
 
 async function main() {

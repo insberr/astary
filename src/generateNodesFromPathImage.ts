@@ -107,10 +107,10 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
         const node = {
             x: path.x, // +path.x.toFixed(),
             y: path.y, // +path.y.toFixed(),
-            dx: path.x - Math.floor(path.x),
-            dy: path.y - Math.floor(path.y),
-            ox: path.x,
-            oy: path.y,
+            // dx: path.x - Math.floor(path.x),
+            // dy: path.y - Math.floor(path.y),
+            // ox: path.x,
+            // oy: path.y,
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
             edges: [],
         }
@@ -128,10 +128,9 @@ export function generateWalls(paths: Paths): Line[] {
             sy: path.sy,
             ex: path.ex,
             ey: path.ey,
-            dx: path.ex - path.sx,
-            dy: path.ey - path.sy,
-            length: Math.sqrt(Math.pow(path.ex - path.sx, 2) + Math.pow(path.ey - path.sy, 2)),
-            edges: [],
+            // dx: path.ex - path.sx,
+            // dy: path.ey - path.sy,
+            // length: Math.sqrt(Math.pow(path.ex - path.sx, 2) + Math.pow(path.ey - path.sy, 2)),
         }
 
         lines.push(line)
