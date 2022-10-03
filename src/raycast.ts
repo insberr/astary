@@ -81,7 +81,10 @@ export function Raycast(nodes: Node[], walls: Line[], _hook?: (nodes: Node[], wa
     entries.push(constructWallEntry(wall))
   })
   // raycast time
-  nodes.forEach((node, i) => {
+  nodes.forEach((node,i) => {
+    if (node.raycast) {
+      return;
+    }
     // edges of the map
     const edges: Point[] = [
       { x: node.x, y: minY },

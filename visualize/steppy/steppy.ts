@@ -136,7 +136,7 @@ function drawStep(st: HookData) {
         case HookDataType.Finished:
             ctx.clearRect(0,0,canvas.width,canvas.height)
             casted.forEach((c) => {
-                drawDot(c, 3, "green")
+                drawDot(c, 3, c.raycast ? "orange" : "green")
                 c.edges.forEach((ed) => {
                     drawLine({sx:c.x, sy:c.y, ex: nodes[ed].x, ey: nodes[ed].y}, "green")
                 })
@@ -153,7 +153,7 @@ function drawStep(st: HookData) {
         case HookDataType.HitRayNewNode:
             drawLine((st.hit as RayE).l, "green")
             drawLine(st.ray.l, "green")
-            drawDot(st.newNode, 3,"green")
+            drawDot(st.newNode, 3, "green")
             break;
     }
 }
@@ -167,7 +167,7 @@ function draw() {
     cstep.entries.forEach((t) => {
         switch (t.t) {
             case "node":
-                drawDot(t.c,2,"red")
+                drawDot(t.c,2,nodes[t.ref].raycast ? "orange" : "red")
                 break;
             case "wall": 
                 drawLine(t.ref, "yellow")
