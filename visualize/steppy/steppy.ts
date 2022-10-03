@@ -1,4 +1,4 @@
-import { HookBase, HookData, HookDataType, randomNodes, randomWalls, Raycast, Line, Point } from "../../src/astar";
+import { HookBase, HookData, Node, HookDataType, randomNodes, randomWalls, Raycast, Line, Point, RayE } from "../../src/astar";
 const s = 32
 const nodes = randomNodes(64,1).map((e) => {return {...e, edges:[]}})
 const nw = Math.max.apply(null,nodes.map((x) => x.x))
@@ -15,14 +15,23 @@ const h = Math.max.apply(null, [...wh,nh])
 
 const steps: HookData[] = []
 let currentStep = 0
-let doDrawPrev = false;
-
+let autoplay = false;
+let autoplayTimer: NodeJS.Timeout;
 const canvas = document.getElementById("canva") as HTMLCanvasElement
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
 
 (document.getElementById("displ") as HTMLInputElement).addEventListener("change", () => {
-    doDrawPrev = (document.getElementById("displ") as HTMLInputElement).checked;
-    upd()
+    autoplay = (document.getElementById("displ") as HTMLInputElement).checked;
+    if (autoplay) {
+        autoplayTimer = setInterval(() => {
+            currentStep++
+            clamp()
+            
+        }, 500)
+    }
+    else {
+        clearInterval(autoplayTimer)
+    }
 })
 
 function clamp() {
@@ -83,8 +92,70 @@ function drawLine(l: Line, style: string, strokeWidth: number = 1) {
 function drawDot(p: Point, radius: number, style: string) {
     ctx.beginPath()
     ctx.strokeStyle = style;
+    ctx.fillStyle = style;
     ctx.arc((p.x/w)*512,(p.y/h)*512,radius,0,2*Math.PI)
+    ctx.fill()
     ctx.stroke()
+}
+
+
+function drawStep(st: HookData) {
+    switch (st.type) {
+        case HookDataType.RayConstructed:
+            drawLine(st.ray.l, "lightblue")
+            drawDot(nodes[st.ray.ref], 3, "lightblue")
+            break;
+        case HookDataType.RayHits:
+            drawLine(st.ray.l, "blue")
+            drawDot(nodes[st.ray.ref], 3, "blue")
+            st.hits.forEach((h) => {
+                if (h.ref == st.ray.ref) {
+                    return;
+                }
+                switch (h.t) {
+                    case "node":
+                        drawDot(h.c,3,"blue")
+                        break;
+                    case "wall":
+                        drawLine(h.ref, "blue")
+                        break;
+                    case "ray":
+                        drawLine(h.l, "blue")
+                        break;
+                }
+            })
+            break;
+        case HookDataType.HitNode:
+            drawDot(nodes[st.hit.ref as number], 3, "green")
+            drawLine(st.ray.l, "green")
+            break;
+        case HookDataType.HitWall:
+            drawLine(st.hit.ref as Line, "green")
+            drawLine(st.ray.l, "green")
+            break;
+        case HookDataType.Finished:
+            ctx.clearRect(0,0,canvas.width,canvas.height)
+            casted.forEach((c) => {
+                drawDot(c, 3, "green")
+                c.edges.forEach((ed) => {
+                    drawLine({sx:c.x, sy:c.y, ex: nodes[ed].x, ey: nodes[ed].y}, "green")
+                })
+            })
+            walls.forEach((w) => {
+                drawLine(w, "yellow")
+            }
+            )
+            break;
+        case HookDataType.HitRay:
+            drawLine((st.hit as RayE).l, "green")
+            drawLine(st.ray.l, "green")
+            break;
+        case HookDataType.HitRayNewNode:
+            drawLine((st.hit as RayE).l, "green")
+            drawLine(st.ray.l, "green")
+            drawDot(st.newNode, 3,"green")
+            break;
+    }
 }
 
 function draw() {
@@ -106,6 +177,8 @@ function draw() {
                 break;
         }
     })
+
+    drawStep(steps[currentStep])
     /*ctx.beginPath()
     ctx.strokeStyle = "white"
     ctx.arc(128,128,20,0,2*Math.PI)

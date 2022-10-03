@@ -52,15 +52,20 @@ export function fastDist(x1: number, y1: number, x2: number, y2: number) {
   return Math.abs(x2 - x1) + Math.abs(y2 - y1)
 }
 function pointLineDist(x: number, y: number, l: Line) {
-  const ax1 = l.sx;
-  const ay1 = l.sy;
-  const ax2 = l.ex;
-  const ay2 = l.ey;
-  return (
-    (x * (ay2 - ay1) - y * (ax2 - ax1) + ax2 * ay1 - ay2 * ax1) /
-    Math.sqrt(Math.abs(Math.pow(ay2 - ay1, 2) + Math.pow(ax2 - ax1, 2)))
-  );
+  function sqr(x: number) { return x * x }
+  function dist2(v:Point, w:Point) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+  function distToSegmentSquared(p: Point, v: Point, w: Point) {
+    var l2 = dist2(v, w);
+    if (l2 == 0) return dist2(p, v);
+    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    t = Math.max(0, Math.min(1, t));
+    return dist2(p, { x: v.x + t * (w.x - v.x),
+                    y: v.y + t * (w.y - v.y) });
+  }
+  return Math.sqrt(distToSegmentSquared({x,y}, getPoints(l)[0], getPoints(l)[1]));
 }
+
+
 
 
 function reduceEnd(line: Line, r: number) {

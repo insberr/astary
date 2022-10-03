@@ -136,6 +136,7 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => { 
+        console.log(node,i)
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
             ctx.strokeStyle = nodes[edge].raycast ? "red" : "green";
@@ -250,7 +251,9 @@ async function drawDatas(datas: {nodes: Node[], walls: Line[], data: HookData}[]
     if (!ctx) return;
     // if (!speed) return;
     for (const step of datas) {
-        
+        if (step.data.type == HookDataType.Finished) {
+            continue;
+        }
         if (step.data.ray) {
             if (!(step.nodes.indexOf(step.data.node) === 17)) continue;
             console.log(HookDataType[step.data.type], step.data)
