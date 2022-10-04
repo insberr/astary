@@ -71,6 +71,8 @@ function pointLineDist(x: number, y: number, l: Line) {
 function reduceEnd(line: Line, r: number) {
   var dx = line.ex - line.sx;
   var dy = line.ey - line.sy;
+  // if (isNaN(dx)) { console.log(line); dx = 0; }
+  // if (isNaN(dy)) { console.log(line); dy = 0; }
   var mag = Math.hypot(dx, dy);
   return {
     x: line.ex - (r * dx) / mag,
@@ -205,7 +207,9 @@ export function constructWallEntry(wall: Line): WallE {
 }
 
 export function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE {
+  if (nid === 50) console.log(nodes[nid], dest)
   const d = nodes[nid]
+  //console.log(d)
   return {
     t: "ray",
     ref: nid,

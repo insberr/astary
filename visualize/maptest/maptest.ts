@@ -1,23 +1,14 @@
 import { Raycast, svgToPaths, generateNodes, generateWalls, Node, AStar, HookData, HookDataType } from "../../src/astar";
-import { distance } from 'mathjs';
-// @ts-ignore
-import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
-import { Entry, Line, Point, RayE } from "../../src/col";
+import { Line } from "../../src/col";
 import { defaultFilterFunction } from "../../src/generateNodesFromSVG";
-
-const _d = 'data:image/svg+xml;base64,' + Buffer.from(_dt).toString('base64');
-// @ts-ignore
-//import _d from "data-url:./map.svg"; // might be a good idea to do a url and not bundle it in
-//console.log(_d)
-// having two imports means that the map svg is included twice in the bundle, maybe convert from text to data url?
-const d: string = _d;
-// can you import the file or like uh .. how to get svg as string ???
 //import eruda from "../eruda";
 
+const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
+let _dt = '';
+(async () => { _dt = await fetch(_d.href).then((r) => { return r.text() }) })();
 
 // Silly mobile
 const dpi = window.devicePixelRatio <= 2.84 ? window.devicePixelRatio : 2.84;
-
 const w = 1920;
 const h = 1080;
 const padding = 42;
@@ -31,12 +22,13 @@ const img = new Image();
 canva.id = "display";
 canva.width = w*dpi;
 canva.height = h*dpi;
-//console.log(w*dpi*h*dpi);
+
 canva.style.width = "100%";
-//canva.style.height = "";
+
 const ctx = canva.getContext("2d");
 ctx?.scale(dpi, dpi);
 
+// For the raycast
 let datas: any[] = [];
 let walls: { sx: number, sy: number, ex: number, ey: number }[] = [];
 let nodes: Node[] = [];
@@ -68,7 +60,7 @@ canva.addEventListener(
         // var y = ((e.clientY  - rect.top) / (rect.bottom  - rect.top) * canva.height);
 
         // console.log(x, y)
-        nodes.push({ x: +(x/dpi).toFixed(), y: +(y/dpi).toFixed(), edges: [] });
+        nodes.push({ x: +(x/dpi).toFixed(), y: +(y/dpi).toFixed(), edges: new Set<number>() });
 
         render().then(() => {debounce = false});
     },
@@ -76,7 +68,7 @@ canva.addEventListener(
 );
 
 function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
-    console.log(HookDataType[data.type], data);
+    //console.log(HookDataType[data.type], data);
     // render(false);
     if (ctx === null) return
     ctx.lineWidth = 4;
@@ -136,7 +128,7 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => { 
-        console.log(node,i)
+        // console.log(node,i)
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
             ctx.strokeStyle = nodes[edge].raycast ? "red" : "green";
@@ -179,6 +171,7 @@ async function render(reRaycast: boolean = true) {
             return;
         }
         */
+       if (![42, 6, 86, 87, 88, 89, 90, 91, 92, 64].includes(i)) return;
 
         ctx.fillStyle = 'white';// "gray";
         // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
@@ -191,14 +184,14 @@ async function render(reRaycast: boolean = true) {
     });
 
     try {
-        const path = await AStar(1, 0, nodes);
-        // console.log(path)
+        const path = await AStar(22, 29, nodes);
+        console.log(path.map((p, ppi) => { return { p: p, e: nodes[p].edges } }))
         const f = nodes[path[0]]
         const end = nodes[path[path.length - 1]]
         ctx.strokeStyle = "yellow"
         ctx.fillStyle = "yellow"
         ctx.lineWidth = 2
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 1;
         ctx.beginPath()
         ctx.arc(f.x, f.y, 5, 0, Math.PI * 2)
         ctx.fill()
@@ -244,7 +237,7 @@ async function render(reRaycast: boolean = true) {
         }
     }
     */
-   drawDatas(datas);
+   //drawDatas(datas);
 }
 
 async function drawDatas(datas: {nodes: Node[], walls: Line[], data: HookData}[]) {
@@ -256,7 +249,7 @@ async function drawDatas(datas: {nodes: Node[], walls: Line[], data: HookData}[]
         }
         if (step.data.ray) {
             if (!(step.nodes.indexOf(step.data.node) === 17)) continue;
-            console.log(HookDataType[step.data.type], step.data)
+            //console.log(HookDataType[step.data.type], step.data)
             if (step.data.type !== HookDataType.HitWall) continue;
             if (!step.data.collisionPos) {
                 console.log('collision pos is false, how? idk: ', step.data.collisionPos)
@@ -280,7 +273,7 @@ async function main() {
     img.onload = function () {
         render();
     };
-    img.src = _d;
+    img.src = _d.href;
 }
 
 main()

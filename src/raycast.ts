@@ -155,10 +155,12 @@ export function Raycast(
       let lastNewNodeIndex = i;
 
       for (const hit of hits) {
+        // const samePosHits = hits.filter((h) => h.ref == hit.ref);
+        // if (samePosHits.length > 1) console.log(hit, samePosHits);
         // const hit = hits[0]
         // we HIT SOMETHING!!
         if (hit.t === "node") {
-          console.log(hit.ref === lastNewNodeIndex, hit.ref === i)
+          // console.log(hit.ref === lastNewNodeIndex, hit.ref === i)
           // idk you finish adding hooks
           if (_hook)
             _hook([...nodes], [...walls], {
@@ -174,15 +176,20 @@ export function Raycast(
 
           // we hit a node
           const hid = hit.ref;
+          /* shant need this if we are using Sets
           if (nodes[lastNewNodeIndex].edges.includes(hid)) {
             return;
           }
-          nodes[hid].edges.push(lastNewNodeIndex);
-          nodes[lastNewNodeIndex].edges.push(hid);
-          entries.push(shrinkRay(constructRayEntry(lastNewNodeIndex, nodes, hit.c), 0.001));
+          */
+          nodes[hid].edges.add(lastNewNodeIndex);
+          nodes[lastNewNodeIndex].edges.add(hid);
+          if (isNaN(hit.c.x)) console.log(hit.c);
+          entries.push(shrinkRay(constructRayEntry(i, nodes, hit.c), 0.001));
+          //console.log(hit.c, entries[h-1].l)
           return;
         } else if (hit.t === "wall") {
           const hitpos = LLI(hit.ref, ray.l);
+          
           if (_hook)
             _hook([...nodes], [...walls], {
               type: HookDataType.HitWall,
@@ -199,7 +206,10 @@ export function Raycast(
           if (!hitpos) {
             throw new Error("This shouldnt be possible and is a bug");
           }
-          entries.push(shrinkRay(constructRayEntry(lastNewNodeIndex, nodes, hitpos), 0.001));
+          if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos)
+
+          entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
+          
           // we hit a wall
           return;
           // break;
@@ -210,11 +220,14 @@ export function Raycast(
           }
           // ray collision pos
           const rayCollidePos = LLI(hit.l, ray.l);
+          
           //console.log(hit, ray.l, LLI(hit.l, ray.l))
           //console.log(rayCollidePos)
           if (!rayCollidePos) {
             throw new Error("This shouldnt be possible and is a bug");
           }
+          // console.log(rayCollidePos)
+          
 
           if (_hook)
             _hook([...nodes], [...walls], {
@@ -231,19 +244,34 @@ export function Raycast(
             });
 
           // create new entry for such line
+          
+
+          if (isNaN(rayCollidePos.x) || isNaN(rayCollidePos.y)) {
+            console.log(lastNewNodeIndex, hit, ray.l)
+          }
+
           entries.push(
-            shrinkRay(constructRayEntry(lastNewNodeIndex, nodes, rayCollidePos), 0.001)
+            shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001)
           );
+
           // create a node at the collision, with entries for the nodes it connects to
           // IDFK
-          lastNewNodeIndex = nodes.push({
-            x: rayCollidePos.x,
-            y: rayCollidePos.y,
-            raycast: true,
-            edges: [i, ray.ref, hit.ref],
-          }) - 1;
+          let temp_lastNewNodeIndex = lastNewNodeIndex;
+          const existingNodes = nodes.filter(n => n.x == rayCollidePos.x && n.y == rayCollidePos.y)
+          if (existingNodes.length === 0) {
+            temp_lastNewNodeIndex = nodes.push({
+              x: rayCollidePos.x,
+              y: rayCollidePos.y,
+              raycast: true,
+              // TODO: figure out which edges need to be added 
+              edges: new Set<number>([lastNewNodeIndex, ray.ref, hit.ref]),
+            }) - 1;
 
-          entries.push(constructNodeEntry(lastNewNodeIndex, nodes));
+            entries.push(constructNodeEntry(temp_lastNewNodeIndex, nodes));
+            // TODO: figure out which edges need to be added 
+            nodes[ray.ref].edges.add(temp_lastNewNodeIndex);
+            nodes[hit.ref].edges.add(temp_lastNewNodeIndex);
+          }
 
           if (_hook)
             _hook([...nodes], [...walls], {
@@ -252,17 +280,18 @@ export function Raycast(
               edge: { ...n },
               entries: [...entries],
               hits: [...hits],
-              newNode: nodes[lastNewNodeIndex],
+              newNode: nodes[temp_lastNewNodeIndex],
               ray: ray,
               info: "edges.forEach => we hit a ray, new node created",
               hit: Object.assign({}, hit),
               distance: distance(hit, node),
               collisionPos: rayCollidePos,
             });
+
+          // TODO: figure out which edges need to be added 
+          nodes[lastNewNodeIndex].edges.add(temp_lastNewNodeIndex);
           
-          if (!nodes[i].edges.includes(lastNewNodeIndex)) nodes[i].edges.push(lastNewNodeIndex);
-          if (!nodes[ray.ref].edges.includes(lastNewNodeIndex)) nodes[ray.ref].edges.push(lastNewNodeIndex);
-          if (!nodes[hit.ref].edges.includes(lastNewNodeIndex)) nodes[hit.ref].edges.push(lastNewNodeIndex);
+          lastNewNodeIndex = temp_lastNewNodeIndex;
           continue;
         }
         console.log("uh this shouldnt run");
@@ -275,5 +304,14 @@ export function Raycast(
       info: "finished",
       entries: [...entries],
     });
+  
+  // temp for testing
+  nodes = nodes.map((n, i) => {
+    if (i === 7) {
+      n.addlWeight = 2000;
+      return n;
+    }
+    return n;
+  });
   return nodes;
 }

@@ -2,7 +2,6 @@ import { Node } from './astar';
 import { ElementNode, parse, RootNode } from 'svg-parser';
 import { Node as SVGNode } from 'svg-parser';
 import { parseSVG, makeAbsolute, VerticalLineToCommandMadeAbsolute, HorizontalLineToCommandMadeAbsolute } from 'svg-path-parser';
-import { Raycast } from './raycast';
 import type { Line } from './col'
 
 export { parseSVG, makeAbsolute };
@@ -97,7 +96,7 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
             x: path.x,
             y: path.y,
             addlWeight: nodeColorWeights?.find(cw => cw[0] === path.fill)?.[1] || 0,
-            edges: [],
+            edges: new Set<number>(),
         }
         nodes.push(node)
     }

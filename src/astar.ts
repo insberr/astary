@@ -12,7 +12,7 @@ export type Node = {
     oy?: number
     addlWeight?: number;
     raycast?: boolean;
-    edges: number[];
+    edges: Set<number>;
 };
 
 /* from wikipedia
