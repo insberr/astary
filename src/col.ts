@@ -20,9 +20,7 @@ function intersect(
 ): false | { x: number; y: number } {
     // Check if none of the lines are of length 0
     if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
-        return x1 == x3 && x2 == x4 && y1 == y3 && y2 == y4
-            ? { x: x1, y: y1 }
-            : false;
+        return x1 == x3 && x2 == x4 && y1 == y3 && y2 == y4 ? { x: x1, y: y1 } : false;
     }
 
     const denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
@@ -67,9 +65,7 @@ function pointLineDist(x: number, y: number, l: Line) {
         t = Math.max(0, Math.min(1, t));
         return dist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
     }
-    return Math.sqrt(
-        distToSegmentSquared({ x, y }, getPoints(l)[0], getPoints(l)[1])
-    );
+    return Math.sqrt(distToSegmentSquared({ x, y }, getPoints(l)[0], getPoints(l)[1]));
 }
 
 function reduceEnd(line: Line, r: number) {
@@ -109,8 +105,7 @@ function calcIsInsideLineSegment(line: Line, pnt: Point): boolean {
         return false;
     }
 
-    const squaredlengthba =
-        (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y);
+    const squaredlengthba = (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y);
     if (dotproduct > squaredlengthba) {
         return false;
     }
@@ -199,11 +194,7 @@ export function constructWallEntry(wall: Line): WallE {
     };
 }
 
-export function constructRayEntry(
-    nid: number,
-    nodes: Node[],
-    dest: Point
-): RayE {
+export function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE {
     if (nid === 50) console.log(nodes[nid], dest);
     const d = nodes[nid];
     //console.log(d)

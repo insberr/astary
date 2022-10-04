@@ -49,21 +49,17 @@ let autoplayTimer: NodeJS.Timeout;
 const canvas = document.getElementById('canva') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-(document.getElementById('displ') as HTMLInputElement).addEventListener(
-    'change',
-    () => {
-        autoplay = (document.getElementById('displ') as HTMLInputElement)
-            .checked;
-        if (autoplay) {
-            autoplayTimer = setInterval(() => {
-                currentStep++;
-                clamp();
-            }, 500);
-        } else {
-            clearInterval(autoplayTimer);
-        }
+(document.getElementById('displ') as HTMLInputElement).addEventListener('change', () => {
+    autoplay = (document.getElementById('displ') as HTMLInputElement).checked;
+    if (autoplay) {
+        autoplayTimer = setInterval(() => {
+            currentStep++;
+            clamp();
+        }, 500);
+    } else {
+        clearInterval(autoplayTimer);
     }
-);
+});
 
 function clamp() {
     currentStep = Math.max(Math.min(currentStep, steps.length - 1), 0);
@@ -71,9 +67,7 @@ function clamp() {
 }
 function upd() {
     const f = document.getElementById('num') as HTMLInputElement;
-    f.value = currentStep
-        .toString()
-        .padStart((steps.length - 1).toString().length, '0');
+    f.value = currentStep.toString().padStart((steps.length - 1).toString().length, '0');
     draw();
 }
 document.getElementById('next')?.addEventListener('click', () => {
@@ -179,10 +173,7 @@ function drawStep(st: HookData) {
             casted.forEach((c) => {
                 drawDot(c, 3, c.raycast ? 'orange' : 'green');
                 c.edges.forEach((ed) => {
-                    drawLine(
-                        { sx: c.x, sy: c.y, ex: nodes[ed].x, ey: nodes[ed].y },
-                        'green'
-                    );
+                    drawLine({ sx: c.x, sy: c.y, ex: nodes[ed].x, ey: nodes[ed].y }, 'green');
                 });
             });
             walls.forEach((w) => {
@@ -203,8 +194,7 @@ function drawStep(st: HookData) {
 
 function draw() {
     const cstep = steps[currentStep];
-    (document.getElementById('cstep') as HTMLPreElement).innerText =
-        JSON.stringify(cstep, null, 2);
+    (document.getElementById('cstep') as HTMLPreElement).innerText = JSON.stringify(cstep, null, 2);
     (document.getElementById('cstepInfo') as HTMLDivElement).innerText =
         cstep.info + ' (' + HookDataType[cstep.type] + ')';
     ctx.setTransform(1, 0, 0, 1, 0, 0);

@@ -59,14 +59,12 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
         );
     })[0];
 
-    const elementCircles = (svgGID_Nodes as ElementNode).children.filter(
-        (c) => {
-            if ((c as ElementNode).tagName !== 'circle') {
-                return false;
-            }
-            return true;
+    const elementCircles = (svgGID_Nodes as ElementNode).children.filter((c) => {
+        if ((c as ElementNode).tagName !== 'circle') {
+            return false;
         }
-    );
+        return true;
+    });
 
     const elementLines = (svgGID_Walls as ElementNode).children.filter((c) => {
         if ((c as ElementNode).tagName !== 'path') {
@@ -76,12 +74,8 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
     });
 
     const svgCirclesToPaths = elementCircles.map((c) => {
-        const cx = parseFloat(
-            (c as ElementNode)?.properties?.cx.toString() || '0'
-        );
-        const cy = parseFloat(
-            (c as ElementNode)?.properties?.cy.toString() || '0'
-        );
+        const cx = parseFloat((c as ElementNode)?.properties?.cx.toString() || '0');
+        const cy = parseFloat((c as ElementNode)?.properties?.cy.toString() || '0');
         const fill =
             (c as ElementNode)?.properties?.style
                 .toString()
@@ -95,12 +89,8 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
         const d = parseSVG((c as ElementNode)?.properties?.d.toString() || '');
         makeAbsolute(d);
 
-        const vertical = d.filter(
-            (v) => v.code === 'V'
-        ) as VerticalLineToCommandMadeAbsolute[];
-        const horizontal = d.filter(
-            (v) => v.code === 'H'
-        ) as HorizontalLineToCommandMadeAbsolute[];
+        const vertical = d.filter((v) => v.code === 'V') as VerticalLineToCommandMadeAbsolute[];
+        const horizontal = d.filter((v) => v.code === 'H') as HorizontalLineToCommandMadeAbsolute[];
 
         const sx = horizontal[0]?.x0 || vertical[0]?.x0 || 0;
         const sy = horizontal[0]?.y0 || vertical[0]?.y0 || 0;
@@ -121,10 +111,7 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
 }
 
 // Remember transparent areas are also considered walkable
-export function svgToPaths(
-    svgAsString: string,
-    filterFn: (svgElement: SVGNode) => Paths
-): Paths {
+export function svgToPaths(svgAsString: string, filterFn: (svgElement: SVGNode) => Paths): Paths {
     const parsed = parse(svgAsString);
     console.log(svgAsString, parsed);
     const svgElement = parsed.children.filter((c) => {
@@ -137,17 +124,13 @@ export function svgToPaths(
     return filterFn(svgElement);
 }
 
-export function generateNodes(
-    paths: Paths,
-    nodeColorWeights?: [string, number][]
-): Node[] {
+export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][]): Node[] {
     const nodes: Node[] = [];
     for (const path of paths.circles) {
         const node = {
             x: path.x,
             y: path.y,
-            addlWeight:
-                nodeColorWeights?.find((cw) => cw[0] === path.fill)?.[1] || 0,
+            addlWeight: nodeColorWeights?.find((cw) => cw[0] === path.fill)?.[1] || 0,
             edges: new Set<number>(),
         };
         nodes.push(node);

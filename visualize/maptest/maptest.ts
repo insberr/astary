@@ -51,10 +51,8 @@ canva.addEventListener(
         debounce = true;
 
         var rect = canva.getBoundingClientRect();
-        var x =
-            ((e.clientX - rect.left) / (rect.right - rect.left)) * canva.width;
-        var y =
-            ((e.clientY - rect.top) / (rect.bottom - rect.top)) * canva.height;
+        var x = ((e.clientX - rect.left) / (rect.right - rect.left)) * canva.width;
+        var y = ((e.clientY - rect.top) / (rect.bottom - rect.top)) * canva.height;
 
         if (e.shiftKey) {
             walls.push({
@@ -128,13 +126,9 @@ async function render(reRaycast: boolean = true) {
             );
         } else {
             datas = [];
-            nodes = await Raycast(
-                nodes,
-                walls,
-                (nodes: Node[], walls: Line[], data: HookData) => {
-                    datas.push({ nodes, walls, data });
-                }
-            );
+            nodes = await Raycast(nodes, walls, (nodes: Node[], walls: Line[], data: HookData) => {
+                datas.push({ nodes, walls, data });
+            });
         }
     }
 
@@ -165,13 +159,9 @@ async function render(reRaycast: boolean = true) {
 
             ctx.fillStyle = 'white';
             const dist = Math.sqrt(
-                Math.pow(nodes[edge].x - node.x, 2) +
-                    Math.pow(nodes[edge].y - node.y, 2)
+                Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
             );
-            const dir = Math.atan2(
-                nodes[edge].y - node.y,
-                nodes[edge].x - node.x
-            );
+            const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
             // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
             //ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
         });
@@ -273,9 +263,7 @@ async function render(reRaycast: boolean = true) {
     //drawDatas(datas);
 }
 
-async function drawDatas(
-    datas: { nodes: Node[]; walls: Line[]; data: HookData }[]
-) {
+async function drawDatas(datas: { nodes: Node[]; walls: Line[]; data: HookData }[]) {
     if (!ctx) return;
     // if (!speed) return;
     for (const step of datas) {
@@ -287,10 +275,7 @@ async function drawDatas(
             //console.log(HookDataType[step.data.type], step.data)
             if (step.data.type !== HookDataType.HitWall) continue;
             if (!step.data.collisionPos) {
-                console.log(
-                    'collision pos is false, how? idk: ',
-                    step.data.collisionPos
-                );
+                console.log('collision pos is false, how? idk: ', step.data.collisionPos);
                 continue;
             }
             ctx.beginPath();

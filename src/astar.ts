@@ -1,10 +1,6 @@
 import Heap from 'heap-js';
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
-import {
-    generateNodes,
-    generateWalls,
-    svgToPaths,
-} from './generateNodesFromSVG';
+import { generateNodes, generateWalls, svgToPaths } from './generateNodesFromSVG';
 
 export type Node = {
     x: number;
@@ -73,10 +69,7 @@ function A_Star(start, goal, h)
 */
 
 // https://en.wikipedia.org/wiki/A*_search_algorithm
-function reconstruct_path(
-    cameFrom: Map<number, number>,
-    current: number
-): number[] {
+function reconstruct_path(cameFrom: Map<number, number>, current: number): number[] {
     var total_path = [current];
     //console.log("reconstruct path")
     //console.log(cameFrom)
@@ -112,9 +105,7 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
     function h(n: number): number {
         const node = nodes[n];
         const goalNode = nodes[goal];
-        return Math.sqrt(
-            Math.pow(node.x - goalNode.x, 2) + Math.pow(node.y - goalNode.y, 2)
-        );
+        return Math.sqrt(Math.pow(node.x - goalNode.x, 2) + Math.pow(node.y - goalNode.y, 2));
     }
     var openSet = new Heap<number>(Heap.minComparator);
     openSet.push(start);
@@ -128,17 +119,14 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
     while (openSet.length > 0) {
         var current = openSet
             .toArray()
-            .reduce((a, b) =>
-                gInfinite(fScore, a) < gInfinite(fScore, b) ? a : b
-            );
+            .reduce((a, b) => (gInfinite(fScore, a) < gInfinite(fScore, b) ? a : b));
         if (current == goal) {
             return reconstruct_path(cameFrom, current);
         }
         //console.log("visited", current)
         openSet.remove(current);
         for (const neighbor of nodes[current].edges) {
-            const tentative_gScore =
-                gInfinite(gScore, current) + edgeW(current, neighbor, nodes);
+            const tentative_gScore = gInfinite(gScore, current) + edgeW(current, neighbor, nodes);
             //console.log(gScore)
             //console.log("tentative_gScore", tentative_gScore, "gScore", gInfinite(gScore,neighbor))
             if (tentative_gScore < gInfinite(gScore, neighbor)) {

@@ -36,8 +36,7 @@ const timeNodes: number[] = [];
 const rayTimes: number[] = [];
 let failedRuns = 0;
 const timePathfind: number[] = [];
-const average = (array: number[]) =>
-    array.reduce((a, b) => a + (b || 0), 0) / array.length;
+const average = (array: number[]) => array.reduce((a, b) => a + (b || 0), 0) / array.length;
 const extraNodes: number[] = [];
 const pathLengths: number[] = [];
 function createMes() {
@@ -101,13 +100,9 @@ async function doOP() {
     // const walls = [{sx: 10, sy: 0, ex: 10, ey: 9}, {sx: 20, sy: 0, ex: 20, ey: 10}]
     const t6 = performance.now();
     // navigator.clipboard.writeText(JSON.stringify(_nodes2))
-    const nodes = await Raycast(
-        _nodes2,
-        walls,
-        (nodes: Node[], walls: Line[], data: HookData) => {
-            datas.push({ nodes, walls, data });
-        }
-    );
+    const nodes = await Raycast(_nodes2, walls, (nodes: Node[], walls: Line[], data: HookData) => {
+        datas.push({ nodes, walls, data });
+    });
     // console.log(nodes)
     const t7 = performance.now();
     ctx.clearRect(0, 0, canva.width, canva.height);
@@ -168,13 +163,7 @@ async function doOP() {
         ctx.arc(scale(f.x, f.y)[0], scale(f.x, f.y)[1], 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.moveTo(...scale(end.x, end.y));
-        ctx.arc(
-            scale(end.x, end.y)[0],
-            scale(end.x, end.y)[1],
-            5,
-            0,
-            Math.PI * 2
-        );
+        ctx.arc(scale(end.x, end.y)[0], scale(end.x, end.y)[1], 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.moveTo(...scale(f.x, f.y));
         ctx.stroke();

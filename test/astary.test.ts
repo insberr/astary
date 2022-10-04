@@ -247,9 +247,7 @@ describe('raycast', () => {
                 [{ sx: 5, sy: 5, ex: 5, ey: -5 }]
             );
             const path = astar.AStar(0, 2, con);
-            expect(
-                path.filter((r) => con[r].raycast).map((z) => con[z])
-            ).toHaveLength(2);
+            expect(path.filter((r) => con[r].raycast).map((z) => con[z])).toHaveLength(2);
             expect(path).toStrictEqual([0, 3, 1, 4, 2]);
         });
         it('should box in the node', () => {

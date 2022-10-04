@@ -87,11 +87,7 @@ export type HookData =
 export function Raycast(
     nodes: Node[],
     walls: Line[],
-    _hook: (nodes: Node[], walls: Line[], data: HookData) => void = (
-        _,
-        __,
-        ___
-    ) => {}
+    _hook: (nodes: Node[], walls: Line[], data: HookData) => void = (_, __, ___) => {}
 ) {
     /* Setup */
     const entries: Entry[] = [];
@@ -205,9 +201,7 @@ export function Raycast(
                     nodes[hid].edges.add(lastNewNodeIndex);
                     nodes[lastNewNodeIndex].edges.add(hid);
                     if (isNaN(hit.c.x)) console.log(hit.c);
-                    entries.push(
-                        shrinkRay(constructRayEntry(i, nodes, hit.c), 0.001)
-                    );
+                    entries.push(shrinkRay(constructRayEntry(i, nodes, hit.c), 0.001));
                     //console.log(hit.c, entries[h-1].l)
                     return;
                 } else if (hit.t === 'wall') {
@@ -227,15 +221,11 @@ export function Raycast(
                             info: 'edges.forEach => we hit a wall',
                         });
                     if (!hitpos) {
-                        throw new Error(
-                            'This shouldnt be possible and is a bug'
-                        );
+                        throw new Error('This shouldnt be possible and is a bug');
                     }
                     if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
 
-                    entries.push(
-                        shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001)
-                    );
+                    entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
 
                     // we hit a wall
                     return;
@@ -251,9 +241,7 @@ export function Raycast(
                     //console.log(hit, ray.l, LLI(hit.l, ray.l))
                     //console.log(rayCollidePos)
                     if (!rayCollidePos) {
-                        throw new Error(
-                            'This shouldnt be possible and is a bug'
-                        );
+                        throw new Error('This shouldnt be possible and is a bug');
                     }
                     // console.log(rayCollidePos)
 
@@ -277,12 +265,7 @@ export function Raycast(
                         console.log(lastNewNodeIndex, hit, ray.l);
                     }
 
-                    entries.push(
-                        shrinkRay(
-                            constructRayEntry(i, nodes, rayCollidePos),
-                            0.001
-                        )
-                    );
+                    entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
 
                     // create a node at the collision, with entries for the nodes it connects to
                     // IDFK
@@ -297,16 +280,10 @@ export function Raycast(
                                 y: rayCollidePos.y,
                                 raycast: true,
                                 // TODO: figure out which edges need to be added
-                                edges: new Set<number>([
-                                    lastNewNodeIndex,
-                                    ray.ref,
-                                    hit.ref,
-                                ]),
+                                edges: new Set<number>([lastNewNodeIndex, ray.ref, hit.ref]),
                             }) - 1;
 
-                        entries.push(
-                            constructNodeEntry(temp_lastNewNodeIndex, nodes)
-                        );
+                        entries.push(constructNodeEntry(temp_lastNewNodeIndex, nodes));
                         // TODO: figure out which edges need to be added
                         nodes[ray.ref].edges.add(temp_lastNewNodeIndex);
                         nodes[hit.ref].edges.add(temp_lastNewNodeIndex);

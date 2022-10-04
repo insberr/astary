@@ -17,25 +17,15 @@ export function randomNodes(amt: number, mincon: number = 2): Node[] {
                 i--;
                 continue;
             }
-            xy[indux].edges = new Set<number>([
-                ...(xy[indux].edges || []),
-                pair,
-            ]);
-            xy[pair].edges = new Set<number>([
-                ...(xy[pair].edges || []),
-                indux,
-            ]);
+            xy[indux].edges = new Set<number>([...(xy[indux].edges || []), pair]);
+            xy[pair].edges = new Set<number>([...(xy[pair].edges || []), indux]);
             //console.log(indux,"<=>",pair)
         }
     }
     return xy.filter((r) => r.edges != undefined) as Node[];
 }
 
-export function randomWalls(
-    amt: number,
-    space: number,
-    length: number
-): Line[] {
+export function randomWalls(amt: number, space: number, length: number): Line[] {
     const xy: { sx: number; sy: number; ex: number; ey: number }[] = [];
     for (let index = 0; index < amt; index++) {
         const rx = Math.floor(Math.random() * space);
