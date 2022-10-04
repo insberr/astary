@@ -175,6 +175,7 @@ export function Raycast(
                 if (hit == undefined) {
                     return;
                 }
+                
                 // TODO: Implement some variation of this.
                 // TODO: Also add detection if multiple rays over each other, remove all of them except the shortest one
                 // const samePosHits = hits.filter((h) => h.ref == hit.ref);

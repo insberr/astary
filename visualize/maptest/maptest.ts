@@ -209,6 +209,19 @@ async function render(reRaycast: boolean = true) {
                 return { p: p, e: nodes[p].edges };
             })
         );
+        
+        path.forEach(p => {
+            const nnn = nodes[p]
+            const [nx, ny] = [nnn.x, nnn.y];
+            ctx.globalAlpha = .5;
+            ctx.strokeStyle = 'lightblue';
+            ctx.beginPath();
+            ctx.arc(nx, ny, 3, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        })
+
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
         ctx.strokeStyle = 'yellow';
