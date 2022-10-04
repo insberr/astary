@@ -1,7 +1,7 @@
 import type { Node } from "./astar";
 import type {Line} from "./col"
 export function randomNodes(amt: number, mincon: number = 2): Node[] {
-    const xy: {x: number, y: number, edges?: number[]}[] = [];
+    const xy: {x: number, y: number, edges?: Set<number>}[] = [];
     for (let index = 0; index < amt; index++) {
         const rx = Math.floor(Math.random()*amt);
         const ry = Math.floor(Math.random()*amt);
@@ -13,12 +13,12 @@ export function randomNodes(amt: number, mincon: number = 2): Node[] {
     for (let indux = 0; indux < amt; indux++) {
         for (let i = 0; i < mincon; i++) {
             const pair = Math.floor(Math.random()*(amt))
-            if (xy[indux].edges?.includes(pair)) {
+            if (xy[indux].edges?.has(pair)) {
                 i--;
                 continue;
             }
-            xy[indux].edges = [...(xy[indux].edges || []), pair ]
-            xy[pair].edges = [...(xy[pair].edges || []), indux]
+            xy[indux].edges = new Set<number>([...(xy[indux].edges || []), pair ])
+            xy[pair].edges = new Set<number>([...(xy[pair].edges || []), indux])
             //console.log(indux,"<=>",pair)
         }
     }

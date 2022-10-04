@@ -304,14 +304,6 @@ export function Raycast(
       info: "finished",
       entries: [...entries],
     });
-  
-  // temp for testing
-  nodes = nodes.map((n, i) => {
-    if (i === 7) {
-      n.addlWeight = 2000;
-      return n;
-    }
-    return n;
-  });
+    
   return nodes;
 }

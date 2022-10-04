@@ -42,24 +42,24 @@ afterAll(
 describe("AStar", () => {
   it("straight line", () => {
     const res = astar.AStar(0, 5, [
-      { x: 0, y: 0, edges: [1] },
-      { x: 1, y: 0, edges: [0, 2] },
-      { x: 2, y: 0, edges: [1, 3] },
-      { x: 3, y: 0, edges: [2, 4] },
-      { x: 4, y: 0, edges: [3, 5] },
-      { x: 5, y: 0, edges: [4] },
+      { x: 0, y: 0, edges: new Set([1]) },
+      { x: 1, y: 0, edges: new Set([0, 2]) },
+      { x: 2, y: 0, edges: new Set([1, 3]) },
+      { x: 3, y: 0, edges: new Set([2, 4]) },
+      { x: 4, y: 0, edges: new Set([3, 5]) },
+      { x: 5, y: 0, edges: new Set([4]) },
     ]);
     //if (!isBenchmark) console.log(res)
     expect(res).toEqual([0, 1, 2, 3, 4, 5]);
   });
   it("tgraph with weight", () => {
     const res = astar.AStar(0, 5, [
-      { x: 0, y: 0, edges: [1, 2] },
-      { x: 2, y: 2, edges: [3, 4] },
-      { x: 2, y: -2, edges: [1, 4] },
-      { x: 6, y: 2, edges: [4, 5] },
-      { x: 6, y: -2, addlWeight: 10, edges: [5] },
-      { x: 8, y: 0, edges: [] },
+      { x: 0, y: 0, edges: new Set([1, 2]) },
+      { x: 2, y: 2, edges: new Set([3, 4]) },
+      { x: 2, y: -2, edges: new Set([1, 4]) },
+      { x: 6, y: 2, edges: new Set([4, 5]) },
+      { x: 6, y: -2, addlWeight: 10, edges: new Set([5]) },
+      { x: 8, y: 0, edges: new Set() },
     ]);
     //if (!isBenchmark) console.log(res)
     expect(res).not.toContain(4); // cannot contain a 4
@@ -67,8 +67,8 @@ describe("AStar", () => {
   it("should error without path", () => {
     expect(() => {
       astar.AStar(0, 1, [
-        { x: 0, y: 0, edges: [] },
-        { x: 1, y: 1, edges: [] },
+        { x: 0, y: 0, edges: new Set() },
+        { x: 1, y: 1, edges: new Set() },
       ]);
     }).toThrowError();
   });
@@ -140,20 +140,20 @@ describe("raycast", () => {
   it("should connect nodes in line.", () => {
     const con = astar.Raycast(
       [
-        { x: 0, y: 0, edges: [] },
-        { x: 10, y: 0, edges: [] },
+        { x: 0, y: 0, edges: new Set() },
+        { x: 10, y: 0, edges: new Set() },
       ],
       []
     );
     //console.log(con)
-    expect(con[0].edges).toHaveLength(1);
-    expect(con[1].edges).toHaveLength(1);
+    expect(con[0].edges.size).toEqual(1);
+    expect(con[1].edges.size).toEqual(1);
   });
   it("should connect 2 nodes with a 3rd", () => {
     const con = astar.Raycast(
       [
-        { x: 0, y: 0, edges: [] },
-        { x: 10, y: 10, edges: [] },
+        { x: 0, y: 0, edges: new Set() },
+        { x: 10, y: 10, edges: new Set() },
       ],
       []
     );
@@ -163,10 +163,10 @@ describe("raycast", () => {
   it("raycast negative test", () => {
     const con = astar.Raycast(
       [
-        { x: 0, y: 0, edges: [] },
-        { x: 5, y: 0, edges: [] },
-        { x: 10, y: 0, edges: [] },
-        { x: 5, y: -10, edges: [] },
+        { x: 0, y: 0, edges: new Set() },
+        { x: 5, y: 0, edges: new Set() },
+        { x: 10, y: 0, edges: new Set() },
+        { x: 5, y: -10, edges: new Set() },
       ],
       []
     );
@@ -175,10 +175,10 @@ describe("raycast", () => {
   it("should decimal", () => {
     const con = astar.Raycast(
       [
-        { x: 0, y: 0, edges: [] },
-        { x: 0, y: 5, edges: [] },
-        { x: 10.3, y: 5, edges: [] },
-        { x: 10.3, y: -5, edges: [] },
+        { x: 0, y: 0, edges: new Set() },
+        { x: 0, y: 5, edges: new Set() },
+        { x: 10.3, y: 5, edges: new Set() },
+        { x: 10.3, y: -5, edges: new Set() },
       ],
       [{ sx: 1.04, sy: 3, ex: 2, ey: -5 }]
     );
@@ -191,9 +191,9 @@ describe("raycast", () => {
     it("shouldnt connect through walls", () => {
       const con = astar.Raycast(
         [
-          { x: 0, y: 0, edges: [] },
-          { x: 10, y: 0, edges: [] },
-          { x: 5, y: 5, edges: [] },
+          { x: 0, y: 0, edges: new Set() },
+          { x: 10, y: 0, edges: new Set() },
+          { x: 5, y: 5, edges: new Set() },
         ],
         [
           { sx: 3, sy: -20, ex: 3, ey: 20 },
@@ -207,8 +207,8 @@ describe("raycast", () => {
     it("should handle walls in the middle of nowhere", () => {
       const con = astar.Raycast(
         [
-          { x: 0, y: 0, edges: [] },
-          { x: 10, y: 0, edges: [] },
+          { x: 0, y: 0, edges: new Set() },
+          { x: 10, y: 0, edges: new Set() },
         ],
         [
           {
@@ -219,16 +219,17 @@ describe("raycast", () => {
           },
         ]
       );
-      expect(con[0].edges).toStrictEqual([1]);
-      expect(con[1].edges).toStrictEqual([0]);
+      // We love js Sets. use spread [...set] to convert it to an array.
+      expect([...con[0].edges]).toStrictEqual([1]);
+      expect([...con[1].edges]).toStrictEqual([0]);
     });
     it("wall", () => {
       const con = astar.Raycast(
         [
-          { x: 0, y: 0, edges: [] },
-          { x: 0, y: 5, edges: [] },
-          { x: 10, y: 5, edges: [] },
-          { x: 10, y: 0, edges: [] },
+          { x: 0, y: 0, edges: new Set() },
+          { x: 0, y: 5, edges: new Set() },
+          { x: 10, y: 5, edges: new Set() },
+          { x: 10, y: 0, edges: new Set() },
         ],
         [{ sx: 1, sy: 0, ex: 2, ey: 1 }]
       );
@@ -239,9 +240,9 @@ describe("raycast", () => {
     it("should navigate around", () => {
       const con = astar.Raycast(
         [
-          { x: 0, y: 0, edges: [] },
-          { x: 5, y: 6, edges: [] },
-          { x: 10, y: 0, edges: [] },
+          { x: 0, y: 0, edges: new Set() },
+          { x: 5, y: 6, edges: new Set() },
+          { x: 10, y: 0, edges: new Set() },
         ],
         [{ sx: 5, sy: 5, ex: 5, ey: -5 }]
       );
@@ -254,11 +255,11 @@ describe("raycast", () => {
     it("should box in the node", () => {
       const con = astar.Raycast(
         [
-          { x: 10, y: 10, edges: [] },
-          { x: 5, y: 10, edges: [] },
-          { x: 15, y: 10, edges: [] },
-          { x: 10, y: 15, edges: [] },
-          { x: 10, y: 5, edges: [] },
+          { x: 10, y: 10, edges: new Set() },
+          { x: 5, y: 10, edges: new Set() },
+          { x: 15, y: 10, edges: new Set() },
+          { x: 10, y: 15, edges: new Set() },
+          { x: 10, y: 5, edges: new Set() },
         ],
         [
           { sx: 7, sy: 7, ex: 7, ey: 12 },
@@ -267,16 +268,16 @@ describe("raycast", () => {
           { sx: 12, sy: 7, ex: 7, ey: 7 },
         ]
       );
-      expect(con[0].edges).toHaveLength(0);
+      expect(con[0].edges.size).toEqual(0);
     });
     it("should respect already existing edges", () => {
       const con = astar.Raycast(
         [
-          { x: 10, y: 10, edges: [1] },
-          { x: 5, y: 10, edges: [0] },
-          { x: 15, y: 10, edges: [] },
-          { x: 10, y: 15, edges: [] },
-          { x: 10, y: 5, edges: [] },
+          { x: 10, y: 10, edges: new Set([1]) },
+          { x: 5, y: 10, edges: new Set([0]) },
+          { x: 15, y: 10, edges: new Set() },
+          { x: 10, y: 15, edges: new Set() },
+          { x: 10, y: 5, edges: new Set() },
         ],
         [
           { sx: 7, sy: 7, ex: 7, ey: 12 },
@@ -285,7 +286,7 @@ describe("raycast", () => {
           { sx: 12, sy: 7, ex: 7, ey: 7 },
         ]
       );
-      expect(con[0].edges).toHaveLength(1);
+      expect(con[0].edges.size).toEqual(1);
       expect(con[0].edges).toContain(1);
     });
   });
