@@ -5,7 +5,10 @@
       "params": {
         "overrides": {
           "removeHiddenElems": false,
-          "removeUselessStrokeAndFill": false
+          "removeUselessStrokeAndFill": false,
+          "cleanupIDs": false,
+          "removeMetadata": false,
+          "convertShapeToPath": false
         }
       }
     }
