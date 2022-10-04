@@ -155,9 +155,12 @@ export function Raycast(
       let lastNewNodeIndex = i;
 
       for (const hit of hits) {
+        // TODO: Implement some variation of this.
+        // TODO: Also add detection if multiple rays over each other, remove all of them except the shortest one
         // const samePosHits = hits.filter((h) => h.ref == hit.ref);
         // if (samePosHits.length > 1) console.log(hit, samePosHits);
-        // const hit = hits[0]
+
+        
         // we HIT SOMETHING!!
         if (hit.t === "node") {
           // console.log(hit.ref === lastNewNodeIndex, hit.ref === i)
@@ -304,6 +307,6 @@ export function Raycast(
       info: "finished",
       entries: [...entries],
     });
-    
+
   return nodes;
 }
