@@ -1,4 +1,5 @@
 import type { Node } from './astar';
+import structuredClone from '@ungap/structured-clone';
 import { Line, Entry, Point, RayE, NodeE, WallE, fastDist } from './col';
 import {
     constructNodeEntry,
