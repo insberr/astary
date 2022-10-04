@@ -1,8 +1,8 @@
-import { HookBase, HookData, Node, HookDataType, randomNodes, randomWalls, Raycast, Line, Point, RayE } from "../../src/astar";
+import { HookData, Node, HookDataType, randomNodes, randomWalls, Raycast, Line, Point, RayE } from "../../src/astar";
 const s = 32
-const nodes: Node[] = JSON.parse(localStorage.getItem('nodes') || JSON.stringify(randomNodes(64,1).map((e) => {return {...e, edges:new Set<number>()}}))).map(n => {
+const nodes: Node[] = JSON.parse(localStorage.getItem('nodes') || JSON.stringify(randomNodes(64,1).map((e) => {return {...e, edges:new Set<number>()}}))).map((n: Node & { edges: number[] | Set<number>}) => {
   // stupid JSON dont know how to store sets
-  n.edges = new Set(n.edges.length > 0 ? n.edges : [])
+  n.edges = new Set((n.edges as number[]).length > 0 ? n.edges : [])
   return n;
 })
 localStorage.setItem('nodes', JSON.stringify(nodes))

@@ -24,6 +24,7 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
 
 
     // Circles: Nodes
+    
     const svgGID_Nodes = (svgGElements as ElementNode).children.filter(c => {
         return (c as ElementNode).tagName === 'g' && (c as ElementNode)?.properties?.id === 'pathfindingNodes'
     })[0]
