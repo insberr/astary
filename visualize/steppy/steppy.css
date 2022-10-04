@@ -5,7 +5,6 @@
     justify-content: center;
 }
 .controls {
-
 }
 
 .mt {
@@ -14,7 +13,7 @@
 
 #cstep {
     background-color: #161616;
-    width:fit-content;
+    width: fit-content;
     padding: 1em;
     border-radius: 10px;
 }
