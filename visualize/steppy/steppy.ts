@@ -23,11 +23,10 @@ const nodes: Node[] = JSON.parse(
     return n;
 });
 if (nodes.length != s) {
-    localStorage.removeItem("nodes");
-    location.reload()
+    localStorage.removeItem('nodes');
+    location.reload();
 } else {
-
-localStorage.setItem('nodes', JSON.stringify(nodes));
+    localStorage.setItem('nodes', JSON.stringify(nodes));
 }
 
 const nw = Math.max.apply(
@@ -38,7 +37,7 @@ const nh = Math.max.apply(
     null,
     nodes.map((y) => y.y)
 );
-const walls = randomWalls(Math.floor(s/8), nw, 4);
+const walls = randomWalls(Math.floor(s / 8), nw, 4);
 const wh: number[] = [];
 const ww: number[] = [];
 walls.forEach((element) => {

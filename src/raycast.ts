@@ -316,7 +316,7 @@ export function Raycast(
                     continue;
                 }
                 console.log('uh this shouldnt run');
-            } while (hit?.t == "ray")
+            } while (hit?.t == 'ray');
         });
     });
 
