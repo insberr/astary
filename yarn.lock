@@ -2116,6 +2116,7 @@ __metadata:
     mathjs: ^11.2.1
     parcel: ^2.7.0
     parcel-reporter-exec: ^0.0.7
+    prettier: 2.7.1
     source-map-support: ^0.5.21
     svg-parser: ^2.0.4
     svg-path-parser: ^1.1.0
@@ -4931,6 +4932,15 @@ __metadata:
     posthtml-parser: ^0.11.0
     posthtml-render: ^3.0.0
   checksum: 8b9b9d27bd2417d6b5b7d408000b23316c3c4d2a2d0ea62080a8fbec5654cc7376ea9d6317b290c030d616142144a8ca0a96ffe1e919493e3eac17442d362596
+  languageName: node
+  linkType: hard
+
+"prettier@npm:2.7.1":
+  version: 2.7.1
+  resolution: "prettier@npm:2.7.1"
+  bin:
+    prettier: bin-prettier.js
+  checksum: 55a4409182260866ab31284d929b3cb961e5fdb91fe0d2e099dac92eaecec890f36e524b4c19e6ceae839c99c6d7195817579cdffc8e2c80da0cb794463a748b
   languageName: node
   linkType: hard
 
