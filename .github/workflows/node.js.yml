@@ -26,6 +26,7 @@ jobs:
             - run: yarn
             - name: check formatting
               run: yarn prettier --check .
+              continue-on-error: true
 
             - run: yarn build
               id: build
