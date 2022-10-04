@@ -9,11 +9,11 @@ import {
     Point,
     RayE,
 } from '../../src/astar';
-const s = 8;
+const s = 16;
 const nodes: Node[] = JSON.parse(
     localStorage.getItem('nodes') ||
         JSON.stringify(
-            randomNodes(64, 1).map((e) => {
+            randomNodes(s, 1).map((e) => {
                 return { ...e, edges: new Set<number>() };
             })
         )
@@ -22,7 +22,13 @@ const nodes: Node[] = JSON.parse(
     n.edges = new Set((n.edges as number[]).length > 0 ? n.edges : []);
     return n;
 });
+if (nodes.length != s) {
+    localStorage.removeItem("nodes");
+    location.reload()
+} else {
+
 localStorage.setItem('nodes', JSON.stringify(nodes));
+}
 
 const nw = Math.max.apply(
     null,
@@ -32,7 +38,7 @@ const nh = Math.max.apply(
     null,
     nodes.map((y) => y.y)
 );
-const walls = randomWalls(10, nw, 4);
+const walls = randomWalls(Math.floor(s/8), nw, 4);
 const wh: number[] = [];
 const ww: number[] = [];
 walls.forEach((element) => {

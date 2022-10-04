@@ -98,12 +98,12 @@ export function Raycast(
         xs.push(w.ex, w.sx);
         ys.push(w.ey, w.sy);
     });
-    if (_hook)
+    /*if (_hook)
         _hook([...nodes], [...walls], {
             type: HookDataType.Finished,
             info: 'finished',
             entries: [...entries],
-        });
+        });*/
 
     const minX = Math.min.apply(null, xs);
     const maxX = Math.max.apply(null, xs);
@@ -136,7 +136,7 @@ export function Raycast(
                     type: HookDataType.RayConstructed,
                     node: node,
                     edge: n,
-                    entries: [...entries],
+                    entries: structuredClone(entries),
                     ray: ray,
                     info: 'edges.forEach => ray constructed',
                 });
@@ -151,7 +151,7 @@ export function Raycast(
                     type: HookDataType.RayHits,
                     node: { ...node },
                     edge: { ...n },
-                    entries: [...entries],
+                    entries: structuredClone(entries),
                     hits: hits,
                     ray: ray,
                     info: 'edges.forEach => hits calculated',
@@ -168,8 +168,12 @@ export function Raycast(
                 Should also add to entries the ray between the last node and the new one
             */
             let lastNewNodeIndex = i;
-
-            for (const hit of hits) {
+            let hit: Entry | undefined;
+            do {
+                hit = hits.shift();
+                if (hit == undefined) {
+                    return;
+                }
                 // TODO: Implement some variation of this.
                 // TODO: Also add detection if multiple rays over each other, remove all of them except the shortest one
                 // const samePosHits = hits.filter((h) => h.ref == hit.ref);
@@ -184,8 +188,8 @@ export function Raycast(
                             type: HookDataType.HitNode,
                             node: { ...node },
                             edge: { ...n },
-                            entries: [...entries],
-                            hits: [...hits],
+                            entries: structuredClone(entries),
+                            hits: hits,
                             ray: ray,
                             hit: Object.assign({}, hit),
                             info: 'edges.forEach => we hit a node',
@@ -212,8 +216,8 @@ export function Raycast(
                             type: HookDataType.HitWall,
                             node: { ...node },
                             edge: { ...n },
-                            entries: [...entries],
-                            hits: [...hits],
+                            entries: structuredClone(entries),
+                            hits: hits,
                             ray: ray,
                             hit: Object.assign({}, hit),
                             distance: distance(hit, node),
@@ -250,8 +254,8 @@ export function Raycast(
                             type: HookDataType.HitRay,
                             node: { ...node },
                             edge: { ...n },
-                            entries: [...entries],
-                            hits: [...hits],
+                            entries: structuredClone(entries),
+                            hits: hits,
                             ray: ray,
                             hit: Object.assign({}, hit),
                             distance: distance(hit, node),
@@ -294,8 +298,8 @@ export function Raycast(
                             type: HookDataType.HitRayNewNode,
                             node: { ...node },
                             edge: { ...n },
-                            entries: [...entries],
-                            hits: [...hits],
+                            entries: structuredClone(entries),
+                            hits: hits,
                             newNode: nodes[temp_lastNewNodeIndex],
                             ray: ray,
                             info: 'edges.forEach => we hit a ray, new node created',
@@ -311,7 +315,7 @@ export function Raycast(
                     continue;
                 }
                 console.log('uh this shouldnt run');
-            }
+            } while (hit?.t == "ray")
         });
     });
 
@@ -319,7 +323,7 @@ export function Raycast(
         _hook([...nodes], [...walls], {
             type: HookDataType.Finished,
             info: 'finished',
-            entries: [...entries],
+            entries: structuredClone(entries),
         });
 
     return nodes;
