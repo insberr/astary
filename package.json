@@ -32,7 +32,7 @@
     "scripts": {
         "build": "parcel build",
         "dev": "parcel watch",
-        "test": "jest --coverage",
+        "test": "jest --coverage --verbose",
         "bench": "jest --projects jest-bench.config.json",
         "prepack": "pinst --disable && yarn build",
         "vis": "parcel serve visualize/index.html --target vis",

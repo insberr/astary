@@ -50,7 +50,7 @@ export type HookDataHitWall = HookBase & {
     hits: Entry[];
     hit: Entry;
     distance: number;
-    collisionPos: Point | boolean;
+    collisionPos: Point;
 };
 
 export type HookDataHitRay = HookBase & {
@@ -211,7 +211,9 @@ export function Raycast(
                     return;
                 } else if (hit.t === 'wall') {
                     const hitpos = LLI(hit.ref, ray.l);
-
+                    if (!hitpos) {
+                        throw new Error('We both hit a wall and didnt hit one. wtf');
+                    }
                     if (_hook)
                         _hook([...nodes], [...walls], {
                             type: HookDataType.HitWall,
