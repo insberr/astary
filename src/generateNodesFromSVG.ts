@@ -24,7 +24,7 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
 
 
     // Circles: Nodes
-    
+    if (typeof svgGElements === 'string' || svgGElements == undefined) console.log(svgElement, svgGElements)
     const svgGID_Nodes = (svgGElements as ElementNode).children.filter(c => {
         return (c as ElementNode).tagName === 'g' && (c as ElementNode)?.properties?.id === 'pathfindingNodes'
     })[0]
@@ -79,7 +79,7 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
 // Remember transparent areas are also considered walkable
 export function svgToPaths(svgAsString: string, filterFn: (svgElement: SVGNode) => Paths): Paths {
     const parsed = parse(svgAsString);
-
+    console.log(svgAsString, parsed)
     const svgElement = parsed.children.filter(c => {
         if ((c as ElementNode).tagName !== 'svg') {
             return false;
