@@ -89,6 +89,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
+dist
 
 # Gatsby files
 .cache/
@@ -125,15 +126,16 @@ out
 .yarn/cache
 .yarn/unplugged
 .yarn/build-state.yml
-.yarn
+.yarn/install-state.gz
+.pnp.*
+
 test/map.svg
 #test/graystylemap.png
 #out.png
 #testMap.png
 .DS_Store
 
-test/
-src/
-*.png
 benchmarks/
 visdist
+
+.yarn

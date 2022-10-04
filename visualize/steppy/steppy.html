@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link rel="stylesheet" href="steppy.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+            crossorigin="anonymous"
+        />
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+            crossorigin="anonymous"
+        ></script>
+    </head>
+    <body>
+        <h1 class="center">Steppy</h1>
+        <div class="center mt" style="border: 5px white">
+            <canvas id="canva" width="512" height="512"></canvas>
+        </div>
+        <div class="center controls mt">
+            <button id="first" class="btn btn-primary">
+                <i class="bi bi-skip-start"></i></button
+            >&nbsp;
+            <button id="prev" class="btn btn-primary">
+                <i class="bi bi-rewind"></i></button
+            >&nbsp;
+            <input
+                id="num"
+                type="number"
+                class="form-control"
+                style="width: 5rem"
+                value="0"
+            />&nbsp;
+            <button id="next" class="btn btn-primary">
+                <i class="bi bi-fast-forward"></i></button
+            >&nbsp;
+            <button id="last" class="btn btn-primary">
+                <i class="bi bi-skip-end"></i>
+            </button>
+        </div>
+        <div class="center controls mt">
+            <input type="checkbox" id="displ" />&nbsp;<label for="displ">Autoplay</label>
+        </div>
+        <div class="center info mt" id="info">Loading...</div>
+        <div class="center mt" id="cstepInfo"></div>
+        <div class="center mt"><pre id="cstep"></pre></div>
+        <script src="steppy.ts" type="module"></script>
+    </body>
+</html>

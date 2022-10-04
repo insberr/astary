@@ -1,0 +1,16 @@
+{
+    "plugins": [
+        {
+            "name": "preset-default",
+            "params": {
+                "overrides": {
+                    "removeHiddenElems": false,
+                    "removeUselessStrokeAndFill": false,
+                    "cleanupIDs": false,
+                    "removeMetadata": false,
+                    "convertShapeToPath": false
+                }
+            }
+        }
+    ]
+}

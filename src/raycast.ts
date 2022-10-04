@@ -1,112 +1,326 @@
-import type { Node } from "./astar"
+import type { Node } from './astar';
+import { Line, Entry, Point, RayE, NodeE, WallE, fastDist } from './col';
+import {
+    constructNodeEntry,
+    constructWallEntry,
+    constructRayEntry,
+    collide,
+    distance,
+    shrinkRay,
+    LLI,
+} from './col';
 
-
-enum GID {
-    EMPTY,
-    NODE,
-    PATH,
-    WALL
+export enum HookDataType {
+    RayConstructed,
+    RayHits,
+    HitNode,
+    HitWall,
+    HitRay,
+    HitRayNewNode,
+    Finished,
 }
-type GridNode = {
-    id: GID,
-    ref?: any;
-}
 
-export type Wall = {
-    x: number,
-    y: number
-    
-}
+export type HookBase = {
+    type: HookDataType;
+    node: Node;
+    edge: Point;
+    entries: Entry[];
+    ray: RayE;
+    info: string;
+};
 
-export function Raycast(inp: Node[], walls?: Wall[]): Node[] {
-    if (walls === undefined) {
-        walls = [];
-    }
-    inp.forEach((node, i) => {
-        //console.log(node.x,node.y)
-        if (node.x != Math.floor(node.x) || node.y != Math.floor(node.y)) {
-            console.warn("Decimal values are not supported in raycast and will be ignored")
-        }
-        inp[i].ox = node.x;
-        inp[i].oy = node.y;
-        inp[i].x = Math.floor(node.x);
-        inp[i].y = Math.floor(node.y);
-    })
-    const sw = Math.abs(Math.min(...[...inp,...walls].map((r) => r.x)))
-    const w = Math.max(...[...inp,...walls].map((r) => r.x)) + 1 + sw
-    const sh = Math.abs(Math.min(...[...inp,...walls].map((r) => r.y)))
-    const h = Math.max(...[...inp,...walls].map((r) => r.y))+1+sh
-    //console.log(w,h,sw,sh)
-    //console.log(w,h)
-    const matrix: GridNode[][] = Array.from({length: h}, () => Array.from({length:w},() => {return {id:GID.EMPTY}} ))
-    walls.forEach(element => {
-        matrix[element.y+sh][element.x+sw] = {id:GID.WALL}
+export type HookDataRayConstructed = HookBase & {
+    type: HookDataType.RayConstructed;
+};
+
+export type HookDataRayHits = HookBase & {
+    type: HookDataType.RayHits;
+    hits: Entry[];
+};
+
+export type HookDataHitNode = HookBase & {
+    type: HookDataType.HitNode;
+    hits: Entry[];
+    hit: Entry;
+};
+
+export type HookDataHitWall = HookBase & {
+    type: HookDataType.HitWall;
+    hits: Entry[];
+    hit: Entry;
+    distance: number;
+    collisionPos: Point | boolean;
+};
+
+export type HookDataHitRay = HookBase & {
+    type: HookDataType.HitRay;
+    hits: Entry[];
+    hit: Entry;
+    distance: number;
+    collisionPos: Point;
+};
+
+export type HookDataHitRayNewNode = HookBase & {
+    type: HookDataType.HitRayNewNode;
+    newNode: Node;
+    hits: Entry[];
+    hit: Entry;
+    distance: number;
+    collisionPos: Point;
+};
+
+export type HookDataFinished = {
+    type: HookDataType.Finished;
+    info: string;
+    entries: Entry[];
+};
+
+export type HookData =
+    | HookDataRayConstructed
+    | HookDataRayHits
+    | HookDataHitNode
+    | HookDataHitWall
+    | HookDataHitRay
+    | HookDataHitRayNewNode
+    | HookDataFinished;
+
+export function Raycast(
+    nodes: Node[],
+    walls: Line[],
+    _hook: (nodes: Node[], walls: Line[], data: HookData) => void = (_, __, ___) => {}
+) {
+    /* Setup */
+    const entries: Entry[] = [];
+    const xs = nodes.map((n) => n.x);
+    const ys = nodes.map((n) => n.y);
+
+    walls.forEach((w) => {
+        xs.push(w.ex, w.sx);
+        ys.push(w.ey, w.sy);
     });
-    inp.forEach((node, i) => {
-        //console.log(node.x,node.y)
-        matrix[node.y+sh][node.x+sw] = {id: GID.NODE, ref: i}
-    })
-    
-    const directions = [
-        [0,1], //down
-        [0,-1],//up
-        [1,0],//right
-        [-1,0]//left
-    ]
-    inp.forEach((node, i) => {
-        if (node.raycast === true) return;
-        directions.forEach((dir) => {
-            const tracker = {...node, x: node.x+sw, y: node.y+sh }
-            //console.log(dir)
-            outer: while (true) {
-                tracker.x += dir[0]
-                tracker.y += dir[1]
-                if (tracker.x < 0 || tracker.x >= w || tracker.y < 0 || tracker.y >= h) {
-                    //console.log(tracker.x, tracker.y, "left graph")
-                    break;
-                }
-                const d = matrix[tracker.y][tracker.x]
-                if (d == undefined) {
-                    console.warn("matrix was undefined, this should probably not happen")
-                    break;
-                }
-                switch (d.id) {
-                    case GID.EMPTY:
-                        matrix[tracker.y][tracker.x] = { id: GID.PATH, ref: i }
-                        break;
-                    case GID.NODE:
-                        //console.log(i,"form connection to node",d.ref)
-                        if (inp[i].edges.includes(d.ref)) {
-                            break outer;
-                        }
-                        inp[d.ref].edges.push(i)
-                        inp[i].edges.push(d.ref)
-                        break outer;
-                    case GID.PATH:
-                        if (inp[i].edges.includes(d.ref)) {
-                            //console.log("link already formed: ",i,"&",d.ref)
-                            break outer;
-                        }
-                        //console.log("create node at ",tracker.x,tracker.y, " and connect it with ",i,"&",d.ref)
+    if (_hook)
+        _hook([...nodes], [...walls], {
+            type: HookDataType.Finished,
+            info: 'finished',
+            entries: [...entries],
+        });
 
-                        const thisNode = inp[i]
-                        const collideNode = inp[d.ref]
-                        const dx = ((thisNode?.dx || 0) > 0) ? (thisNode?.dx || 0) : (collideNode?.dx || 0);
-                        const dy = ((thisNode?.dy || 0) > 0) ? (thisNode?.dy || 0) : (collideNode?.dy || 0);
+    const minX = Math.min.apply(null, xs);
+    const maxX = Math.max.apply(null, xs);
+    const minY = Math.min.apply(null, ys);
+    const maxY = Math.max.apply(null, ys);
 
-                        const ne = inp.push({x:(tracker.x-sw)+dx, y:(tracker.y-sh)+dy, raycast:true, edges: [i,d.ref]})-1
-                        inp[i].edges.push(ne)
-                        inp[d.ref].edges.push(ne)
-                        break outer;
-                    case GID.WALL:
-                        break outer;
+    /* Construct entries */
+    nodes.forEach((_node, i) => entries.push(constructNodeEntry(i, nodes)));
+    walls.forEach((wall, _i) => entries.push(constructWallEntry(wall)));
+
+    /* Raycast Time */
+    nodes.forEach((node, i) => {
+        if (node.raycast) return; // moves on to the next node if this one was created by the raycast
+
+        // Edges of the map
+        const edges: Point[] = [
+            { x: node.x, y: minY },
+            { x: node.x, y: maxY },
+            { x: minX, y: node.y },
+            { x: maxX, y: node.y },
+        ];
+
+        edges.forEach((n) => {
+            const ray = constructRayEntry(i, nodes, n);
+
+            if (ray.l.sx == ray.l.ex && ray.l.sy == ray.l.ey) return;
+
+            if (_hook)
+                _hook([...nodes], [...walls], {
+                    type: HookDataType.RayConstructed,
+                    node: node,
+                    edge: n,
+                    entries: [...entries],
+                    ray: ray,
+                    info: 'edges.forEach => ray constructed',
+                });
+
+            // begin absolute chonker of a line
+            const hits = entries
+                .filter((e) => e.ref != i && collide(ray, e))
+                .sort((a, b) => distance(a, node) - distance(b, node));
+
+            if (_hook)
+                _hook([...nodes], [...walls], {
+                    type: HookDataType.RayHits,
+                    node: { ...node },
+                    edge: { ...n },
+                    entries: [...entries],
+                    hits: hits,
+                    ray: ray,
+                    info: 'edges.forEach => hits calculated',
+                });
+
+            // end absolute chonker of a line
+            if (hits.length == 0) {
+                entries.push(ray); // we dont hit anything
+                return;
             }
-        }
-        })
-    })
-    //console.log(inp)
-    //console.log(matrix)
-    return inp.map((node) => {
-        return {...node, x: node.ox || node.x, y: node.oy || node.y}
-    })
+
+            /*
+                TODO: Implement this so that newly created nodes on the same ray connect to the last created node
+                Should also add to entries the ray between the last node and the new one
+            */
+            let lastNewNodeIndex = i;
+
+            for (const hit of hits) {
+                // TODO: Implement some variation of this.
+                // TODO: Also add detection if multiple rays over each other, remove all of them except the shortest one
+                // const samePosHits = hits.filter((h) => h.ref == hit.ref);
+                // if (samePosHits.length > 1) console.log(hit, samePosHits);
+
+                // we HIT SOMETHING!!
+                if (hit.t === 'node') {
+                    // console.log(hit.ref === lastNewNodeIndex, hit.ref === i)
+                    // idk you finish adding hooks
+                    if (_hook)
+                        _hook([...nodes], [...walls], {
+                            type: HookDataType.HitNode,
+                            node: { ...node },
+                            edge: { ...n },
+                            entries: [...entries],
+                            hits: [...hits],
+                            ray: ray,
+                            hit: Object.assign({}, hit),
+                            info: 'edges.forEach => we hit a node',
+                        });
+
+                    // we hit a node
+                    const hid = hit.ref;
+                    /* shant need this if we are using Sets
+                    if (nodes[lastNewNodeIndex].edges.includes(hid)) {
+                        return;
+                    }
+                    */
+                    nodes[hid].edges.add(lastNewNodeIndex);
+                    nodes[lastNewNodeIndex].edges.add(hid);
+                    if (isNaN(hit.c.x)) console.log(hit.c);
+                    entries.push(shrinkRay(constructRayEntry(i, nodes, hit.c), 0.001));
+                    //console.log(hit.c, entries[h-1].l)
+                    return;
+                } else if (hit.t === 'wall') {
+                    const hitpos = LLI(hit.ref, ray.l);
+
+                    if (_hook)
+                        _hook([...nodes], [...walls], {
+                            type: HookDataType.HitWall,
+                            node: { ...node },
+                            edge: { ...n },
+                            entries: [...entries],
+                            hits: [...hits],
+                            ray: ray,
+                            hit: Object.assign({}, hit),
+                            distance: distance(hit, node),
+                            collisionPos: hitpos,
+                            info: 'edges.forEach => we hit a wall',
+                        });
+                    if (!hitpos) {
+                        throw new Error('This shouldnt be possible and is a bug');
+                    }
+                    if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
+
+                    entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
+
+                    // we hit a wall
+                    return;
+                    // break;
+                } else if (hit.t === 'ray') {
+                    // we hit a ray
+                    if (ray.ref == hit.ref) {
+                        continue;
+                    }
+                    // ray collision pos
+                    const rayCollidePos = LLI(hit.l, ray.l);
+
+                    //console.log(hit, ray.l, LLI(hit.l, ray.l))
+                    //console.log(rayCollidePos)
+                    if (!rayCollidePos) {
+                        throw new Error('This shouldnt be possible and is a bug');
+                    }
+                    // console.log(rayCollidePos)
+
+                    if (_hook)
+                        _hook([...nodes], [...walls], {
+                            type: HookDataType.HitRay,
+                            node: { ...node },
+                            edge: { ...n },
+                            entries: [...entries],
+                            hits: [...hits],
+                            ray: ray,
+                            hit: Object.assign({}, hit),
+                            distance: distance(hit, node),
+                            collisionPos: rayCollidePos,
+                            info: 'edges.forEach => we hit a ray',
+                        });
+
+                    // create new entry for such line
+
+                    if (isNaN(rayCollidePos.x) || isNaN(rayCollidePos.y)) {
+                        console.log(lastNewNodeIndex, hit, ray.l);
+                    }
+
+                    entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
+
+                    // create a node at the collision, with entries for the nodes it connects to
+                    // IDFK
+                    let temp_lastNewNodeIndex = lastNewNodeIndex;
+                    const existingNodes = nodes.filter(
+                        (n) => n.x == rayCollidePos.x && n.y == rayCollidePos.y
+                    );
+                    if (existingNodes.length === 0) {
+                        temp_lastNewNodeIndex =
+                            nodes.push({
+                                x: rayCollidePos.x,
+                                y: rayCollidePos.y,
+                                raycast: true,
+                                // TODO: figure out which edges need to be added
+                                edges: new Set<number>([lastNewNodeIndex, ray.ref, hit.ref]),
+                            }) - 1;
+
+                        entries.push(constructNodeEntry(temp_lastNewNodeIndex, nodes));
+                        // TODO: figure out which edges need to be added
+                        nodes[ray.ref].edges.add(temp_lastNewNodeIndex);
+                        nodes[hit.ref].edges.add(temp_lastNewNodeIndex);
+                    }
+
+                    if (_hook)
+                        _hook([...nodes], [...walls], {
+                            type: HookDataType.HitRayNewNode,
+                            node: { ...node },
+                            edge: { ...n },
+                            entries: [...entries],
+                            hits: [...hits],
+                            newNode: nodes[temp_lastNewNodeIndex],
+                            ray: ray,
+                            info: 'edges.forEach => we hit a ray, new node created',
+                            hit: Object.assign({}, hit),
+                            distance: distance(hit, node),
+                            collisionPos: rayCollidePos,
+                        });
+
+                    // TODO: figure out which edges need to be added
+                    nodes[lastNewNodeIndex].edges.add(temp_lastNewNodeIndex);
+
+                    lastNewNodeIndex = temp_lastNewNodeIndex;
+                    continue;
+                }
+                console.log('uh this shouldnt run');
+            }
+        });
+    });
+
+    if (_hook)
+        _hook([...nodes], [...walls], {
+            type: HookDataType.Finished,
+            info: 'finished',
+            entries: [...entries],
+        });
+
+    return nodes;
 }

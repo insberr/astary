@@ -1,0 +1,19 @@
+@import '../style.css';
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.controls {
+}
+
+.mt {
+    margin-top: 1em;
+}
+
+#cstep {
+    background-color: #161616;
+    width: fit-content;
+    padding: 1em;
+    border-radius: 10px;
+}
