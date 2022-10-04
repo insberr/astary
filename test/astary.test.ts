@@ -3,10 +3,10 @@ beforeEach(() => {
     testContext = {};
 });
 
-require("source-map-support").install();
-import * as astar from "../src/astar";
-import * as fs from "fs";
-import { defaultFilterFunction } from "../src/generateNodesFromSVG";
+require('source-map-support').install();
+import * as astar from '../src/astar';
+import * as fs from 'fs';
+import { defaultFilterFunction } from '../src/generateNodesFromSVG';
 
 afterEach(() => {
     // restore the spy created with spyOn
@@ -26,7 +26,7 @@ bench.on("error", () => {
     console.error("ruh roh!");
 })*/
 
-const onek = JSON.parse(fs.readFileSync(__dirname + "/1k.json").toString());
+const onek = JSON.parse(fs.readFileSync(__dirname + '/1k.json').toString());
 // uncommented
 /*bench.on('complete', function() {
     console.log(this);
@@ -39,8 +39,8 @@ let isBenchmark = false;
 afterAll(
     () => { isBenchmark = true; console.log("benchmarking"); return bench.run({async: true}) }
 )*/
-describe("AStar", () => {
-    it("straight line", () => {
+describe('AStar', () => {
+    it('straight line', () => {
         const res = astar.AStar(0, 5, [
             { x: 0, y: 0, edges: new Set([1]) },
             { x: 1, y: 0, edges: new Set([0, 2]) },
@@ -52,7 +52,7 @@ describe("AStar", () => {
         //if (!isBenchmark) console.log(res)
         expect(res).toEqual([0, 1, 2, 3, 4, 5]);
     });
-    it("tgraph with weight", () => {
+    it('tgraph with weight', () => {
         const res = astar.AStar(0, 5, [
             { x: 0, y: 0, edges: new Set([1, 2]) },
             { x: 2, y: 2, edges: new Set([3, 4]) },
@@ -64,7 +64,7 @@ describe("AStar", () => {
         //if (!isBenchmark) console.log(res)
         expect(res).not.toContain(4); // cannot contain a 4
     });
-    it("should error without path", () => {
+    it('should error without path', () => {
         expect(() => {
             astar.AStar(0, 1, [
                 { x: 0, y: 0, edges: new Set() },
@@ -74,23 +74,23 @@ describe("AStar", () => {
     });
 });
 
-describe("stress test", () => {
-    it("1k", () => {
+describe('stress test', () => {
+    it('1k', () => {
         astar.AStar(0, 999, onek);
     });
 });
 
-describe("random", () => {
-    it("should generate a random nodes (100 nodes, 10+ connections)", () => {
+describe('random', () => {
+    it('should generate a random nodes (100 nodes, 10+ connections)', () => {
         const d = astar.randomNodes(100, 10);
         expect(d).toHaveLength(100);
     });
-    it("random graph pathable (100 nodes, 10+ connections)", () => {
+    it('random graph pathable (100 nodes, 10+ connections)', () => {
         const d = astar.randomNodes(100, 10);
         astar.AStar(0, 99, d);
     });
-    describe("random walls", () => {
-        it("should generate 100 walls", () => {
+    describe('random walls', () => {
+        it('should generate 100 walls', () => {
             const d = astar.randomWalls(100, 1, 5);
             expect(d).toHaveLength(100);
         });
@@ -98,18 +98,18 @@ describe("random", () => {
     });
 });
 
-const svg = fs.readFileSync(__dirname + "/BHS_Building_Map_SVG.svg", "utf8");
+const svg = fs.readFileSync(__dirname + '/BHS_Building_Map_SVG.svg', 'utf8');
 
-describe("generate nodes from svg", () => {
-    it("should make nodes from node points on image", () => {
+describe('generate nodes from svg', () => {
+    it('should make nodes from node points on image', () => {
         const paths = astar.svgToPaths(svg, defaultFilterFunction);
         const nodes = astar.generateNodes(paths);
         //console.log(nodes);
     });
 });
 
-describe("generate nodes from svg then raycast", () => {
-    it("should make nodes from node points on image, then raycast", () => {
+describe('generate nodes from svg then raycast', () => {
+    it('should make nodes from node points on image, then raycast', () => {
         const paths = astar.svgToPaths(svg, defaultFilterFunction);
         const nodes = astar.generateNodes(paths);
         //console.log(nodes);
@@ -123,8 +123,8 @@ describe("generate nodes from svg then raycast", () => {
     });
 });
 
-describe("generate nodes from svg then raycast with walls", () => {
-    it("should make nodes from node points on image, then raycast with walls so yeah", () => {
+describe('generate nodes from svg then raycast with walls', () => {
+    it('should make nodes from node points on image, then raycast with walls so yeah', () => {
         const paths = astar.svgToPaths(svg, defaultFilterFunction);
         const nodes = astar.generateNodes(paths);
         const walls = astar.generateWalls(paths);
@@ -136,8 +136,8 @@ describe("generate nodes from svg then raycast with walls", () => {
     });
 });
 
-describe("raycast", () => {
-    it("should connect nodes in line.", () => {
+describe('raycast', () => {
+    it('should connect nodes in line.', () => {
         const con = astar.Raycast(
             [
                 { x: 0, y: 0, edges: new Set() },
@@ -149,7 +149,7 @@ describe("raycast", () => {
         expect(con[0].edges.size).toEqual(1);
         expect(con[1].edges.size).toEqual(1);
     });
-    it("should connect 2 nodes with a 3rd", () => {
+    it('should connect 2 nodes with a 3rd', () => {
         const con = astar.Raycast(
             [
                 { x: 0, y: 0, edges: new Set() },
@@ -160,7 +160,7 @@ describe("raycast", () => {
         //console.log(con)
         astar.AStar(0, 1, con);
     });
-    it("raycast negative test", () => {
+    it('raycast negative test', () => {
         const con = astar.Raycast(
             [
                 { x: 0, y: 0, edges: new Set() },
@@ -172,7 +172,7 @@ describe("raycast", () => {
         );
     });
 
-    it("should decimal", () => {
+    it('should decimal', () => {
         const con = astar.Raycast(
             [
                 { x: 0, y: 0, edges: new Set() },
@@ -187,8 +187,8 @@ describe("raycast", () => {
         astar.AStar(0, 3, con);
     });
 
-    describe("walls", () => {
-        it("shouldnt connect through walls", () => {
+    describe('walls', () => {
+        it('shouldnt connect through walls', () => {
             const con = astar.Raycast(
                 [
                     { x: 0, y: 0, edges: new Set() },
@@ -204,7 +204,7 @@ describe("raycast", () => {
             expect(() => astar.AStar(0, 1, con)).toThrowError();
             expect(() => astar.AStar(0, 2, con)).toThrowError();
         });
-        it("should handle walls in the middle of nowhere", () => {
+        it('should handle walls in the middle of nowhere', () => {
             const con = astar.Raycast(
                 [
                     { x: 0, y: 0, edges: new Set() },
@@ -223,7 +223,7 @@ describe("raycast", () => {
             expect([...con[0].edges]).toStrictEqual([1]);
             expect([...con[1].edges]).toStrictEqual([0]);
         });
-        it("wall", () => {
+        it('wall', () => {
             const con = astar.Raycast(
                 [
                     { x: 0, y: 0, edges: new Set() },
@@ -237,7 +237,7 @@ describe("raycast", () => {
             expect(con[0].edges).toContainEqual(1);
             astar.AStar(0, 3, con);
         });
-        it("should navigate around", () => {
+        it('should navigate around', () => {
             const con = astar.Raycast(
                 [
                     { x: 0, y: 0, edges: new Set() },
@@ -252,7 +252,7 @@ describe("raycast", () => {
             ).toHaveLength(2);
             expect(path).toStrictEqual([0, 3, 1, 4, 2]);
         });
-        it("should box in the node", () => {
+        it('should box in the node', () => {
             const con = astar.Raycast(
                 [
                     { x: 10, y: 10, edges: new Set() },
@@ -270,7 +270,7 @@ describe("raycast", () => {
             );
             expect(con[0].edges.size).toEqual(0);
         });
-        it("should respect already existing edges", () => {
+        it('should respect already existing edges', () => {
             const con = astar.Raycast(
                 [
                     { x: 10, y: 10, edges: new Set([1]) },

@@ -9,29 +9,29 @@ import {
     Point,
     RayE,
     HookData,
-} from "../src/astar";
+} from '../src/astar';
 //import { createGzip } from "zlib";
 const params = new URLSearchParams(window.location.search);
 function intParam(name: string, defaul: number | number[]): number | number[] {
     const o = params.get(name);
     if (o == null) {
         return defaul;
-    } else if (name === "cstl") {
-        return o.split(",").map((x) => parseInt(x));
+    } else if (name === 'cstl') {
+        return o.split(',').map((x) => parseInt(x));
     } else {
         return parseInt(o);
     }
 }
 
-const amt = intParam("amt", 128) as number;
-const count = intParam("count", 5000) as number;
-const w = intParam("w", 800) as number;
-const h = intParam("h", 800) as number;
+const amt = intParam('amt', 128) as number;
+const count = intParam('count', 5000) as number;
+const w = intParam('w', 800) as number;
+const h = intParam('h', 800) as number;
 
-const nodeConnectionStyle = intParam("cstl", [1, 2, 3]) as number[];
+const nodeConnectionStyle = intParam('cstl', [1, 2, 3]) as number[];
 const conAmt = 1;
 const padding = 0;
-const ele = document.getElementById("mes");
+const ele = document.getElementById('mes');
 const timeNodes: number[] = [];
 const rayTimes: number[] = [];
 let failedRuns = 0;
@@ -41,37 +41,37 @@ const average = (array: number[]) =>
 const extraNodes: number[] = [];
 const pathLengths: number[] = [];
 function createMes() {
-    let msg = amt + " nodes; ";
-    msg += "randomNodes: " + average(timeNodes).toFixed(5) + "ms; ";
-    msg += "raycast: " + average(rayTimes).toFixed(5) + "ms; ";
-    msg += "pathfind: " + average(timePathfind).toFixed(5) + "ms; ";
-    msg += "extra nodes: " + average(extraNodes).toFixed(5) + "; ";
-    msg += "averagePathLength: " + average(pathLengths).toFixed(5) + "; ";
+    let msg = amt + ' nodes; ';
+    msg += 'randomNodes: ' + average(timeNodes).toFixed(5) + 'ms; ';
+    msg += 'raycast: ' + average(rayTimes).toFixed(5) + 'ms; ';
+    msg += 'pathfind: ' + average(timePathfind).toFixed(5) + 'ms; ';
+    msg += 'extra nodes: ' + average(extraNodes).toFixed(5) + '; ';
+    msg += 'averagePathLength: ' + average(pathLengths).toFixed(5) + '; ';
     msg +=
-        "runs: " +
+        'runs: ' +
         Math.floor(average([timeNodes.length, timePathfind.length])) +
-        "/" +
+        '/' +
         count +
-        " f:" +
+        ' f:' +
         failedRuns +
-        ";";
+        ';';
     return msg;
 }
 
-const canva = document.getElementsByTagName("canvas")[0];
+const canva = document.getElementsByTagName('canvas')[0];
 if (!canva) {
-    throw new Error("of");
+    throw new Error('of');
 }
 
-canva.id = "cring";
+canva.id = 'cring';
 canva.width = w;
 canva.height = h;
 //alert("canvas created")
 
-const dt = document.getElementById("data");
+const dt = document.getElementById('data');
 let datas: any[] = [];
 
-const ctx = canva.getContext("2d");
+const ctx = canva.getContext('2d');
 
 // console.log(w/amt, h/amt)
 const scale: (x: number, y: number) => [number, number] = (x, y) => {
@@ -79,8 +79,8 @@ const scale: (x: number, y: number) => [number, number] = (x, y) => {
 };
 async function doOP() {
     if (!ctx) {
-        alert("unable to establish canvas context!");
-        throw new Error("Cnva");
+        alert('unable to establish canvas context!');
+        throw new Error('Cnva');
     }
     ctx.scale(1, 1); // maybe scale so we dont have to use a scale function?
     //alert("canvas context")
@@ -113,20 +113,20 @@ async function doOP() {
     ctx.clearRect(0, 0, canva.width, canva.height);
     walls.forEach((wall) => {
         ctx.lineWidth = 2;
-        ctx.strokeStyle = "yellow";
+        ctx.strokeStyle = 'yellow';
         ctx.beginPath();
         ctx.moveTo(...scale(wall.sx, wall.sy));
         ctx.lineTo(...scale(wall.ex, wall.ey));
         ctx.stroke();
     });
     //alert("nodesDone")
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = 'red';
     ctx.lineWidth = 1;
     //alert(nodes.length)
     nodes.forEach((node, i) => {
         //if (node.raycast) return;
         ctx.moveTo(...scale(node.x, node.y));
-        ctx.strokeStyle = "red";
+        ctx.strokeStyle = 'red';
         node.edges.forEach((edge) => {
             //if (!nodes[edge].raycast) return;
             ctx.beginPath();
@@ -138,11 +138,11 @@ async function doOP() {
     nodes.forEach((node, i) => {
         const [nx, ny] = scale(node.x, node.y);
         if (i >= amt) {
-            ctx.strokeStyle = "blue";
-            ctx.fillStyle = "blue";
+            ctx.strokeStyle = 'blue';
+            ctx.fillStyle = 'blue';
         } else {
-            ctx.strokeStyle = node.raycast ? "red" : "green";
-            ctx.fillStyle = node.raycast ? "red" : "green";
+            ctx.strokeStyle = node.raycast ? 'red' : 'green';
+            ctx.fillStyle = node.raycast ? 'red' : 'green';
         }
         ctx.beginPath();
         ctx.arc(nx, ny, 4, 0, 2 * Math.PI);
@@ -161,8 +161,8 @@ async function doOP() {
         extraNodes.push(nodes.length - amt);
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
-        ctx.strokeStyle = "lightblue";
-        ctx.fillStyle = "lightblue";
+        ctx.strokeStyle = 'lightblue';
+        ctx.fillStyle = 'lightblue';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(scale(f.x, f.y)[0], scale(f.x, f.y)[1], 5, 0, Math.PI * 2);
@@ -194,23 +194,23 @@ async function doOP() {
 }
 
 function settings() {
-    const s = document.getElementById("settings");
+    const s = document.getElementById('settings');
     if (!s) {
         return;
     }
-    s.innerHTML = "Settings: <br />";
-    s.innerHTML += "slow: " + speed + ";<br />";
-    s.innerHTML += "w: " + w + ";<br />";
-    s.innerHTML += "h: " + h + ";<br />";
-    s.innerHTML += "amt: " + amt + ";<br />";
-    s.innerHTML += "<br />colors:<br />";
-    s.innerHTML += "green: random node;<br />";
-    s.innerHTML += "blue: node added by raycast;<br />";
-    s.innerHTML += "red line: node edge;<br />";
-    s.innerHTML += "light blue line: pathfound path;<br />";
-    s.innerHTML += "light blue: start/end;<br />";
+    s.innerHTML = 'Settings: <br />';
+    s.innerHTML += 'slow: ' + speed + ';<br />';
+    s.innerHTML += 'w: ' + w + ';<br />';
+    s.innerHTML += 'h: ' + h + ';<br />';
+    s.innerHTML += 'amt: ' + amt + ';<br />';
+    s.innerHTML += '<br />colors:<br />';
+    s.innerHTML += 'green: random node;<br />';
+    s.innerHTML += 'blue: node added by raycast;<br />';
+    s.innerHTML += 'red line: node edge;<br />';
+    s.innerHTML += 'light blue line: pathfound path;<br />';
+    s.innerHTML += 'light blue: start/end;<br />';
 }
-const speed = params.get("slow") != null;
+const speed = params.get('slow') != null;
 
 async function drawDatas(
     datas: {
@@ -229,7 +229,7 @@ async function drawDatas(
     for (const step of datas) {
         if (step.ray) {
             ctx.beginPath();
-            ctx.strokeStyle = "purple";
+            ctx.strokeStyle = 'purple';
             ctx.lineWidth = 1;
             ctx.globalAlpha = 0.5;
             ctx.moveTo(...scale(step.ray.l.sx, step.ray.l.sy));
@@ -263,10 +263,10 @@ async function dof() {
 async function main() {
     settings();
     if (speed) {
-        const butt = document.createElement("button");
-        butt.className = "btn btn-primary";
-        butt.addEventListener("click", dof);
-        butt.innerText = "next";
+        const butt = document.createElement('button');
+        butt.className = 'btn btn-primary';
+        butt.addEventListener('click', dof);
+        butt.innerText = 'next';
         document.body.appendChild(butt);
         dof();
     }

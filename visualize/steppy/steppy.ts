@@ -8,10 +8,10 @@ import {
     Line,
     Point,
     RayE,
-} from "../../src/astar";
+} from '../../src/astar';
 const s = 32;
 const nodes: Node[] = JSON.parse(
-    localStorage.getItem("nodes") ||
+    localStorage.getItem('nodes') ||
         JSON.stringify(
             randomNodes(64, 1).map((e) => {
                 return { ...e, edges: new Set<number>() };
@@ -22,7 +22,7 @@ const nodes: Node[] = JSON.parse(
     n.edges = new Set((n.edges as number[]).length > 0 ? n.edges : []);
     return n;
 });
-localStorage.setItem("nodes", JSON.stringify(nodes));
+localStorage.setItem('nodes', JSON.stringify(nodes));
 
 const nw = Math.max.apply(
     null,
@@ -46,13 +46,13 @@ const steps: HookData[] = [];
 let currentStep = 0;
 let autoplay = false;
 let autoplayTimer: NodeJS.Timeout;
-const canvas = document.getElementById("canva") as HTMLCanvasElement;
-const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const canvas = document.getElementById('canva') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-(document.getElementById("displ") as HTMLInputElement).addEventListener(
-    "change",
+(document.getElementById('displ') as HTMLInputElement).addEventListener(
+    'change',
     () => {
-        autoplay = (document.getElementById("displ") as HTMLInputElement)
+        autoplay = (document.getElementById('displ') as HTMLInputElement)
             .checked;
         if (autoplay) {
             autoplayTimer = setInterval(() => {
@@ -70,33 +70,33 @@ function clamp() {
     upd();
 }
 function upd() {
-    const f = document.getElementById("num") as HTMLInputElement;
+    const f = document.getElementById('num') as HTMLInputElement;
     f.value = currentStep
         .toString()
-        .padStart((steps.length - 1).toString().length, "0");
+        .padStart((steps.length - 1).toString().length, '0');
     draw();
 }
-document.getElementById("next")?.addEventListener("click", () => {
+document.getElementById('next')?.addEventListener('click', () => {
     currentStep += 1;
     clamp();
 });
-document.getElementById("prev")?.addEventListener("click", () => {
+document.getElementById('prev')?.addEventListener('click', () => {
     currentStep -= 1;
     clamp();
 });
-document.getElementById("num")?.addEventListener("blur", () => {
-    const e = document.getElementById("num") as HTMLInputElement;
+document.getElementById('num')?.addEventListener('blur', () => {
+    const e = document.getElementById('num') as HTMLInputElement;
     currentStep = parseInt(e.value);
     if (isNaN(currentStep)) {
         currentStep = 0;
     }
     clamp();
 });
-document.getElementById("first")?.addEventListener("click", () => {
+document.getElementById('first')?.addEventListener('click', () => {
     currentStep = 0;
     clamp();
 });
-document.getElementById("last")?.addEventListener("click", () => {
+document.getElementById('last')?.addEventListener('click', () => {
     currentStep = steps.length - 1;
     clamp();
 });
@@ -105,17 +105,17 @@ const casted = Raycast(nodes, walls, (n, w, d) => {
     steps.push(d);
 });
 
-const dt = document.getElementById("info");
+const dt = document.getElementById('info');
 if (dt) {
     dt.innerText =
         s +
-        " nodes; " +
+        ' nodes; ' +
         casted.length +
-        " after cast; " +
+        ' after cast; ' +
         steps.length +
-        " steps (0-" +
+        ' steps (0-' +
         (steps.length - 1) +
-        ");";
+        ');';
 }
 
 function drawLine(l: Line, style: string, strokeWidth: number = 1) {
@@ -142,83 +142,83 @@ function drawStep(st: HookData) {
     switch (st.type) {
         case HookDataType.RayConstructed:
             console.clear();
-            drawLine(st.ray.l, "lightblue");
-            drawDot(nodes[st.ray.ref], 3, "lightblue");
+            drawLine(st.ray.l, 'lightblue');
+            drawDot(nodes[st.ray.ref], 3, 'lightblue');
             break;
         case HookDataType.RayHits:
             console.log(st.hits);
-            drawLine(st.ray.l, "blue");
-            drawDot(nodes[st.ray.ref], 3, "blue");
+            drawLine(st.ray.l, 'blue');
+            drawDot(nodes[st.ray.ref], 3, 'blue');
             st.hits.forEach((h) => {
                 if (h.ref == st.ray.ref) {
                     return;
                 }
                 switch (h.t) {
-                    case "node":
-                        drawDot(h.c, 3, "blue");
+                    case 'node':
+                        drawDot(h.c, 3, 'blue');
                         break;
-                    case "wall":
-                        drawLine(h.ref, "blue");
+                    case 'wall':
+                        drawLine(h.ref, 'blue');
                         break;
-                    case "ray":
-                        drawLine(h.l, "blue");
+                    case 'ray':
+                        drawLine(h.l, 'blue');
                         break;
                 }
             });
             break;
         case HookDataType.HitNode:
-            drawDot(nodes[st.hit.ref as number], 3, "green");
-            drawLine(st.ray.l, "green");
+            drawDot(nodes[st.hit.ref as number], 3, 'green');
+            drawLine(st.ray.l, 'green');
             break;
         case HookDataType.HitWall:
-            drawLine(st.hit.ref as Line, "green");
-            drawLine(st.ray.l, "green");
+            drawLine(st.hit.ref as Line, 'green');
+            drawLine(st.ray.l, 'green');
             break;
         case HookDataType.Finished:
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             casted.forEach((c) => {
-                drawDot(c, 3, c.raycast ? "orange" : "green");
+                drawDot(c, 3, c.raycast ? 'orange' : 'green');
                 c.edges.forEach((ed) => {
                     drawLine(
                         { sx: c.x, sy: c.y, ex: nodes[ed].x, ey: nodes[ed].y },
-                        "green"
+                        'green'
                     );
                 });
             });
             walls.forEach((w) => {
-                drawLine(w, "yellow");
+                drawLine(w, 'yellow');
             });
             break;
         case HookDataType.HitRay:
-            drawLine((st.hit as RayE).l, "green");
-            drawLine(st.ray.l, "green");
+            drawLine((st.hit as RayE).l, 'green');
+            drawLine(st.ray.l, 'green');
             break;
         case HookDataType.HitRayNewNode:
-            drawLine((st.hit as RayE).l, "green");
-            drawLine(st.ray.l, "green");
-            drawDot(st.newNode, 3, "green");
+            drawLine((st.hit as RayE).l, 'green');
+            drawLine(st.ray.l, 'green');
+            drawDot(st.newNode, 3, 'green');
             break;
     }
 }
 
 function draw() {
     const cstep = steps[currentStep];
-    (document.getElementById("cstep") as HTMLPreElement).innerText =
+    (document.getElementById('cstep') as HTMLPreElement).innerText =
         JSON.stringify(cstep, null, 2);
-    (document.getElementById("cstepInfo") as HTMLDivElement).innerText =
-        cstep.info + " (" + HookDataType[cstep.type] + ")";
+    (document.getElementById('cstepInfo') as HTMLDivElement).innerText =
+        cstep.info + ' (' + HookDataType[cstep.type] + ')';
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     cstep.entries.forEach((t) => {
         switch (t.t) {
-            case "node":
-                drawDot(t.c, 2, nodes[t.ref].raycast ? "orange" : "red");
+            case 'node':
+                drawDot(t.c, 2, nodes[t.ref].raycast ? 'orange' : 'red');
                 break;
-            case "wall":
-                drawLine(t.ref, "yellow");
+            case 'wall':
+                drawLine(t.ref, 'yellow');
                 break;
-            case "ray":
-                drawLine(t.l, "purple");
+            case 'ray':
+                drawLine(t.l, 'purple');
                 break;
         }
     });

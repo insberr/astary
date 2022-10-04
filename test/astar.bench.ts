@@ -1,6 +1,6 @@
-require("source-map-support").install();
-import { benchmarkSuite } from "jest-bench";
-import { AStar, randomNodes, Raycast } from "../src/astar";
+require('source-map-support').install();
+import { benchmarkSuite } from 'jest-bench';
+import { AStar, randomNodes, Raycast } from '../src/astar';
 const rng = (max: number) => Math.floor(Math.random() * max);
 let hundred = randomNodes(100, 5);
 let thousand = randomNodes(1000, 5);
@@ -14,7 +14,7 @@ let Rthousand = randomNodes(1000, 1).map((n) => {
 let Rtenthousand = randomNodes(10000, 1).map((n) => {
     return { ...n, edges: [] };
 });
-benchmarkSuite("astar", {
+benchmarkSuite('astar', {
     hundred() {
         AStar(rng(100), rng(100), hundred);
     },
@@ -26,7 +26,7 @@ benchmarkSuite("astar", {
     },
 });
 
-benchmarkSuite("randomNodes", {
+benchmarkSuite('randomNodes', {
     hundred() {
         randomNodes(100, 5);
     },

@@ -7,14 +7,14 @@ import {
     AStar,
     HookData,
     HookDataType,
-} from "../../src/astar";
-import { Line } from "../../src/col";
-import { defaultFilterFunction } from "../../src/generateNodesFromSVG";
+} from '../../src/astar';
+import { Line } from '../../src/col';
+import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
 //import eruda from "../eruda";
 
-const _d = new URL("./BHS_Building_Map_SVG.svg", import.meta.url);
+const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
 // @ts-ignore
-import _dt from "bundle-text:./BHS_Building_Map_SVG.svg";
+import _dt from 'bundle-text:./BHS_Building_Map_SVG.svg';
 // (async () => { _dt = await fetch(_d.href).then((r) => { return r.text() }) })();
 
 // Silly mobile
@@ -23,19 +23,19 @@ const w = 1920;
 const h = 1080;
 const padding = 42;
 
-const canva = document.getElementsByTagName("canvas")[0];
+const canva = document.getElementsByTagName('canvas')[0];
 if (!canva) {
-    throw new Error("of");
+    throw new Error('of');
 }
 
 const img = new Image();
-canva.id = "display";
+canva.id = 'display';
 canva.width = w * dpi;
 canva.height = h * dpi;
 
-canva.style.width = "100%";
+canva.style.width = '100%';
 
-const ctx = canva.getContext("2d");
+const ctx = canva.getContext('2d');
 ctx?.scale(dpi, dpi);
 
 // For the raycast
@@ -45,7 +45,7 @@ let nodes: Node[] = [];
 
 let debounce = false;
 canva.addEventListener(
-    "click",
+    'click',
     function (e) {
         if (debounce) return;
         debounce = true;
@@ -70,7 +70,7 @@ canva.addEventListener(
         }
 
         if (ctx === null) {
-            console.log("click, but ctx is null");
+            console.log('click, but ctx is null');
             return;
         }
 
@@ -98,13 +98,13 @@ function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
     if (ctx === null) return;
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.strokeStyle = "purple";
+    ctx.strokeStyle = 'purple';
     ctx.moveTo(10, 10);
     ctx.lineTo(100, 10);
     ctx.stroke();
     ctx.lineWidth = 1;
 
-    ctx.fillStyle = "white";
+    ctx.fillStyle = 'white';
     ctx.fillText(data.info, 50, 10);
 }
 
@@ -144,7 +144,7 @@ async function render(reRaycast: boolean = true) {
     walls.forEach((wall) => {
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.strokeStyle = "blue";
+        ctx.strokeStyle = 'blue';
         ctx.moveTo(wall.sx, wall.sy);
         ctx.lineTo(wall.ex, wall.ey);
         ctx.stroke();
@@ -155,7 +155,7 @@ async function render(reRaycast: boolean = true) {
         // console.log(node,i)
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
-            ctx.strokeStyle = nodes[edge].raycast ? "red" : "green";
+            ctx.strokeStyle = nodes[edge].raycast ? 'red' : 'green';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
@@ -163,7 +163,7 @@ async function render(reRaycast: boolean = true) {
             ctx.stroke();
             ctx.lineWidth = 1;
 
-            ctx.fillStyle = "white";
+            ctx.fillStyle = 'white';
             const dist = Math.sqrt(
                 Math.pow(nodes[edge].x - node.x, 2) +
                     Math.pow(nodes[edge].y - node.y, 2)
@@ -178,8 +178,8 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => {
-        ctx.fillStyle = node?.raycast ? "red" : "green";
-        ctx.strokeStyle = node?.raycast ? "red" : "green";
+        ctx.fillStyle = node?.raycast ? 'red' : 'green';
+        ctx.strokeStyle = node?.raycast ? 'red' : 'green';
         const [nx, ny] = [node.x, node.y];
         ctx.beginPath();
         ctx.arc(nx, ny, 4, 0, 2 * Math.PI);
@@ -202,7 +202,7 @@ async function render(reRaycast: boolean = true) {
         */
         if (![42, 6, 86, 87, 88, 89, 90, 91, 92, 64].includes(i)) return;
 
-        ctx.fillStyle = "white"; // "gray";
+        ctx.fillStyle = 'white'; // "gray";
         // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
         ctx.fillText(
             /* `${i} - [${node.x}, ${node.y}] : ${node.edges}`, */
@@ -221,8 +221,8 @@ async function render(reRaycast: boolean = true) {
         );
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
-        ctx.strokeStyle = "yellow";
-        ctx.fillStyle = "yellow";
+        ctx.strokeStyle = 'yellow';
+        ctx.fillStyle = 'yellow';
         ctx.lineWidth = 2;
         ctx.globalAlpha = 1;
         ctx.beginPath();
@@ -288,13 +288,13 @@ async function drawDatas(
             if (step.data.type !== HookDataType.HitWall) continue;
             if (!step.data.collisionPos) {
                 console.log(
-                    "collision pos is false, how? idk: ",
+                    'collision pos is false, how? idk: ',
                     step.data.collisionPos
                 );
                 continue;
             }
             ctx.beginPath();
-            ctx.strokeStyle = "purple";
+            ctx.strokeStyle = 'purple';
             ctx.lineWidth = 1;
             ctx.globalAlpha = 0.5;
             ctx.moveTo(step.data.node.x, step.data.node.y);

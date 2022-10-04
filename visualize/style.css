@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 body {
-    font-family: "Roboto Mono", sans-serif;
+    font-family: 'Roboto Mono', sans-serif;
     color: white;
     background-color: #272727;
 }

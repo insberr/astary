@@ -1,5 +1,5 @@
-import type { Node } from "./astar";
-import type { Line } from "./col";
+import type { Node } from './astar';
+import type { Line } from './col';
 export function randomNodes(amt: number, mincon: number = 2): Node[] {
     const xy: { x: number; y: number; edges?: Set<number> }[] = [];
     for (let index = 0; index < amt; index++) {

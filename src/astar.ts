@@ -1,10 +1,10 @@
-import Heap from "heap-js";
+import Heap from 'heap-js';
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
 import {
     generateNodes,
     generateWalls,
     svgToPaths,
-} from "./generateNodesFromSVG";
+} from './generateNodesFromSVG';
 
 export type Node = {
     x: number;
@@ -152,11 +152,11 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
         }
     }
 
-    throw new Error("No path found");
+    throw new Error('No path found');
 }
 
 //_astar(0, 1, (n) => 0);
-export * from "./random";
-export * from "./raycast";
-export type { Entry, Line, Point, RayE, NodeE, WallE } from "./col";
+export * from './random';
+export * from './raycast';
+export type { Entry, Line, Point, RayE, NodeE, WallE } from './col';
 export { AStar, generateNodes, generateWalls, svgToPaths };

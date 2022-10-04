@@ -1,13 +1,13 @@
-import { Node } from "./astar";
-import { ElementNode, parse, RootNode } from "svg-parser";
-import { Node as SVGNode } from "svg-parser";
+import { Node } from './astar';
+import { ElementNode, parse, RootNode } from 'svg-parser';
+import { Node as SVGNode } from 'svg-parser';
 import {
     parseSVG,
     makeAbsolute,
     VerticalLineToCommandMadeAbsolute,
     HorizontalLineToCommandMadeAbsolute,
-} from "svg-path-parser";
-import type { Line } from "./col";
+} from 'svg-path-parser';
+import type { Line } from './col';
 
 export { parseSVG, makeAbsolute };
 
@@ -35,33 +35,33 @@ export type Colors = {
 export function defaultFilterFunction(svgElement: SVGNode): Paths {
     const svgGElements = (svgElement as ElementNode).children
         .filter((c) => {
-            return (c as ElementNode).tagName === "g";
+            return (c as ElementNode).tagName === 'g';
         })
         .filter((c) => {
-            return ((c as ElementNode)?.properties?.id || "") === "pathfinding";
+            return ((c as ElementNode)?.properties?.id || '') === 'pathfinding';
         })[0];
 
     // Circles: Nodes
-    if (typeof svgGElements === "string" || svgGElements == undefined)
+    if (typeof svgGElements === 'string' || svgGElements == undefined)
         console.log(svgElement, svgGElements);
     const svgGID_Nodes = (svgGElements as ElementNode).children.filter((c) => {
         return (
-            (c as ElementNode).tagName === "g" &&
-            (c as ElementNode)?.properties?.id === "pathfindingNodes"
+            (c as ElementNode).tagName === 'g' &&
+            (c as ElementNode)?.properties?.id === 'pathfindingNodes'
         );
     })[0];
 
     // Lines: Walls
     const svgGID_Walls = (svgGElements as ElementNode).children.filter((c) => {
         return (
-            (c as ElementNode).tagName === "g" &&
-            (c as ElementNode)?.properties?.id === "pathfindingWalls"
+            (c as ElementNode).tagName === 'g' &&
+            (c as ElementNode)?.properties?.id === 'pathfindingWalls'
         );
     })[0];
 
     const elementCircles = (svgGID_Nodes as ElementNode).children.filter(
         (c) => {
-            if ((c as ElementNode).tagName !== "circle") {
+            if ((c as ElementNode).tagName !== 'circle') {
                 return false;
             }
             return true;
@@ -69,7 +69,7 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
     );
 
     const elementLines = (svgGID_Walls as ElementNode).children.filter((c) => {
-        if ((c as ElementNode).tagName !== "path") {
+        if ((c as ElementNode).tagName !== 'path') {
             return false;
         }
         return true;
@@ -77,29 +77,29 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
 
     const svgCirclesToPaths = elementCircles.map((c) => {
         const cx = parseFloat(
-            (c as ElementNode)?.properties?.cx.toString() || "0"
+            (c as ElementNode)?.properties?.cx.toString() || '0'
         );
         const cy = parseFloat(
-            (c as ElementNode)?.properties?.cy.toString() || "0"
+            (c as ElementNode)?.properties?.cy.toString() || '0'
         );
         const fill =
             (c as ElementNode)?.properties?.style
                 .toString()
-                .split(";")
-                .filter((s) => s.includes("fill:"))[0]
-                .split(":")[0] || "why is this undefined";
+                .split(';')
+                .filter((s) => s.includes('fill:'))[0]
+                .split(':')[0] || 'why is this undefined';
         return { x: cx, y: cy, fill: fill };
     });
 
     const svgLinesToPaths = elementLines.map((c) => {
-        const d = parseSVG((c as ElementNode)?.properties?.d.toString() || "");
+        const d = parseSVG((c as ElementNode)?.properties?.d.toString() || '');
         makeAbsolute(d);
 
         const vertical = d.filter(
-            (v) => v.code === "V"
+            (v) => v.code === 'V'
         ) as VerticalLineToCommandMadeAbsolute[];
         const horizontal = d.filter(
-            (v) => v.code === "H"
+            (v) => v.code === 'H'
         ) as HorizontalLineToCommandMadeAbsolute[];
 
         const sx = horizontal[0]?.x0 || vertical[0]?.x0 || 0;
@@ -110,9 +110,9 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
         const stroke =
             (c as ElementNode)?.properties?.style
                 .toString()
-                .split(";")
-                .filter((s) => s.includes("stroke:"))[0]
-                .split(":")[0] || "why is this undefined";
+                .split(';')
+                .filter((s) => s.includes('stroke:'))[0]
+                .split(':')[0] || 'why is this undefined';
 
         return { sx: sx, sy: sy, ex: ex, ey: ey, fill: stroke, d: d };
     });
@@ -128,7 +128,7 @@ export function svgToPaths(
     const parsed = parse(svgAsString);
     console.log(svgAsString, parsed);
     const svgElement = parsed.children.filter((c) => {
-        if ((c as ElementNode).tagName !== "svg") {
+        if ((c as ElementNode).tagName !== 'svg') {
             return false;
         }
         return true;

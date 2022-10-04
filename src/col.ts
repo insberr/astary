@@ -1,4 +1,4 @@
-import type { Node } from "./astar";
+import type { Node } from './astar';
 export type Line = {
     sx: number;
     sy: number;
@@ -123,16 +123,16 @@ function calcIsInsideLineSegment(line: Line, pnt: Point): boolean {
 export type Entry = NodeE | WallE | RayE;
 
 export type NodeE = {
-    t: "node";
+    t: 'node';
     ref: number;
     c: Point;
 };
 export type WallE = {
-    t: "wall";
+    t: 'wall';
     ref: Line;
 };
 export type RayE = {
-    t: "ray";
+    t: 'ray';
     ref: number;
     l: Line;
 };
@@ -141,52 +141,52 @@ export type Point = {
     y: number;
 };
 export function distance(entry: Entry, p: Point): number {
-    if (entry.t == "node") {
+    if (entry.t == 'node') {
         return fastDist(entry.c.x, entry.c.y, p.x, p.y);
-    } else if (entry.t == "wall") {
+    } else if (entry.t == 'wall') {
         return pointLineDist(p.x, p.y, entry.ref);
-    } else if (entry.t == "ray") {
+    } else if (entry.t == 'ray') {
         return pointLineDist(p.x, p.y, entry.l);
     } else {
-        throw new Error("Unknown entry: " + entry);
+        throw new Error('Unknown entry: ' + entry);
     }
 }
 
 export function collide(entry1: Entry, entry2: Entry): boolean {
     // This function could probably be optimized but idgaf
-    if (entry1.t == "node") {
-        if (entry2.t == "node") {
+    if (entry1.t == 'node') {
+        if (entry2.t == 'node') {
             // Node Node Colision
             return entry1.c.x == entry2.c.x && entry1.c.y == entry2.c.y;
-        } else if (entry2.t == "ray") {
+        } else if (entry2.t == 'ray') {
             return calcIsInsideLineSegment(entry2.l, entry1.c);
-        } else if (entry2.t == "wall") {
+        } else if (entry2.t == 'wall') {
             return calcIsInsideLineSegment(entry2.ref, entry1.c);
         }
-    } else if (entry1.t == "wall") {
-        if (entry2.t == "node") {
+    } else if (entry1.t == 'wall') {
+        if (entry2.t == 'node') {
             return calcIsInsideLineSegment(entry1.ref, entry2.c);
-        } else if (entry2.t == "wall") {
+        } else if (entry2.t == 'wall') {
             return LLI(entry1.ref, entry2.ref) ? true : false;
-        } else if (entry2.t == "ray") {
+        } else if (entry2.t == 'ray') {
             return LLI(entry1.ref, entry2.l) ? true : false;
         }
-    } else if (entry1.t == "ray") {
-        if (entry2.t == "node") {
+    } else if (entry1.t == 'ray') {
+        if (entry2.t == 'node') {
             return calcIsInsideLineSegment(entry1.l, entry2.c);
-        } else if (entry2.t == "wall") {
+        } else if (entry2.t == 'wall') {
             return LLI(entry1.l, entry2.ref) ? true : false;
-        } else if (entry2.t == "ray") {
+        } else if (entry2.t == 'ray') {
             return LLI(entry1.l, entry2.l) ? true : false;
         }
     }
 
-    throw new Error("Failed to compare " + entry1.t + " and " + entry2.t);
+    throw new Error('Failed to compare ' + entry1.t + ' and ' + entry2.t);
 }
 
 export function constructNodeEntry(nid: number, nodes: Node[]): NodeE {
     return {
-        t: "node",
+        t: 'node',
         ref: nid,
         c: nodes[nid],
     };
@@ -194,7 +194,7 @@ export function constructNodeEntry(nid: number, nodes: Node[]): NodeE {
 
 export function constructWallEntry(wall: Line): WallE {
     return {
-        t: "wall",
+        t: 'wall',
         ref: wall,
     };
 }
@@ -208,7 +208,7 @@ export function constructRayEntry(
     const d = nodes[nid];
     //console.log(d)
     return {
-        t: "ray",
+        t: 'ray',
         ref: nid,
         l: { sx: d.x, sy: d.y, ex: dest.x, ey: dest.y },
     };

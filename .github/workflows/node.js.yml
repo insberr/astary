@@ -5,9 +5,9 @@ name: Node.js CI
 
 on:
     push:
-        branches: ["main"]
+        branches: ['main']
     pull_request:
-        branches: ["main"]
+        branches: ['main']
 
 jobs:
     build:
@@ -22,7 +22,7 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: 16.17.0
-                  cache: "yarn"
+                  cache: 'yarn'
             - run: yarn
             - name: check formatting
               run: yarn prettier --check .
