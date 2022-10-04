@@ -1,6 +1,6 @@
 import { HookBase, HookData, Node, HookDataType, randomNodes, randomWalls, Raycast, Line, Point, RayE } from "../../src/astar";
 const s = 32
-const nodes = JSON.parse(localStorage.getItem('nodes') || JSON.stringify(randomNodes(64,1).map((e) => {return {...e, edges:[]}})))
+const nodes: Node[] = JSON.parse(localStorage.getItem('nodes') || JSON.stringify(randomNodes(64,1).map((e) => {return {...e, edges:[]}})))
 localStorage.setItem('nodes', JSON.stringify(nodes))
 const nw = Math.max.apply(null,nodes.map((x) => x.x))
 const nh = Math.max.apply(null,nodes.map((y) => y.y))
