@@ -88,7 +88,7 @@ export type HookData =
 export function Raycast(
     nodes: Node[],
     walls: Line[],
-    _hook: (nodes: Node[], walls: Line[], data: HookData) => void = (_, __, ___) => {}
+    _hook?: (nodes: Node[], walls: Line[], data: HookData) => void
 ) {
     /* Setup */
     const entries: Entry[] = [];
@@ -316,7 +316,7 @@ export function Raycast(
                     continue;
                 }
                 console.log('uh this shouldnt run');
-            } while (hit?.t == "ray")
+            } while (hit?.t == 'ray');
         });
     });
 
