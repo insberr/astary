@@ -87,10 +87,9 @@ export type HookData =
 export function Raycast(
     nodes: Node[],
     walls: Line[],
-    _hook?: (nodes: Node[], walls: Line[], data: HookData) => void
+    _hook: (nodes: Node[], walls: Line[], data: HookData) => void = ((_, __, ___) => {})
 ) {
     /* Setup */
-    if (_hook === undefined) _hook = (nodes: Node[], walls: Line[], data: HookData) => {};
     const entries: Entry[] = [];
     const xs = nodes.map((n) => n.x);
     const ys = nodes.map((n) => n.y);
