@@ -4,29 +4,32 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
 
 jobs:
-  build:
+    build:
+        runs-on:
+            ubuntu-latest
 
-    runs-on: ubuntu-latest
+            # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        steps:
+            - uses: actions/checkout@v3
+            - name: Use Node.js 16.17.0
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 16.17.0
+                  cache: "yarn"
+            - run: yarn
+            - name: check formatting
+              run: yarn prettier --check .
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.17.0
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.17.0
-        cache: 'yarn'
-    - run: yarn
-    - run: yarn build
-      id: build
-    - run: yarn test
-      if: always() && steps.build.outcome == 'success'
-    - run: yarn bench
-      if: always() && steps.build.outcome == 'success'
+            - run: yarn build
+              id: build
+            - run: yarn test
+              if: always() && steps.build.outcome == 'success'
+            - run: yarn bench
+              if: always() && steps.build.outcome == 'success'

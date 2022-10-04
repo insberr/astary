@@ -98,6 +98,12 @@ export function Raycast(
         xs.push(w.ex, w.sx);
         ys.push(w.ey, w.sy);
     });
+    if (_hook)
+        _hook([...nodes], [...walls], {
+            type: HookDataType.Finished,
+            info: "finished",
+            entries: [...entries],
+        });
 
     const minX = Math.min.apply(null, xs);
     const maxX = Math.max.apply(null, xs);
@@ -105,8 +111,8 @@ export function Raycast(
     const maxY = Math.max.apply(null, ys);
 
     /* Construct entries */
-    nodes.forEach((_node, i) => entries.push(constructNodeEntry(i, nodes)) );
-    walls.forEach((wall, _i) => entries.push(constructWallEntry(wall)) );
+    nodes.forEach((_node, i) => entries.push(constructNodeEntry(i, nodes)));
+    walls.forEach((wall, _i) => entries.push(constructWallEntry(wall)));
 
     /* Raycast Time */
     nodes.forEach((node, i) => {
@@ -125,14 +131,15 @@ export function Raycast(
 
             if (ray.l.sx == ray.l.ex && ray.l.sy == ray.l.ey) return;
 
-            _hook([...nodes], [...walls], {
-                type: HookDataType.RayConstructed,
-                node: node,
-                edge: n,
-                entries: [...entries],
-                ray: ray,
-                info: "edges.forEach => ray constructed",
-            });
+            if (_hook)
+                _hook([...nodes], [...walls], {
+                    type: HookDataType.RayConstructed,
+                    node: node,
+                    edge: n,
+                    entries: [...entries],
+                    ray: ray,
+                    info: "edges.forEach => ray constructed",
+                });
 
             // begin absolute chonker of a line
             const hits = entries

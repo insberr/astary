@@ -1,6 +1,10 @@
 import Heap from "heap-js";
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
-import { generateNodes, generateWalls, svgToPaths } from "./generateNodesFromSVG";
+import {
+    generateNodes,
+    generateWalls,
+    svgToPaths,
+} from "./generateNodesFromSVG";
 
 export type Node = {
     x: number;
@@ -9,7 +13,7 @@ export type Node = {
     dx?: number;
     dy?: number;
     ox?: number;
-    oy?: number
+    oy?: number;
     addlWeight?: number;
     raycast?: boolean;
     edges: Set<number>;
@@ -69,14 +73,17 @@ function A_Star(start, goal, h)
 */
 
 // https://en.wikipedia.org/wiki/A*_search_algorithm
-function reconstruct_path(cameFrom: Map<number, number>, current: number): number[] {
+function reconstruct_path(
+    cameFrom: Map<number, number>,
+    current: number
+): number[] {
     var total_path = [current];
     //console.log("reconstruct path")
     //console.log(cameFrom)
-    while (cameFrom.has(current)) { 
+    while (cameFrom.has(current)) {
         //console.log("current", current)
         current = cameFrom.get(current) as number;
-        //console.log("to", current) 
+        //console.log("to", current)
         total_path.unshift(current);
     }
     return total_path;
@@ -84,12 +91,17 @@ function reconstruct_path(cameFrom: Map<number, number>, current: number): numbe
 
 function edgeW(current: number, nei: number, nodes: Node[]): number {
     const w = (nodes[current].addlWeight || 0) + (nodes[nei].addlWeight || 0);
-    return w + Math.sqrt(Math.pow(nodes[current].x - nodes[nei].x, 2) + Math.pow(nodes[current].y - nodes[nei].y, 2));
-
+    return (
+        w +
+        Math.sqrt(
+            Math.pow(nodes[current].x - nodes[nei].x, 2) +
+                Math.pow(nodes[current].y - nodes[nei].y, 2)
+        )
+    );
 }
 function gInfinite(m: Map<number, number>, n: number): number {
     if (m.has(n)) {
-        let out = m.get(n) ;
+        let out = m.get(n);
         //@ts-ignore should never has() but not able to get()
         return out;
     }
@@ -100,29 +112,36 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
     function h(n: number): number {
         const node = nodes[n];
         const goalNode = nodes[goal];
-        return Math.sqrt(Math.pow(node.x - goalNode.x, 2) + Math.pow(node.y - goalNode.y, 2));
+        return Math.sqrt(
+            Math.pow(node.x - goalNode.x, 2) + Math.pow(node.y - goalNode.y, 2)
+        );
     }
     var openSet = new Heap<number>(Heap.minComparator);
     openSet.push(start);
     var cameFrom = new Map<number, number>();
 
     var gScore = new Map<number, number>();
-    gScore.set(start, 0)
+    gScore.set(start, 0);
     var fScore = new Map<number, number>();
-    fScore.set(start,h(start));
+    fScore.set(start, h(start));
 
     while (openSet.length > 0) {
-        var current = openSet.toArray().reduce((a, b) => gInfinite(fScore,a) < gInfinite(fScore,b) ? a : b);
+        var current = openSet
+            .toArray()
+            .reduce((a, b) =>
+                gInfinite(fScore, a) < gInfinite(fScore, b) ? a : b
+            );
         if (current == goal) {
             return reconstruct_path(cameFrom, current);
         }
         //console.log("visited", current)
         openSet.remove(current);
         for (const neighbor of nodes[current].edges) {
-            const tentative_gScore = gInfinite(gScore,current) + edgeW(current, neighbor, nodes);
+            const tentative_gScore =
+                gInfinite(gScore, current) + edgeW(current, neighbor, nodes);
             //console.log(gScore)
             //console.log("tentative_gScore", tentative_gScore, "gScore", gInfinite(gScore,neighbor))
-            if (tentative_gScore < gInfinite(gScore,neighbor)) {
+            if (tentative_gScore < gInfinite(gScore, neighbor)) {
                 cameFrom.set(neighbor, current);
                 gScore.set(neighbor, tentative_gScore);
                 fScore.set(neighbor, tentative_gScore + h(neighbor));
@@ -131,15 +150,13 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
                 }
             }
         }
-
-        
     }
-    
+
     throw new Error("No path found");
 }
 
 //_astar(0, 1, (n) => 0);
 export * from "./random";
-export * from "./raycast"
-export type { Entry, Line, Point, RayE, NodeE, WallE } from "./col"
+export * from "./raycast";
+export type { Entry, Line, Point, RayE, NodeE, WallE } from "./col";
 export { AStar, generateNodes, generateWalls, svgToPaths };
