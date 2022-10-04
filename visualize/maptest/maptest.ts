@@ -261,6 +261,10 @@ async function render(reRaycast: boolean = true) {
     }
     */
     //drawDatas(datas);
+    (document.getElementById('data') as HTMLDivElement).innerText = JSON.stringify(
+        nodes,
+        (_key, value) => (value instanceof Set ? [...value] : value)
+    );
 }
 
 async function drawDatas(datas: { nodes: Node[]; walls: Line[]; data: HookData }[]) {
