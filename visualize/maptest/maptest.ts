@@ -4,8 +4,9 @@ import { defaultFilterFunction } from "../../src/generateNodesFromSVG";
 //import eruda from "../eruda";
 
 const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
-let _dt = '';
-(async () => { _dt = await fetch(_d.href).then((r) => { return r.text() }) })();
+// @ts-ignore
+import _dt from 'bundle-text:./BHS_Building_Map_SVG.svg';
+// (async () => { _dt = await fetch(_d.href).then((r) => { return r.text() }) })();
 
 // Silly mobile
 const dpi = window.devicePixelRatio <= 2.84 ? window.devicePixelRatio : 2.84;
