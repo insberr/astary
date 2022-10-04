@@ -1,9 +1,10 @@
 import { HookBase, HookData, Node, HookDataType, randomNodes, randomWalls, Raycast, Line, Point, RayE } from "../../src/astar";
 const s = 32
-const nodes = randomNodes(64,1).map((e) => {return {...e, edges:[]}})
+const nodes = JSON.parse(localStorage.getItem('nodes') || JSON.stringify(randomNodes(64,1).map((e) => {return {...e, edges:[]}})))
+localStorage.setItem('nodes', JSON.stringify(nodes))
 const nw = Math.max.apply(null,nodes.map((x) => x.x))
 const nh = Math.max.apply(null,nodes.map((y) => y.y))
-const walls = randomWalls(5,20,4)
+const walls = randomWalls(10,nw,4)
 const wh: number[] = []
 const ww: number[] = []
 walls.forEach(element => {
@@ -102,10 +103,12 @@ function drawDot(p: Point, radius: number, style: string) {
 function drawStep(st: HookData) {
     switch (st.type) {
         case HookDataType.RayConstructed:
+          console.clear()
             drawLine(st.ray.l, "lightblue")
             drawDot(nodes[st.ray.ref], 3, "lightblue")
             break;
         case HookDataType.RayHits:
+          console.log(st.hits)
             drawLine(st.ray.l, "blue")
             drawDot(nodes[st.ray.ref], 3, "blue")
             st.hits.forEach((h) => {
