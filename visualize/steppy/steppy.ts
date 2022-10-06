@@ -9,6 +9,9 @@ import {
     Point,
     RayE,
 } from '../../src/astar';
+// @ts-ignore
+import JsonViewer from 'json-viewer-js';
+
 console.clear = () => {};
 const s = 16;
 const nodes: Node[] = JSON.parse(
@@ -200,7 +203,16 @@ function drawStep(st: HookData) {
 
 function draw() {
     const cstep = steps[currentStep];
-    (document.getElementById('cstep') as HTMLPreElement).innerText = JSON.stringify(cstep, null, 2);
+    // (document.getElementById('cstep') as HTMLPreElement).innerText = JSON.stringify(cstep, null, 2);
+    (document.getElementById('cstep') as HTMLDivElement).innerHTML = '';
+    (document.getElementById('cstep') as HTMLDivElement).innerHTML = '';
+    new JsonViewer({
+        container: document.getElementById('cstep'),
+        data: JSON.stringify(cstep, (k, v) => { if (k === 'type') { return "[HookDataType " + v + "] " + HookDataType[v] } return v }),
+        theme: 'dark',
+        expand: false,
+    });
+
     (document.getElementById('cstepInfo') as HTMLDivElement).innerText =
         cstep.info + ' (' + HookDataType[cstep.type] + ')';
     ctx.setTransform(1, 0, 0, 1, 0, 0);

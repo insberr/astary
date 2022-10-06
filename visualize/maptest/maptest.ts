@@ -287,7 +287,7 @@ async function render(reRaycast: boolean = true) {
         container: document.getElementById('data'),
         data: JSON.stringify(nodes, (_key, value) => (value instanceof Set ? [...value] : value)),
         theme: 'dark',
-        expand: true,
+        expand: false,
     });
 }
 
