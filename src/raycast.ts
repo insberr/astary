@@ -85,6 +85,7 @@ export type HookData =
     | HookDataHitRayNewNode
     | HookDataFinished;
 
+// Time to fix edges
 export function Raycast(
     nodes: Node[],
     walls: Line[],
