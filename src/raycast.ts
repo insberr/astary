@@ -345,10 +345,11 @@ export function Raycast(
                     }
                     entries.push(constructNodeEntry(lastNewNodeIndex, nodes));
                     entries.push(shrinkRay(newR1, 0.001), shrinkRay(newR2, 0.001));
+                    nodes[hit.ref].edges.add(lastNewNodeIndex)
                     if (hitsP.length > 0) {
                         const hitN = (hitsP[0] as NodeE).ref;
                         nodes[hitN].edges.add(lastNewNodeIndex);
-                        nodes[hit.ref].edges.add(lastNewNodeIndex);
+                        //nodes[hit.ref].edges.add(lastNewNodeIndex);
                     }
 
                     //     let temp_lastNewNodeIndex = lastNewNodeIndex;
