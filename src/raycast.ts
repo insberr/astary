@@ -41,31 +41,29 @@ export enum HookDataType {
 
 export type HookBase = {
     type: HookDataType;
-    node: Node;
-    edge: Point;
-    entries: Entry[];
-    ray: RayE;
     info: string;
 };
 
 export type HookDataRayConstructed = HookBase & {
     type: HookDataType.RayConstructed;
+    ray: RayE;
 };
 
 export type HookDataRayHits = HookBase & {
     type: HookDataType.RayHits;
+    ray: RayE;
     hits: Entry[];
 };
 
 export type HookDataHitNode = HookBase & {
     type: HookDataType.HitNode;
-    hits: Entry[];
+    ray: RayE;
     hit: Entry;
 };
 
 export type HookDataHitWall = HookBase & {
     type: HookDataType.HitWall;
-    hits: Entry[];
+    ray: RayE;
     hit: Entry;
     distance: number;
     collisionPos: Point;
@@ -73,7 +71,7 @@ export type HookDataHitWall = HookBase & {
 
 export type HookDataHitRay = HookBase & {
     type: HookDataType.HitRay;
-    hits: Entry[];
+    ray: RayE;
     hit: Entry;
     distance: number;
     collisionPos: Point;
@@ -81,8 +79,8 @@ export type HookDataHitRay = HookBase & {
 
 export type HookDataHitRayNewNode = HookBase & {
     type: HookDataType.HitRayNewNode;
+    ray: RayE;
     newNode: Node;
-    hits: Entry[];
     hit: Entry;
     distance: number;
     collisionPos: Point;
@@ -154,10 +152,7 @@ export function Raycast(
             if (_hook)
                 _hook([...nodes], [...walls], {
                     type: HookDataType.RayConstructed,
-                    node: node,
-                    edge: n,
-                    entries: structuredClone(entries),
-                    ray: ray,
+                    ray: Object.assign({}, ray),
                     info: 'edges.forEach => ray constructed',
                 });
 
@@ -171,11 +166,8 @@ export function Raycast(
             if (_hook)
                 _hook([...nodes], [...walls], {
                     type: HookDataType.RayHits,
-                    node: { ...node },
-                    edge: { ...n },
-                    entries: structuredClone(entries),
-                    hits: hits,
-                    ray: ray,
+                    hits: Object.assign({}, hits),
+                    ray: Object.assign({}, ray),
                     info: 'edges.forEach => hits calculated',
                 });
 
