@@ -128,9 +128,13 @@ async function render(reRaycast: boolean = true) {
             );
         } else {
             datas = [];
-            nodes = await Raycast(nodes, walls, (nodes: Node[], walls: Line[], data: HookData) => {
-                datas.push({ nodes, walls, data });
-            });
+            nodes = await Raycast(
+                nodes,
+                walls,
+                (data: HookData, nodes?: Node[], walls?: Line[]) => {
+                    datas.push({ data });
+                }
+            );
         }
     }
 
@@ -285,7 +289,10 @@ async function render(reRaycast: boolean = true) {
     (document.getElementById('data') as HTMLDivElement).innerHTML = '';
     new JsonViewer({
         container: document.getElementById('data'),
-        data: JSON.stringify(nodes, (_key, value) => (value instanceof Set ? [...value] : value)),
+        data: JSON.stringify(nodes, (_key, value) => {
+            // fix the problem where entries is blank. cause this lib doesnt know how to convert a set to an array
+            return value instanceof Set ? [...value] : value;
+        }),
         theme: 'dark',
         expand: false,
     });

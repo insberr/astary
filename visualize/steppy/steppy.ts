@@ -104,7 +104,7 @@ document.getElementById('last')?.addEventListener('click', () => {
     clamp();
 });
 
-const casted = Raycast(nodes, walls, (n, w, d) => {
+const casted = Raycast(nodes, walls, (d, n, w) => {
     steps.push(d);
 });
 
@@ -208,7 +208,16 @@ function draw() {
     (document.getElementById('cstep') as HTMLDivElement).innerHTML = '';
     new JsonViewer({
         container: document.getElementById('cstep'),
-        data: JSON.stringify(cstep, (k, v) => { if (k === 'type') { return "[HookDataType " + v + "] " + HookDataType[v] } return v }),
+        data: JSON.stringify(cstep, (k, v) => {
+            if (k === 'type') {
+                return '[HookDataType ' + v + '] ' + HookDataType[v];
+            }
+
+            if (k === 'edges') {
+                return [...v];
+            }
+            return v;
+        }),
         theme: 'dark',
         expand: false,
     });
