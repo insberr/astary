@@ -11,7 +11,7 @@ import {
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
 // @ts-ignore
-import JsonViewer from 'json-viewer-js'; 
+import JsonViewer from 'json-viewer-js';
 //import eruda from "../eruda";
 
 const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
@@ -211,18 +211,18 @@ async function render(reRaycast: boolean = true) {
                 return { p: p, e: nodes[p].edges };
             })
         );
-        
-        path.forEach(p => {
-            const nnn = nodes[p]
+
+        path.forEach((p) => {
+            const nnn = nodes[p];
             const [nx, ny] = [nnn.x, nnn.y];
-            ctx.globalAlpha = .5;
+            ctx.globalAlpha = 0.5;
             ctx.strokeStyle = 'lightblue';
             ctx.beginPath();
             ctx.arc(nx, ny, 3, 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
             ctx.globalAlpha = 1;
-        })
+        });
 
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
@@ -282,13 +282,11 @@ async function render(reRaycast: boolean = true) {
         (_key, value) => (value instanceof Set ? [...value] : value)
     );
     */
-    (document.getElementById('data') as HTMLDivElement).innerHTML = "";
+    (document.getElementById('data') as HTMLDivElement).innerHTML = '';
     new JsonViewer({
-        container: document.getElementById('data'), 
-        data: JSON.stringify(nodes,
-            (_key, value) => (value instanceof Set ? [...value] : value)
-            ), 
-        theme: 'dark', 
+        container: document.getElementById('data'),
+        data: JSON.stringify(nodes, (_key, value) => (value instanceof Set ? [...value] : value)),
+        theme: 'dark',
         expand: true,
     });
 }
