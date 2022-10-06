@@ -44,6 +44,7 @@
     "dependencies": {
         "@ungap/structured-clone": "^1.0.1",
         "heap-js": "^2.2.0",
+        "json-viewer-js": "https://github.com/renhongl/json-viewer-js.git",
         "mathjs": "^11.2.1",
         "svg-parser": "^2.0.4",
         "svg-path-parser": "^1.1.0"

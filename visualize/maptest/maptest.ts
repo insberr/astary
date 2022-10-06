@@ -10,6 +10,8 @@ import {
 } from '../../src/astar';
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
+// @ts-ignore
+import JsonViewer from 'json-viewer-js'; 
 //import eruda from "../eruda";
 
 const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
@@ -138,7 +140,7 @@ async function render(reRaycast: boolean = true) {
     walls.forEach((wall) => {
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.strokeStyle = 'blue';
+        ctx.strokeStyle = 'orange';
         ctx.moveTo(wall.sx, wall.sy);
         ctx.lineTo(wall.ex, wall.ey);
         ctx.stroke();
@@ -274,10 +276,21 @@ async function render(reRaycast: boolean = true) {
     }
     */
     //drawDatas(datas);
+    /*
     (document.getElementById('data') as HTMLDivElement).innerText = JSON.stringify(
         nodes,
         (_key, value) => (value instanceof Set ? [...value] : value)
     );
+    */
+    (document.getElementById('data') as HTMLDivElement).innerHTML = "";
+    new JsonViewer({
+        container: document.getElementById('data'), 
+        data: JSON.stringify(nodes,
+            (_key, value) => (value instanceof Set ? [...value] : value)
+            ), 
+        theme: 'dark', 
+        expand: true,
+    });
 }
 
 async function drawDatas(datas: { nodes: Node[]; walls: Line[]; data: HookData }[]) {

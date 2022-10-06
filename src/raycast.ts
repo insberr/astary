@@ -109,6 +109,7 @@ export function Raycast(
     _hook?: (nodes: Node[], walls: Line[], data: HookData) => void
 ): Node[] {
     /* Setup */
+    const margin = 2;
     const entries: Entry[] = [];
     const xs = nodes.map((n) => n.x);
     const ys = nodes.map((n) => n.y);
@@ -162,7 +163,9 @@ export function Raycast(
 
             // begin absolute chonker of a line
             const hits = entries
-                .filter((e) => e.ref != i && collide(ray, e))
+                .filter((e) => {
+                    return e.ref != i && collide(ray, e)
+                })
                 .sort((a, b) => distance(a, node) - distance(b, node));
 
             if (_hook)
