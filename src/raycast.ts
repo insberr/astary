@@ -164,7 +164,7 @@ export function Raycast(
             // begin absolute chonker of a line
             const hits = entries
                 .filter((e) => {
-                    return e.ref != i && collide(ray, e)
+                    return e.ref != i && collide(ray, e);
                 })
                 .sort((a, b) => distance(a, node) - distance(b, node));
 
@@ -265,7 +265,7 @@ export function Raycast(
                         continue;
                     }
                     if (nodes[ray.ref].edges.has(hit.ref)) {
-                        return;
+                        continue;
                     }
                     // ray collision pos
                     const rayCollidePos = LLI(hit.l, ray.l);
@@ -303,8 +303,8 @@ export function Raycast(
                     // IDFK
 
                     // check if the ray's endpoint hits a node
-                    const expanded = shrinkRay(hit, -0.001);
-                    const hitp = { x: expanded.l.ex, y: expanded.l.ey };
+                    //const expanded = shrinkRay(hit, -0.001);
+                    const hitp = { x: hit.l.ex, y: hit.l.ey };
                     const hitsP = entries.filter(
                         (e) =>
                             e.t == 'node' &&
@@ -344,8 +344,8 @@ export function Raycast(
                         throw new Error('unable to find ray...');
                     }
                     entries.push(constructNodeEntry(lastNewNodeIndex, nodes));
-                    entries.push(shrinkRay(newR1, 0.001), newR2);
-                    if (hitsP.length >= 1) {
+                    entries.push(shrinkRay(newR1, 0.001), shrinkRay(newR2, 0.001));
+                    if (hitsP.length > 0) {
                         const hitN = (hitsP[0] as NodeE).ref;
                         nodes[hitN].edges.add(lastNewNodeIndex);
                         nodes[hit.ref].edges.add(lastNewNodeIndex);
