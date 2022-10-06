@@ -287,6 +287,23 @@ describe('raycast', () => {
             expect(con[0].edges.size).toEqual(1);
             expect(con[0].edges).toContain(1);
         });
+        it('should split the ray correctly', () => {
+            const con = astar.Raycast(
+                [
+                    { x: -5, y: 5, edges: new Set() },
+                    { x: 5, y: 5, edges: new Set() },
+                    { x: 0, y: 0, edges: new Set() },
+                ],
+                [
+                    { sx: -3, sy: -1, ex: -3, ey: 4 },
+                    { sx: 3, sy: -1, ex: 3, ey: 4 },
+                ]
+            );
+            console.log(con);
+            expect(con.filter((x) => x.raycast)).toHaveLength(1); // only 1 raycasted node
+            expect(astar.AStar(2, 0, con)).toHaveLength(3);
+            expect(astar.AStar(2, 1, con)).toHaveLength(3);
+        });
     });
 });
 /*describe('makeGraph', () => {

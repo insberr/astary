@@ -9,6 +9,7 @@ import {
     Point,
     RayE,
 } from '../../src/astar';
+console.clear = () => {};
 const s = 16;
 const nodes: Node[] = JSON.parse(
     localStorage.getItem('nodes') ||

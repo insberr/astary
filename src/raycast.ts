@@ -11,6 +11,24 @@ import {
     LLI,
 } from './col';
 
+function between(t: number, a: number, b: number, inclusive: boolean): boolean {
+    var min = Math.min(a, b),
+        max = Math.max(a, b);
+
+    return inclusive ? t >= min && t <= max : t > min && t < max;
+}
+
+function within(t: number, c: number, dist: number): boolean {
+    return between(t, c + dist, c - dist, true);
+}
+
+function split(line: Line, p: Point): [Line, Line] {
+    return [
+        { ...line, ex: p.x, ey: p.y },
+        { ...line, sx: p.x, sy: p.y },
+    ];
+}
+
 export enum HookDataType {
     RayConstructed,
     RayHits,
@@ -89,7 +107,7 @@ export function Raycast(
     nodes: Node[],
     walls: Line[],
     _hook?: (nodes: Node[], walls: Line[], data: HookData) => void
-) {
+): Node[] {
     /* Setup */
     const entries: Entry[] = [];
     const xs = nodes.map((n) => n.x);
@@ -175,7 +193,7 @@ export function Raycast(
                 if (hit == undefined) {
                     return;
                 }
-                
+
                 // TODO: Implement some variation of this.
                 // TODO: Also add detection if multiple rays over each other, remove all of them except the shortest one
                 // const samePosHits = hits.filter((h) => h.ref == hit.ref);
@@ -243,6 +261,9 @@ export function Raycast(
                     if (ray.ref == hit.ref) {
                         continue;
                     }
+                    if (nodes[ray.ref].edges.has(hit.ref)) {
+                        return;
+                    }
                     // ray collision pos
                     const rayCollidePos = LLI(hit.l, ray.l);
 
@@ -277,48 +298,98 @@ export function Raycast(
 
                     // create a node at the collision, with entries for the nodes it connects to
                     // IDFK
-                    let temp_lastNewNodeIndex = lastNewNodeIndex;
-                    const existingNodes = nodes.filter(
-                        (n) => n.x == rayCollidePos.x && n.y == rayCollidePos.y
-                    );
-                    if (existingNodes.length === 0) {
-                        temp_lastNewNodeIndex =
-                            nodes.push({
-                                x: rayCollidePos.x,
-                                y: rayCollidePos.y,
-                                raycast: true,
-                                // TODO: figure out which edges need to be added
-                                edges: new Set<number>([lastNewNodeIndex, ray.ref, hit.ref]),
-                            }) - 1;
 
-                        entries.push(constructNodeEntry(temp_lastNewNodeIndex, nodes));
-                        // TODO: figure out which edges need to be added
-                        nodes[ray.ref].edges.add(temp_lastNewNodeIndex);
-                        nodes[hit.ref].edges.add(temp_lastNewNodeIndex);
+                    // check if the ray's endpoint hits a node
+                    const expanded = shrinkRay(hit, -0.001);
+                    const hitp = { x: expanded.l.ex, y: expanded.l.ey };
+                    const hitsP = entries.filter(
+                        (e) =>
+                            e.t == 'node' &&
+                            within(hitp.x, e.c.x, 0.001) &&
+                            within(hitp.y, e.c.y, 0.001)
+                    );
+                    let tedge: number[];
+                    if (hitsP.length == 0) {
+                        // the ray isnt nodetonode
+                        //console.log('nope');
+                        tedge = [lastNewNodeIndex, hit.ref];
+                    } else {
+                        //console.log('hit node!');
+                        tedge = [lastNewNodeIndex, hit.ref, (hitsP[0] as NodeE).ref];
+                        // oh god
+                        const hitN = (hitsP[0] as NodeE).ref;
+                        nodes[hitN].edges.delete(hit.ref);
+                        nodes[hit.ref].edges.delete(hitN);
+                    }
+                    let newR1 = structuredClone(hit);
+                    let newR2 = structuredClone(hit);
+                    const splitted = split(hit.l, rayCollidePos);
+                    newR1.l = splitted[0];
+                    newR2.l = splitted[1];
+                    newR2.ref =
+                        nodes.push({
+                            x: rayCollidePos.x,
+                            y: rayCollidePos.y,
+                            raycast: true,
+                            edges: new Set<number>(tedge),
+                        }) - 1;
+                    lastNewNodeIndex = newR2.ref;
+                    const rid = entries.indexOf(hit);
+                    if (rid != -1) {
+                        entries.splice(rid, 1);
+                    } else {
+                        throw new Error('unable to find ray...');
+                    }
+                    entries.push(constructNodeEntry(lastNewNodeIndex, nodes));
+                    entries.push(shrinkRay(newR1, 0.001), newR2);
+                    if (hitsP.length >= 1) {
+                        const hitN = (hitsP[0] as NodeE).ref;
+                        nodes[hitN].edges.add(lastNewNodeIndex);
+                        nodes[hit.ref].edges.add(lastNewNodeIndex);
                     }
 
-                    if (_hook)
-                        _hook([...nodes], [...walls], {
-                            type: HookDataType.HitRayNewNode,
-                            node: { ...node },
-                            edge: { ...n },
-                            entries: structuredClone(entries),
-                            hits: hits,
-                            newNode: nodes[temp_lastNewNodeIndex],
-                            ray: ray,
-                            info: 'edges.forEach => we hit a ray, new node created',
-                            hit: Object.assign({}, hit),
-                            distance: distance(hit, node),
-                            collisionPos: rayCollidePos,
-                        });
+                    //     let temp_lastNewNodeIndex = lastNewNodeIndex;
+                    //     const existingNodes = nodes.filter(
+                    //         (n) => n.x == rayCollidePos.x && n.y == rayCollidePos.y
+                    //     );
+                    //     if (existingNodes.length === 0) {
+                    //         temp_lastNewNodeIndex =
+                    //             nodes.push({
+                    //                 x: rayCollidePos.x,
+                    //                 y: rayCollidePos.y,
+                    //                 raycast: true,
+                    //                 // TODO: figure out which edges need to be added
+                    //                 edges: new Set<number>([lastNewNodeIndex, ray.ref, hit.ref]),
+                    //             }) - 1;
 
-                    // TODO: figure out which edges need to be added
-                    nodes[lastNewNodeIndex].edges.add(temp_lastNewNodeIndex);
+                    //         entries.push(constructNodeEntry(temp_lastNewNodeIndex, nodes));
+                    //         // TODO: figure out which edges need to be added
+                    //         nodes[ray.ref].edges.add(temp_lastNewNodeIndex);
+                    //         nodes[hit.ref].edges.add(temp_lastNewNodeIndex);
+                    //     }
 
-                    lastNewNodeIndex = temp_lastNewNodeIndex;
-                    continue;
+                    //     if (_hook)
+                    //         _hook([...nodes], [...walls], {
+                    //             type: HookDataType.HitRayNewNode,
+                    //             node: { ...node },
+                    //             edge: { ...n },
+                    //             entries: structuredClone(entries),
+                    //             hits: hits,
+                    //             newNode: nodes[temp_lastNewNodeIndex],
+                    //             ray: ray,
+                    //             info: 'edges.forEach => we hit a ray, new node created',
+                    //             hit: Object.assign({}, hit),
+                    //             distance: distance(hit, node),
+                    //             collisionPos: rayCollidePos,
+                    //         });
+
+                    //     // TODO: figure out which edges need to be added
+                    //     nodes[lastNewNodeIndex].edges.add(temp_lastNewNodeIndex);
+
+                    //     lastNewNodeIndex = temp_lastNewNodeIndex;
+                    //     continue;
                 }
-                console.log('uh this shouldnt run');
+                // console.log('uh this shouldnt run');
             } while (hit?.t == 'ray');
         });
     });
