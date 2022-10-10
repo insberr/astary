@@ -122,7 +122,7 @@ async function render(reRaycast: boolean = true) {
             nodes = await Raycast(
                 await generateNodes(svgPaths),
                 walls,
-                (nodes: Node[], walls: Line[], data: HookData) => {
+                (data: HookData, nodes?: Node[], walls?: Line[]) => {
                     datas.push({ nodes, walls, data });
                 }
             );
