@@ -289,7 +289,7 @@ async function render(reRaycast: boolean = true) {
     (document.getElementById('data') as HTMLDivElement).innerHTML = '';
     new JsonViewer({
         container: document.getElementById('data'),
-        data: JSON.stringify(nodes, (_key, value) => {
+        data: JSON.stringify(nodes, (key, value) => {
             // fix the problem where entries is blank. cause this lib doesnt know how to convert a set to an array
             return value instanceof Set ? [...value] : value;
         }),
