@@ -2164,6 +2164,7 @@ __metadata:
     "@ungap/structured-clone": ^1.0.1
     benchmark: ^2.1.4
     buffer: ^6.0.3
+    cytoscape: ^3.23.0
     heap-js: ^2.2.0
     husky: ^8.0.1
     jest: ^29.0.3
@@ -2687,6 +2688,16 @@ __metadata:
   dependencies:
     css-tree: ^1.1.2
   checksum: 380ba9663da3bcea58dee358a0d8c4468bb6539be3c439dc266ac41c047217f52fd698fb7e4b6b6ccdfb8cf53ef4ceed8cc8ceccb8dfca2aa628319826b5b998
+  languageName: node
+  linkType: hard
+
+"cytoscape@npm:^3.23.0":
+  version: 3.23.0
+  resolution: "cytoscape@npm:3.23.0"
+  dependencies:
+    heap: ^0.2.6
+    lodash: ^4.17.21
+  checksum: bcb3c48068384309287553a8b2561bf500562548563ef900c43d011b4a2c8e7cbf0c44f40f7f4ad1b661ff959385c627027f7e7a642021a3716054ae093d3749
   languageName: node
   linkType: hard
 
@@ -3228,6 +3239,13 @@ __metadata:
   version: 2.2.0
   resolution: "heap-js@npm:2.2.0"
   checksum: be89ec49ceac0c55a1cdbbe47b8fad76b43d98468b72e7fb3302f048a796ca8c8e683d59ffe564cc0b5ad31b68770a31bf2f315e3739bd7165ea34d7562a4b6b
+  languageName: node
+  linkType: hard
+
+"heap@npm:^0.2.6":
+  version: 0.2.7
+  resolution: "heap@npm:0.2.7"
+  checksum: b0f3963a799e02173f994c452921a777f2b895b710119df999736bfed7477235c2860c423d9aea18a9f3b3d065cb1114d605c208cfcb8d0ac550f97ec5d28cb0
   languageName: node
   linkType: hard
 
@@ -4388,7 +4406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.20, lodash@npm:^4.17.4":
+"lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7

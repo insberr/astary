@@ -43,6 +43,7 @@
     },
     "dependencies": {
         "@ungap/structured-clone": "^1.0.1",
+        "cytoscape": "^3.23.0",
         "heap-js": "^2.2.0",
         "json-viewer-js": "https://github.com/renhongl/json-viewer-js.git",
         "mathjs": "^11.2.1",
