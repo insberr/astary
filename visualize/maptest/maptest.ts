@@ -10,6 +10,10 @@ import {
 } from '../../src/astar';
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
+
+import { createSvgEditor, addElement, addElementParameters, setElementParameters } from 'svg-draw';
+
+
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';
 //import eruda from "../eruda";
@@ -18,6 +22,40 @@ const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
 // @ts-ignore
 import _dt from 'bundle-text:./BHS_Building_Map_SVG.svg';
 // (async () => { _dt = await fetch(_d.href).then((r) => { return r.text() }) })();
+
+function createElement(str: string): Element | null {
+    const temp = document.createElement('template');
+    str = str.trim();
+    temp.innerHTML = str;
+    return temp.content.firstElementChild;
+}
+
+const map_svg = createElement(_dt);
+if (map_svg) {
+    map_svg.id = 'map-svg';
+    map_svg.setAttribute("width",'100%');
+    map_svg.setAttribute("height", "");
+    document.body.replaceChild(map_svg, document.getElementById("map-svg") as Element);
+    document.getElementById('pathfinding').style.display = 'block'
+}
+
+const svgContainer = document.getElementById('map-svg');
+if (!svgContainer) {
+  throw new Error('svgContainer not found');
+}
+if (!(svgContainer instanceof SVGSVGElement)) {
+  throw new Error('svgContainer are not instanse of SVGSVGElement');
+}
+ 
+const svgEditor = createSvgEditor(document, svgContainer);
+const svgAddElement = svgEditor(addElement);
+const svgSetElementParameters = svgEditor(setElementParameters);
+const svgAddElementParameters = svgEditor(addElementParameters);
+// const svgRemoveElement = svgEditor(removeElement);
+ 
+
+
+
 
 // Silly mobile
 const dpi = window.devicePixelRatio <= 2.84 ? window.devicePixelRatio : 2.84;
@@ -152,6 +190,7 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => {
+
         // console.log(node,i)
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
@@ -174,6 +213,15 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => {
+        svgAddElement({
+            type: 'circle',
+            x: node.x,
+            y: node.y,
+            width: 5,
+            height: 5,
+            fill: 'red'
+        });
+
         ctx.fillStyle = node?.raycast ? 'red' : 'green';
         ctx.strokeStyle = node?.raycast ? 'red' : 'green';
         const [nx, ny] = [node.x, node.y];
