@@ -190,7 +190,6 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => {
-
         // console.log(node,i)
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
@@ -213,7 +212,9 @@ async function render(reRaycast: boolean = true) {
     });
 
     nodes.forEach((node, i) => {
-        svgAddElement({
+        // maybe just dont use this library ?
+        // could also be something to do with the layers?? idk lmao
+        const drawn_node = svgAddElement({
             type: 'circle',
             x: node.x,
             y: node.y,
@@ -221,6 +222,8 @@ async function render(reRaycast: boolean = true) {
             height: 5,
             fill: 'red'
         });
+        if (i === 0 ) console.log(node.x, node.y, drawn_node)
+        // console.log(drawn_node)
 
         ctx.fillStyle = node?.raycast ? 'red' : 'green';
         ctx.strokeStyle = node?.raycast ? 'red' : 'green';

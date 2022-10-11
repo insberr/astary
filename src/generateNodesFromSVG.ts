@@ -64,6 +64,8 @@ export function defaultFilterFunction(svgElement: SVGNode): Paths {
         return true;
     });
 
+    console.log(elementCircles[0])
+
     const elementLines = (svgGID_Walls as ElementNode).children.filter((c) => {
         if ((c as ElementNode).tagName !== 'path') {
             return false;
