@@ -72,15 +72,17 @@ let nodes: Node[] = [];
 
 let debounce = false;
 
-const pt = (map_svg as SVGSVGElement).createSVGPoint();
+const pt = (map_svg as SVGSVGElement).createSVGPoint(); // https://stackoverflow.com/a/42711775/13606260
 
 map_svg.addEventListener('click', function (e) {
     pt.x = e.clientX;
     pt.y = e.clientY;
 
+    // ====== https://stackoverflow.com/a/42711775/13606260
     // The cursor point, translated into svg coordinates
     var cursorpt = pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
-    console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
+    // console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
+    // ====== End
     createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
     nodes.push({
         x: +cursorpt.x.toFixed(),
