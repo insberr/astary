@@ -227,11 +227,19 @@ export function Raycast(
                     nodes[lastNewNodeIndex].edges.add(hid);
                     const rayEntryHitNode = constructRayEntry(i, nodes, hit.c);
                     if (rayEntryHitNode.zeroLength) {
-                        console.log('rayEntryHitNode is zero length\nNode' , nodes[i], i, '\nHit: ', hit, '\nRay: ', ray);
+                        console.log(
+                            'rayEntryHitNode is zero length\nNode',
+                            nodes[i],
+                            i,
+                            '\nHit: ',
+                            hit,
+                            '\nRay: ',
+                            ray
+                        );
                     } else {
                         entries.push(shrinkRay(rayEntryHitNode, 0.001));
                     }
-                    
+
                     //console.log(hit.c, entries[h-1].l)
                     return;
                 } else if (hit.t === 'wall') {
@@ -256,7 +264,17 @@ export function Raycast(
 
                     const rayEntryHitWall = constructRayEntry(i, nodes, hitpos);
                     if (rayEntryHitWall.zeroLength) {
-                        console.log('rayEntryHitWall is zero length\nNode: ' , nodes[i], i, '\nHit: ', hit, '\nRay: ', ray, '\nHitpos: ', hitpos);
+                        console.log(
+                            'rayEntryHitWall is zero length\nNode: ',
+                            nodes[i],
+                            i,
+                            '\nHit: ',
+                            hit,
+                            '\nRay: ',
+                            ray,
+                            '\nHitpos: ',
+                            hitpos
+                        );
                         // we are likely on the wall
                         return;
                     } else {
@@ -304,7 +322,17 @@ export function Raycast(
 
                     const rayEntryHitRay = constructRayEntry(i, nodes, rayCollidePos);
                     if (rayEntryHitRay.zeroLength) {
-                        console.log('rayEntryHitRay is zero length\nNode' , nodes[i], i, '\nHit: ', hit, '\nRay: ', ray, '\nRayCollidePos: ', rayCollidePos);
+                        console.log(
+                            'rayEntryHitRay is zero length\nNode',
+                            nodes[i],
+                            i,
+                            '\nHit: ',
+                            hit,
+                            '\nRay: ',
+                            ray,
+                            '\nRayCollidePos: ',
+                            rayCollidePos
+                        );
                     } else {
                         entries.push(shrinkRay(rayEntryHitRay, 0.001));
                     }
@@ -368,7 +396,7 @@ export function Raycast(
                             distance: distance(hit, node),
                             collisionPos: Object.assign({}, rayCollidePos),
                         });
-                    
+
                     // TODO Check this for zero length
                     entries.push(shrinkRay(newR1, 0.001), shrinkRay(newR2, 0.001));
                     nodes[hit.ref].edges.add(lastNewNodeIndex);

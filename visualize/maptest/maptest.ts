@@ -13,7 +13,6 @@ import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
 
 import { createCircle, createLayer, createLine, createPath } from '../svgEdit';
 
-
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';
 //import eruda from "../eruda";
@@ -33,14 +32,13 @@ function createElement(str: string): Element | null {
 const map_svg = createElement(_dt) as SVGSVGElement;
 if (map_svg) {
     map_svg.id = 'map-svg';
-    map_svg.setAttribute("width",'100%');
-    map_svg.setAttribute("height", "");
-    document.body.replaceChild(map_svg, document.getElementById("map-svg") as Element);
+    map_svg.setAttribute('width', '100%');
+    map_svg.setAttribute('height', '');
+    document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
     // document.getElementById('pathfinding').style.display = 'inline'
 }
 
 const svgDrawLayer = createLayer(map_svg, 'svg-draw-layer', true);
-
 
 // Silly mobile
 const dpi = window.devicePixelRatio <= 2.84 ? window.devicePixelRatio : 2.84;
@@ -72,26 +70,26 @@ let debounce = false;
 var pt = (map_svg as SVGSVGElement).createSVGPoint();
 if (map_svg === null) {
     throw new Error('map_svg is null');
-};
+}
 
 map_svg.addEventListener('click', function (e) {
     pt.x = e.clientX;
     pt.y = e.clientY;
 
     // The cursor point, translated into svg coordinates
-    var cursorpt =  pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
-    console.log("(" + cursorpt.x + ", " + cursorpt.y + ")");
+    var cursorpt = pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
+    console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
     createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
     nodes.push({
-        x: +(cursorpt.x).toFixed(),
-        y: +(cursorpt.y).toFixed(),
+        x: +cursorpt.x.toFixed(),
+        y: +cursorpt.y.toFixed(),
         edges: new Set<number>(),
     });
 
     render().then(() => {
         debounce = false;
     });
-})
+});
 
 canva.addEventListener(
     'click',
@@ -189,7 +187,7 @@ async function render(reRaycast: boolean = true) {
     // console.log("Walls: ", walls);
 
     walls.forEach((wall) => {
-        createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2)
+        createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2);
     });
 
     nodes.forEach((node, i) => {
@@ -197,7 +195,12 @@ async function render(reRaycast: boolean = true) {
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
             const lineColor = nodes[edge].raycast ? 'red' : 'green';
-            createPath(svgDrawLayer, `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`, lineColor, 4)
+            createPath(
+                svgDrawLayer,
+                `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
+                lineColor,
+                4
+            );
 
             /*
             ctx.fillStyle = 'white';
@@ -250,7 +253,6 @@ async function render(reRaycast: boolean = true) {
             })
         );
 
-        
         path.forEach((p) => {
             const nnn = nodes[p];
             const [nx, ny] = [nnn.x, nnn.y];
@@ -268,7 +270,9 @@ async function render(reRaycast: boolean = true) {
             ctx.lineTo(nodes[i].x, nodes[i].y);
 
             if (nodes[path[ii + 1]]) {
-                const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${nodes[path[ii + 1]].y} Z`;
+                const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${
+                    nodes[path[ii + 1]].y
+                } Z`;
                 createPath(svgDrawLayer, dPath, 'lightblue', 2, 0.8);
             }
             //createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', 4, 0.8);
@@ -284,7 +288,7 @@ async function render(reRaycast: boolean = true) {
 
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
-        
+
         createCircle(svgDrawLayer, f.x, f.y, 'yellow', 5, 0.5);
         createCircle(svgDrawLayer, end.x, end.y, 'yellow', 5, 0.5);
 
@@ -304,9 +308,6 @@ async function render(reRaycast: boolean = true) {
         // ctx.stroke();
         // ctx.globalAlpha = 1;
         // ctx.lineWidth = 1;
-
-        
-
     } catch (e) {
         console.log(e);
     }

@@ -43,10 +43,7 @@ const nh = Math.max.apply(
 );
 
 const walls: Line[] = JSON.parse(
-    localStorage.getItem('walls') ||
-        JSON.stringify(
-            randomWalls(Math.floor(s / 8), nw, 4)
-        )
+    localStorage.getItem('walls') || JSON.stringify(randomWalls(Math.floor(s / 8), nw, 4))
 );
 if (walls.length != s / 8) {
     localStorage.removeItem('walls');
@@ -54,8 +51,6 @@ if (walls.length != s / 8) {
 } else {
     localStorage.setItem('walls', JSON.stringify(nodes));
 }
-
-
 
 const wh: number[] = [];
 const ww: number[] = [];

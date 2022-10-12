@@ -32,11 +32,10 @@ if (map_svg === null) {
 }
 
 map_svg.id = 'map-svg';
-map_svg.setAttribute("width",'100%');
-map_svg.setAttribute("height", "");
-document.body.replaceChild(map_svg, document.getElementById("map-svg") as Element);
+map_svg.setAttribute('width', '100%');
+map_svg.setAttribute('height', '');
+document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
 // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
-
 
 const svgDrawLayer = createLayer(map_svg, 'svg-draw-layer', true);
 
@@ -66,7 +65,6 @@ if (showTextButton) {
     });
 }
 
-
 // For the raycast
 let datas: any[] = [];
 let walls: { sx: number; sy: number; ex: number; ey: number }[] = [];
@@ -76,25 +74,24 @@ let debounce = false;
 
 const pt = (map_svg as SVGSVGElement).createSVGPoint();
 
-
 map_svg.addEventListener('click', function (e) {
     pt.x = e.clientX;
     pt.y = e.clientY;
 
     // The cursor point, translated into svg coordinates
-    var cursorpt =  pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
-    console.log("(" + cursorpt.x + ", " + cursorpt.y + ")");
+    var cursorpt = pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
+    console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
     createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
     nodes.push({
-        x: +(cursorpt.x).toFixed(),
-        y: +(cursorpt.y).toFixed(),
+        x: +cursorpt.x.toFixed(),
+        y: +cursorpt.y.toFixed(),
         edges: new Set<number>(),
     });
 
     render().then(() => {
         debounce = false;
     });
-})
+});
 
 function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
     /*
@@ -146,14 +143,25 @@ async function render(reRaycast: boolean = true) {
     // console.log("Walls: ", walls);
     if (highlightWalls) {
         walls.forEach((wall) => {
-            createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2)
+            createPath(
+                svgDrawLayer,
+                `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`,
+                'orange',
+                2
+            );
         });
     }
 
     nodes.forEach((node, i) => {
         node.edges.forEach((edge) => {
             const lineColor = nodes[edge].raycast ? 'red' : 'green';
-            createPath(svgDrawLayer, `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`, lineColor, 3, 0.5)
+            createPath(
+                svgDrawLayer,
+                `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
+                lineColor,
+                3,
+                0.5
+            );
 
             /*
             // Some sort of text drawing that shows the node connections of the line
@@ -186,7 +194,6 @@ async function render(reRaycast: boolean = true) {
             return;
         }
         */
-
         /* // Add createText to svg drawer
         ctx.fillStyle = 'white'; // "gray";
         // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
@@ -209,16 +216,18 @@ async function render(reRaycast: boolean = true) {
 
         path.forEach((i, ii) => {
             if (nodes[path[ii + 1]]) {
-                const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${nodes[path[ii + 1]].y} Z`;
+                const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${
+                    nodes[path[ii + 1]].y
+                } Z`;
                 createPath(svgDrawLayer, dPath, 'lightblue', 2, 0.8);
             }
-            
+
             createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', 2.5, 0.8);
         });
 
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
-        
+
         createCircle(svgDrawLayer, f.x, f.y, 'yellow', 5, 0.5);
         createCircle(svgDrawLayer, end.x, end.y, 'yellow', 5, 0.5);
     } catch (e) {

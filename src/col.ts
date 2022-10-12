@@ -79,8 +79,8 @@ function reduceEnd(line: Line, r: number) {
     }
     // temporary fix for NaN
     if (mag === 0) {
-        console.log(mag, line)
-        mag = 1
+        console.log(mag, line);
+        mag = 1;
     }
     return {
         x: line.ex - (r * dx) / mag,
@@ -217,7 +217,7 @@ export function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE
         t: 'ray',
         ref: nid,
         l: { sx: d.x, sy: d.y, ex: dest.x, ey: dest.y },
-        zeroLength: (d.x == dest.x && d.y == dest.y) ? true : false,
+        zeroLength: d.x == dest.x && d.y == dest.y ? true : false,
     };
 }
 

@@ -17,10 +17,10 @@ const drawSvg = document.getElementById('drawing-svg');
 let drawingLayer = document.getElementById('drawing-layer') as unknown as SVGGElement;
 if (drawingLayer === null) {
     throw new Error('drawingLayer or drawSvg is null');
-};
+}
 if (drawSvg === null) {
     throw new Error('drawingLayer or drawSvg is null');
-};
+}
 
 drawingLayer = drawingLayer as SVGGElement;
 
@@ -29,18 +29,20 @@ const resetStorage = params.get('reset') === 'true';
 
 console.clear = () => {};
 const s = 16;
-const nodes: Node[] = !resetStorage ? (JSON.parse(
-    localStorage.getItem('nodes') ||
-        JSON.stringify(
-            randomNodes(s, 1).map((e) => {
-                return { ...e, edges: new Set<number>() };
-            })
-        )
-).map((n: Node & { edges: number[] | Set<number> }) => {
-    // stupid JSON dont know how to store sets
-    n.edges = new Set((n.edges as number[]).length > 0 ? n.edges : []);
-    return n;
-})) : randomNodes(s, 1);
+const nodes: Node[] = !resetStorage
+    ? JSON.parse(
+          localStorage.getItem('nodes') ||
+              JSON.stringify(
+                  randomNodes(s, 1).map((e) => {
+                      return { ...e, edges: new Set<number>() };
+                  })
+              )
+      ).map((n: Node & { edges: number[] | Set<number> }) => {
+          // stupid JSON dont know how to store sets
+          n.edges = new Set((n.edges as number[]).length > 0 ? n.edges : []);
+          return n;
+      })
+    : randomNodes(s, 1);
 if (nodes.length != s) {
     localStorage.removeItem('nodes');
     location.reload();
@@ -57,20 +59,17 @@ const nh = Math.max.apply(
     nodes.map((y) => y.y)
 );
 
-const walls: Line[] = !resetStorage ? (JSON.parse(
-    localStorage.getItem('walls') ||
-        JSON.stringify(
-            randomWalls(Math.floor(s/2), nw, 4)
-        )
-)) : randomWalls(Math.floor(s/2), nw, 4);
-if (walls.length != s/2) {
+const walls: Line[] = !resetStorage
+    ? JSON.parse(
+          localStorage.getItem('walls') || JSON.stringify(randomWalls(Math.floor(s / 2), nw, 4))
+      )
+    : randomWalls(Math.floor(s / 2), nw, 4);
+if (walls.length != s / 2) {
     localStorage.removeItem('walls');
     location.reload();
 } else {
     localStorage.setItem('walls', JSON.stringify(walls));
 }
-
-
 
 const wh: number[] = [];
 const ww: number[] = [];
