@@ -200,6 +200,11 @@ export function Raycast(
 
                 // we HIT SOMETHING!!
                 if (hit.t === 'node') {
+                    // ?? maybe thatll fix it
+                    /*if (nodes[ray.ref].edges.has(hit.ref)) {
+                        continue;
+                    }
+                    */
                     // console.log(hit.ref === lastNewNodeIndex, hit.ref === i)
                     // idk you finish adding hooks
                     if (_hook)
@@ -220,8 +225,13 @@ export function Raycast(
                     */
                     nodes[hid].edges.add(lastNewNodeIndex);
                     nodes[lastNewNodeIndex].edges.add(hid);
-                    if (isNaN(hit.c.x)) console.log(hit.c);
-                    entries.push(shrinkRay(constructRayEntry(i, nodes, hit.c), 0.001));
+                    const rayEntryHitNode = constructRayEntry(i, nodes, hit.c);
+                    if (rayEntryHitNode.zeroLength) {
+                        console.log('rayEntryHitNode is zero length\nNode' , nodes[i], i, '\nHit: ', hit, '\nRay: ', ray);
+                    } else {
+                        entries.push(shrinkRay(rayEntryHitNode, 0.001));
+                    }
+                    
                     //console.log(hit.c, entries[h-1].l)
                     return;
                 } else if (hit.t === 'wall') {
@@ -244,7 +254,15 @@ export function Raycast(
                     }
                     if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
 
-                    entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
+                    const rayEntryHitWall = constructRayEntry(i, nodes, hitpos);
+                    if (rayEntryHitWall.zeroLength) {
+                        console.log('rayEntryHitWall is zero length\nNode: ' , nodes[i], i, '\nHit: ', hit, '\nRay: ', ray, '\nHitpos: ', hitpos);
+                        // we are likely on the wall
+                        return;
+                    } else {
+                        entries.push(shrinkRay(rayEntryHitWall, 0.001));
+                    }
+                    // entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
 
                     // we hit a wall
                     return;
@@ -281,10 +299,16 @@ export function Raycast(
                     // create new entry for such line
 
                     if (isNaN(rayCollidePos.x) || isNaN(rayCollidePos.y)) {
-                        console.log(lastNewNodeIndex, hit, ray.l);
+                        console.log(lastNewNodeIndex, hit, ray);
                     }
 
-                    entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
+                    const rayEntryHitRay = constructRayEntry(i, nodes, rayCollidePos);
+                    if (rayEntryHitRay.zeroLength) {
+                        console.log('rayEntryHitRay is zero length\nNode' , nodes[i], i, '\nHit: ', hit, '\nRay: ', ray, '\nRayCollidePos: ', rayCollidePos);
+                    } else {
+                        entries.push(shrinkRay(rayEntryHitRay, 0.001));
+                    }
+                    // entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
 
                     // create a node at the collision, with entries for the nodes it connects to
                     // IDFK
@@ -330,6 +354,8 @@ export function Raycast(
                     } else {
                         throw new Error('unable to find ray...');
                     }
+
+                    // TODO Add zero length check to new node creation
                     entries.push(constructNodeEntry(lastNewNodeIndex, nodes));
                     if (_hook)
                         _hook({
@@ -342,6 +368,8 @@ export function Raycast(
                             distance: distance(hit, node),
                             collisionPos: Object.assign({}, rayCollidePos),
                         });
+                    
+                    // TODO Check this for zero length
                     entries.push(shrinkRay(newR1, 0.001), shrinkRay(newR2, 0.001));
                     nodes[hit.ref].edges.add(lastNewNodeIndex);
                     if (hitsP.length > 0) {

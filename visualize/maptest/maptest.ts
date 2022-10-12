@@ -13,8 +13,6 @@ import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
 
 import { createCircle, createLayer, createLine, createPath } from '../svgEdit';
 
-import { createSvgEditor, addElement, addElementParameters, setElementParameters } from 'svg-draw';
-
 
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';

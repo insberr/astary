@@ -25,7 +25,17 @@
     <body>
         <h1 class="center">Steppy</h1>
         <div class="center mt" style="border: 5px white">
-            <canvas id="canva" width="512" height="512"></canvas>
+            <svg width="512"
+                height="512"
+                viewBox="0 0 512 512"
+                version="1.1"
+                id="drawing-svg"
+                xml:space="preserve"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:svg="http://www.w3.org/2000/svg">
+                <g id="drawing-layer"></g>
+            </svg>
         </div>
         <div class="center controls mt">
             <button id="first" class="btn btn-primary">
@@ -54,6 +64,6 @@
         <div class="center info mt" id="info">Loading...</div>
         <div class="center mt" id="cstepInfo"></div>
         <div class="center mt"><pre id="cstep"></pre></div>
-        <script src="steppy.ts" type="module"></script>
+        <script src="steppy2.ts" type="module"></script>
     </body>
 </html>

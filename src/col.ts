@@ -74,6 +74,14 @@ function reduceEnd(line: Line, r: number) {
     // if (isNaN(dx)) { console.log(line); dx = 0; }
     // if (isNaN(dy)) { console.log(line); dy = 0; }
     var mag = Math.hypot(dx, dy);
+    if (isNaN(mag) && !isNaN(line.sx) && !isNaN(line.sy) && !isNaN(line.ex) && !isNaN(line.ey)) {
+        console.log('mag is NaN', line);
+    }
+    // temporary fix for NaN
+    if (mag === 0) {
+        console.log(mag, line)
+        mag = 1
+    }
     return {
         x: line.ex - (r * dx) / mag,
         y: line.ey - (r * dy) / mag,
@@ -130,6 +138,7 @@ export type RayE = {
     t: 'ray';
     ref: number;
     l: Line;
+    zeroLength: boolean;
 };
 export type Point = {
     x: number;
@@ -195,13 +204,20 @@ export function constructWallEntry(wall: Line): WallE {
 }
 
 export function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE {
-    if (nid === 50) console.log(nodes[nid], dest);
+    if (isNaN(dest.x) || isNaN(dest.y)) {
+        console.log('dest is NaN', dest, '\nnode: ', nodes[nid]);
+    }
     const d = nodes[nid];
+    if (d.x == dest.x && d.y == dest.y) {
+        //console.log('0 length ray ', nid, d, dest);
+        // return null
+    }
     //console.log(d)
     return {
         t: 'ray',
         ref: nid,
         l: { sx: d.x, sy: d.y, ex: dest.x, ey: dest.y },
+        zeroLength: (d.x == dest.x && d.y == dest.y) ? true : false,
     };
 }
 

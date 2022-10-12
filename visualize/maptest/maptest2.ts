@@ -35,10 +35,36 @@ map_svg.id = 'map-svg';
 map_svg.setAttribute("width",'100%');
 map_svg.setAttribute("height", "");
 document.body.replaceChild(map_svg, document.getElementById("map-svg") as Element);
-document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
+// document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
 
 
 const svgDrawLayer = createLayer(map_svg, 'svg-draw-layer', true);
+
+// Display options
+let highlightWalls = false;
+let showText = false;
+let makePath = [1, 4];
+
+const highlightWallsButton = document.getElementById('highlight-walls-btn');
+const showTextButton = document.getElementById('show-text-btn');
+if (highlightWallsButton) {
+    highlightWallsButton.innerText = highlightWalls ? 'Hide Walls' : 'Show Walls';
+
+    highlightWallsButton.addEventListener('click', () => {
+        highlightWalls = !highlightWalls;
+        highlightWallsButton.innerText = highlightWalls ? 'Hide Walls' : 'Show Walls';
+        render();
+    });
+}
+if (showTextButton) {
+    showTextButton.innerText = showText ? 'Hide Text' : 'Show Text';
+
+    showTextButton.addEventListener('click', () => {
+        showText = !showText;
+        showTextButton.innerText = showText ? 'Hide Text' : 'Show Text';
+        render();
+    });
+}
 
 
 // For the raycast
@@ -118,10 +144,11 @@ async function render(reRaycast: boolean = true) {
 
     // console.log("Nodes: ", nodes);
     // console.log("Walls: ", walls);
-
-    walls.forEach((wall) => {
-        createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2)
-    });
+    if (highlightWalls) {
+        walls.forEach((wall) => {
+            createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2)
+        });
+    }
 
     nodes.forEach((node, i) => {
         node.edges.forEach((edge) => {
@@ -142,7 +169,7 @@ async function render(reRaycast: boolean = true) {
 
     nodes.forEach((node, i) => {
         const fillColor = node?.raycast ? 'red' : 'green';
-        const strokeColro = node?.raycast ? 'red' : 'green'; // TODO
+        const strokeColor = node?.raycast ? 'red' : 'green'; // TODO
         createCircle(svgDrawLayer, node.x, node.y, fillColor, 2.5);
     });
 
