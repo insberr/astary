@@ -232,6 +232,9 @@ export function setRayEnd(entry: RayE, end: Point): RayE {
     };
 }
 export function shrinkRay(ray: RayE, amt: number): RayE {
+    if (ray.zeroLength) {
+        return ray;
+    }
     const sPoint = reduceEnd(ray.l, amt);
     return setRayEnd(ray, sPoint);
 }
