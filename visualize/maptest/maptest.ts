@@ -11,6 +11,8 @@ import {
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
 
+import { createCircle, createLayer, createLine, createPath } from '../svgEdit';
+
 import { createSvgEditor, addElement, addElementParameters, setElementParameters } from 'svg-draw';
 
 
@@ -30,31 +32,16 @@ function createElement(str: string): Element | null {
     return temp.content.firstElementChild;
 }
 
-const map_svg = createElement(_dt);
+const map_svg = createElement(_dt) as SVGSVGElement;
 if (map_svg) {
     map_svg.id = 'map-svg';
     map_svg.setAttribute("width",'100%');
     map_svg.setAttribute("height", "");
     document.body.replaceChild(map_svg, document.getElementById("map-svg") as Element);
-    document.getElementById('pathfinding').style.display = 'block'
+    // document.getElementById('pathfinding').style.display = 'inline'
 }
 
-const svgContainer = document.getElementById('map-svg');
-if (!svgContainer) {
-  throw new Error('svgContainer not found');
-}
-if (!(svgContainer instanceof SVGSVGElement)) {
-  throw new Error('svgContainer are not instanse of SVGSVGElement');
-}
- 
-const svgEditor = createSvgEditor(document, svgContainer);
-const svgAddElement = svgEditor(addElement);
-const svgSetElementParameters = svgEditor(setElementParameters);
-const svgAddElementParameters = svgEditor(addElementParameters);
-// const svgRemoveElement = svgEditor(removeElement);
- 
-
-
+const svgDrawLayer = createLayer(map_svg, 'svg-draw-layer', true);
 
 
 // Silly mobile
@@ -84,6 +71,30 @@ let walls: { sx: number; sy: number; ex: number; ey: number }[] = [];
 let nodes: Node[] = [];
 
 let debounce = false;
+var pt = (map_svg as SVGSVGElement).createSVGPoint();
+if (map_svg === null) {
+    throw new Error('map_svg is null');
+};
+
+map_svg.addEventListener('click', function (e) {
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+
+    // The cursor point, translated into svg coordinates
+    var cursorpt =  pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
+    console.log("(" + cursorpt.x + ", " + cursorpt.y + ")");
+    createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
+    nodes.push({
+        x: +(cursorpt.x).toFixed(),
+        y: +(cursorpt.y).toFixed(),
+        edges: new Set<number>(),
+    });
+
+    render().then(() => {
+        debounce = false;
+    });
+})
+
 canva.addEventListener(
     'click',
     function (e) {
@@ -180,27 +191,17 @@ async function render(reRaycast: boolean = true) {
     // console.log("Walls: ", walls);
 
     walls.forEach((wall) => {
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.strokeStyle = 'orange';
-        ctx.moveTo(wall.sx, wall.sy);
-        ctx.lineTo(wall.ex, wall.ey);
-        ctx.stroke();
-        ctx.lineWidth = 1;
+        createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2)
     });
 
     nodes.forEach((node, i) => {
         // console.log(node,i)
         ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
-            ctx.strokeStyle = nodes[edge].raycast ? 'red' : 'green';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(node.x, node.y);
-            ctx.lineTo(nodes[edge].x, nodes[edge].y);
-            ctx.stroke();
-            ctx.lineWidth = 1;
+            const lineColor = nodes[edge].raycast ? 'red' : 'green';
+            createPath(svgDrawLayer, `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`, lineColor, 4)
 
+            /*
             ctx.fillStyle = 'white';
             const dist = Math.sqrt(
                 Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
@@ -208,30 +209,14 @@ async function render(reRaycast: boolean = true) {
             const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
             // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
             //ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
+            */
         });
     });
 
     nodes.forEach((node, i) => {
-        // maybe just dont use this library ?
-        // could also be something to do with the layers?? idk lmao
-        const drawn_node = svgAddElement({
-            type: 'circle',
-            x: node.x,
-            y: node.y,
-            width: 5,
-            height: 5,
-            fill: 'red'
-        });
-        if (i === 0 ) console.log(node.x, node.y, drawn_node)
-        // console.log(drawn_node)
-
-        ctx.fillStyle = node?.raycast ? 'red' : 'green';
-        ctx.strokeStyle = node?.raycast ? 'red' : 'green';
-        const [nx, ny] = [node.x, node.y];
-        ctx.beginPath();
-        ctx.arc(nx, ny, 4, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
+        const fillColor = node?.raycast ? 'red' : 'green';
+        const strokeColro = node?.raycast ? 'red' : 'green';
+        createCircle(svgDrawLayer, node.x, node.y, fillColor, 2.5);
     });
 
     nodes.forEach((node, i) => {
@@ -247,7 +232,7 @@ async function render(reRaycast: boolean = true) {
             return;
         }
         */
-        if (![42, 6, 86, 87, 88, 89, 90, 91, 92, 64].includes(i)) return;
+        // if (![42, 6, 86, 87, 88, 89, 90, 91, 92, 64].includes(i)) return;
 
         ctx.fillStyle = 'white'; // "gray";
         // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
@@ -267,6 +252,7 @@ async function render(reRaycast: boolean = true) {
             })
         );
 
+        
         path.forEach((p) => {
             const nnn = nodes[p];
             const [nx, ny] = [nnn.x, nnn.y];
@@ -279,8 +265,31 @@ async function render(reRaycast: boolean = true) {
             ctx.globalAlpha = 1;
         });
 
+        // let dPath = '';
+        path.forEach((i, ii) => {
+            ctx.lineTo(nodes[i].x, nodes[i].y);
+
+            if (nodes[path[ii + 1]]) {
+                const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${nodes[path[ii + 1]].y} Z`;
+                createPath(svgDrawLayer, dPath, 'lightblue', 2, 0.8);
+            }
+            //createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', 4, 0.8);
+
+            /* // Might be easier
+            if (ii !== 0) {
+                dPath += `L${nodes[i].x} ${nodes[i].y} M${nodes[i].x} ${nodes[i].y} `;
+            } else {
+                dPath += `M${nodes[i].x} ${nodes[i].y} `;
+            }
+            */
+        });
+
         const f = nodes[path[0]];
         const end = nodes[path[path.length - 1]];
+        
+        createCircle(svgDrawLayer, f.x, f.y, 'yellow', 5, 0.5);
+        createCircle(svgDrawLayer, end.x, end.y, 'yellow', 5, 0.5);
+
         ctx.strokeStyle = 'yellow';
         ctx.fillStyle = 'yellow';
         ctx.lineWidth = 2;
@@ -293,12 +302,13 @@ async function render(reRaycast: boolean = true) {
         ctx.fill();
         ctx.moveTo(f.x, f.y);
         ctx.stroke();
-        path.forEach((i) => {
-            ctx.lineTo(nodes[i].x, nodes[i].y);
-        });
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.lineWidth = 1;
+
+        // ctx.stroke();
+        // ctx.globalAlpha = 1;
+        // ctx.lineWidth = 1;
+
+        
+
     } catch (e) {
         console.log(e);
     }
