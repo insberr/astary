@@ -53,8 +53,6 @@ if (drawingLayer === null) {
 }
 drawingLayer = drawingLayer as SVGGElement;
 
-
-
 const params = new URLSearchParams(window.location.search);
 const resetStorage = params.get('reset') === 'true';
 
@@ -79,12 +77,13 @@ function getWallsFromStorage(): Line[] {
         localStorage.setItem('nodes', JSON.stringify(newWalls));
         return newWalls;
     }
-    return JSON.parse(walls)
+    return JSON.parse(walls);
 }
 
 let nodes: Node[] = !resetStorage ? getNodesFromStorage() : randomNodes2(s, 512, 512, 5, 20, 1);
-let walls: Line[] = !resetStorage ? getWallsFromStorage() : randomWalls2(Math.floor(s / 5), 512, 512, 10);
-
+let walls: Line[] = !resetStorage
+    ? getWallsFromStorage()
+    : randomWalls2(Math.floor(s / 5), 512, 512, 10);
 
 if (nodes.length != s) {
     localStorage.removeItem('nodes');
@@ -110,7 +109,9 @@ if (walls.length != s / 5) {
 }
 
 function drawMapFn() {
-    document.getElementById('drawing-div').replaceChild(map_svg, document.getElementById('drawing-svg') as Element);
+    document
+        .getElementById('drawing-div')
+        .replaceChild(map_svg, document.getElementById('drawing-svg') as Element);
     // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
     const svgPaths = svgToPaths(_dt, defaultFilterFunction);
     nodes = generateNodes(svgPaths);
@@ -119,8 +120,12 @@ function drawMapFn() {
     drawingLayer = createLayer(map_svg, 'drawing-layer', true);
 }
 function undrawMapFn() {
-    const newSvg = createElement('<svg width="512" height="512" viewBox="0 0 512 512" version="1.1" id="drawing-svg" xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><g id="drawing-layer"></g></svg>') as SVGSVGElement;
-    document.getElementById('drawing-div').replaceChild(newSvg, document.getElementById('drawing-svg') as HTMLElement);
+    const newSvg = createElement(
+        '<svg width="512" height="512" viewBox="0 0 512 512" version="1.1" id="drawing-svg" xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><g id="drawing-layer"></g></svg>'
+    ) as SVGSVGElement;
+    document
+        .getElementById('drawing-div')
+        .replaceChild(newSvg, document.getElementById('drawing-svg') as HTMLElement);
     nodes = getNodesFromStorage();
     walls = getWallsFromStorage();
     reRaycast();
@@ -169,7 +174,7 @@ if (drawMapBtn) {
         } else {
             undrawMapFn();
         }
-        clamp()
+        clamp();
     });
 }
 

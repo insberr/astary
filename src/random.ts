@@ -1,9 +1,17 @@
 import type { Node } from './astar';
 import type { Line } from './col';
 
-export function randomNodes2(amount: number, width: number, height: number, distance: number, alignment?: number, mincon: number = 2): Node[] {
+// TODO: Optimize the if wall or node already exists there continue to something better, to reduce the amount of loops
+export function randomNodes2(
+    amount: number,
+    width: number,
+    height: number,
+    distance: number,
+    alignment?: number,
+    mincon: number = 2
+): Node[] {
     const generatedNodes: Node[] = [];
-    
+
     for (let i = 0; i < amount; null) {
         let randomX = Math.floor(Math.random() * width);
         let randomY = Math.floor(Math.random() * height);
@@ -12,11 +20,14 @@ export function randomNodes2(amount: number, width: number, height: number, dist
             randomX = Math.round(randomX / alignment) * alignment;
             randomY = Math.round(randomY / alignment) * alignment;
         }
-        if (generatedNodes.filter(n => {
-            if (n.x == randomX && n.y == randomY) false;
-            if (Math.abs(n.x - randomX) > distance || Math.abs(n.y - randomY) > distance) return false;
-            return true;
-        }).length !== 0) {
+        if (
+            generatedNodes.filter((n) => {
+                if (n.x == randomX && n.y == randomY) false;
+                if (Math.abs(n.x - randomX) > distance || Math.abs(n.y - randomY) > distance)
+                    return false;
+                return true;
+            }).length !== 0
+        ) {
             continue;
         }
 
@@ -52,13 +63,18 @@ export function randomNodes(amt: number, mincon: number = 2): Node[] {
     return xy.filter((r) => r.edges != undefined) as Node[];
 }
 
-
-export function randomWalls2(amount: number, width: number, height: number, distance: number, direction?: number): Line[] {
+export function randomWalls2(
+    amount: number,
+    width: number,
+    height: number,
+    distance: number,
+    direction?: number
+): Line[] {
     const generatedWalls: Line[] = [];
 
     for (let i = 0; i < amount; null) {
         let dir = Math.floor(Math.random() * 100) > 50 ? 1 : 0;
-        
+
         let randomSX = Math.floor(Math.random() * width);
         let randomSY = Math.floor(Math.random() * height);
         let randomEX = Math.floor(Math.random() * width);
@@ -70,12 +86,25 @@ export function randomWalls2(amount: number, width: number, height: number, dist
             // horizontal
             randomEY = randomSY;
         }
-        
-        if (generatedWalls.filter(w => {
-            if (w.sx === randomSX && w.sy === randomSY && w.ex === randomEX && w.ey === randomEY) return false;
-            if ((Math.abs(w.sx - randomSX) > distance || Math.abs(w.sy - randomSY) > distance) && (Math.abs(w.ex - randomEX) > distance || Math.abs(w.ey - randomEY) > distance)) return false;
-            return true;
-        }).length !== 0) {
+
+        if (
+            generatedWalls.filter((w) => {
+                if (
+                    w.sx === randomSX &&
+                    w.sy === randomSY &&
+                    w.ex === randomEX &&
+                    w.ey === randomEY
+                )
+                    return false;
+                if (
+                    (Math.abs(w.sx - randomSX) > distance ||
+                        Math.abs(w.sy - randomSY) > distance) &&
+                    (Math.abs(w.ex - randomEX) > distance || Math.abs(w.ey - randomEY) > distance)
+                )
+                    return false;
+                return true;
+            }).length !== 0
+        ) {
             continue;
         }
 

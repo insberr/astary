@@ -45,7 +45,7 @@
         "@ungap/structured-clone": "^1.0.1",
         "cytoscape": "^3.23.0",
         "heap-js": "^2.2.0",
-        "json-viewer-js": "https://github.com/renhongl/json-viewer-js.git",
+        "json-viewer-js": "^1.0.8",
         "mathjs": "^11.2.1",
         "svg-draw": "^1.1.1",
         "svg-parser": "^2.0.4",
@@ -62,5 +62,8 @@
             "distDir": "visdist",
             "context": "browser"
         }
+    },
+    "resolutions": {
+        "json-viewer-js@^1.0.8": "patch:json-viewer-js@npm%3A1.0.8#./.yarn/patches/json-viewer-js-npm-1.0.8-b18345308b.patch"
     }
 }

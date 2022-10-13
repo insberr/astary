@@ -11,6 +11,7 @@ import {
     HookData,
 } from '../src/astar';
 //import { createGzip } from "zlib";
+
 const params = new URLSearchParams(window.location.search);
 function intParam(name: string, defaul: number | number[]): number | number[] {
     const o = params.get(name);
