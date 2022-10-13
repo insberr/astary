@@ -8,7 +8,9 @@
                     "removeUselessStrokeAndFill": false,
                     "cleanupIDs": false,
                     "removeMetadata": false,
-                    "convertShapeToPath": false
+                    "convertShapeToPath": false,
+                    "removeViewBox": false,
+                    "removeEmptyContainers": false
                 }
             }
         }

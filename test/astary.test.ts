@@ -1,17 +1,20 @@
+import * as astar from '../src/astar';
+import * as fs from 'fs';
+import { defaultFilterFunction } from '../src/generateNodesFromSVG';
+
+require('source-map-support').install();
+
+
 let testContext: any;
 beforeEach(() => {
     testContext = {};
 });
 
-require('source-map-support').install();
-import * as astar from '../src/astar';
-import * as fs from 'fs';
-import { defaultFilterFunction } from '../src/generateNodesFromSVG';
-
 afterEach(() => {
     // restore the spy created with spyOn
     jest.restoreAllMocks();
 });
+
 //import * as benchmark from 'benchmark'
 //const { AssertionError } = require('assert');
 // const { createImageData } = require('canvas')
@@ -80,18 +83,34 @@ describe('stress test', () => {
     });
 });
 
-describe('random', () => {
-    it('should generate a random nodes (100 nodes, 10+ connections)', () => {
-        const d = astar.randomNodes(100, 10);
+describe('random (canvas size 1000 x 1000)', () => {
+    it('should generate random nodes (100 nodes, 10 connections)', () => {
+        const d = astar.randomNodes2(100, 1000, 1000, {
+            distance: 5,
+            alignment: 0,
+            connections: 10
+        });
         expect(d).toHaveLength(100);
     });
-    it('random graph pathable (100 nodes, 10+ connections)', () => {
-        const d = astar.randomNodes(100, 10);
+    it('random graph pathable (100 nodes, 10 connections)', () => {
+        const d = astar.randomNodes2(100, 1000, 1000, {
+            distance: 5,
+            alignment: 0,
+            connections: 10
+        });
         astar.AStar(0, 99, d);
+    });
+    it('should generate random nodes (1000 nodes, 10 connections)', () => {
+        const d = astar.randomNodes2(1000, 5000, 5000, {
+            distance: 5,
+            alignment: 0,
+            connections: 10
+        });
+        expect(d).toHaveLength(1000);
     });
     describe('random walls', () => {
         it('should generate 100 walls', () => {
-            const d = astar.randomWalls(100, 1, 5);
+            const d = astar.randomWalls2(100, 1000, 1000, 10, 5);
             expect(d).toHaveLength(100);
         });
         // more random wall tests.
@@ -100,15 +119,13 @@ describe('random', () => {
 
 const svg = fs.readFileSync(__dirname + '/BHS_Building_Map_SVG.svg', 'utf8');
 
-describe('generate nodes from svg', () => {
+describe('Map SVG Tests', () => {
     it('should make nodes from node points on image', () => {
         const paths = astar.svgToPaths(svg, defaultFilterFunction);
         const nodes = astar.generateNodes(paths);
         //console.log(nodes);
     });
-});
 
-describe('generate nodes from svg then raycast', () => {
     it('should make nodes from node points on image, then raycast', () => {
         const paths = astar.svgToPaths(svg, defaultFilterFunction);
         const nodes = astar.generateNodes(paths);
@@ -121,23 +138,24 @@ describe('generate nodes from svg then raycast', () => {
         const again = astar.Raycast(newNodes, []);
         //console.log(again);
     });
-});
 
-describe('generate nodes from svg then raycast with walls', () => {
-    it('should make nodes from node points on image, then raycast with walls so yeah', () => {
-        const paths = astar.svgToPaths(svg, defaultFilterFunction);
-        const nodes = astar.generateNodes(paths);
-        const walls = astar.generateWalls(paths);
-        //console.log(nodes);
-        //console.log(walls);
-
-        const raycastNodes = astar.Raycast(nodes, walls);
-        //console.log(raycastNodes)
+    describe('generate nodes from svg then raycast with walls', () => {
+        it('should make nodes from node points on image, then raycast with walls so yeah', () => {
+            const paths = astar.svgToPaths(svg, defaultFilterFunction);
+            const nodes = astar.generateNodes(paths);
+            const walls = astar.generateWalls(paths);
+            //console.log(nodes);
+            //console.log(walls);
+    
+            const raycastNodes = astar.Raycast(nodes, walls);
+            //console.log(raycastNodes)
+        });
     });
 });
 
-describe('raycast', () => {
-    it('should connect nodes in line.', () => {
+
+describe('Raycast Tests', () => {
+    it('Should connect nodes in line.', () => {
         const con = astar.Raycast(
             [
                 { x: 0, y: 0, edges: new Set() },

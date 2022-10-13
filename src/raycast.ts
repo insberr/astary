@@ -105,8 +105,10 @@ export type HookData =
 export function Raycast(
     nodes: Node[],
     walls: Line[],
+    maxHits?: number,
     _hook?: (data: HookData, nodes?: Node[], walls?: Line[]) => void
 ): Node[] {
+    let hook_calls = 0;
     /* Setup */
     const margin = 2;
     const entries: Entry[] = [];
@@ -151,22 +153,24 @@ export function Raycast(
 
             if (ray.l.sx == ray.l.ex && ray.l.sy == ray.l.ey) return;
 
-            if (_hook)
+            if (_hook) {
+                hook_calls++;
                 _hook({
                     type: HookDataType.RayConstructed,
                     entries: entriesForHook,
                     ray: Object.assign({}, ray),
                     info: 'edges.forEach => ray constructed',
                 });
-
+            }
             // begin absolute chonker of a line
             const hits = entries
                 .filter((e) => {
-                    return e.ref != i && collide(ray, e);
+                    return e.ref !== i && collide(ray, e);
                 })
                 .sort((a, b) => distance(a, node) - distance(b, node));
 
-            if (_hook)
+            if (_hook) {
+                hook_calls++;
                 _hook({
                     type: HookDataType.RayHits,
                     entries: entriesForHook,
@@ -174,7 +178,7 @@ export function Raycast(
                     ray: Object.assign({}, ray),
                     info: 'edges.forEach => hits calculated',
                 });
-
+            }
             // end absolute chonker of a line
             if (hits.length == 0) {
                 entries.push(ray); // we dont hit anything
@@ -187,6 +191,10 @@ export function Raycast(
             */
             let lastNewNodeIndex = i;
             let hit: Entry | undefined;
+            if (maxHits === 0 || maxHits === undefined) {
+                maxHits = Infinity;
+            }
+            let iterated = 0;
             do {
                 hit = hits.shift();
                 if (hit == undefined) {
@@ -200,9 +208,15 @@ export function Raycast(
 
                 // we HIT SOMETHING!!
                 if (hit.t === 'node') {
+                    // ?? maybe thatll fix it
+                    /*if (nodes[ray.ref].edges.has(hit.ref)) {
+                        continue;
+                    }
+                    */
                     // console.log(hit.ref === lastNewNodeIndex, hit.ref === i)
                     // idk you finish adding hooks
-                    if (_hook)
+                    if (_hook) {
+                        hook_calls++;
                         _hook({
                             type: HookDataType.HitNode,
                             entries: entriesForHook,
@@ -210,7 +224,7 @@ export function Raycast(
                             hit: Object.assign({}, hit),
                             info: 'edges.forEach => we hit a node',
                         });
-
+                    }
                     // we hit a node
                     const hid = hit.ref;
                     /* shant need this if we are using Sets
@@ -220,8 +234,21 @@ export function Raycast(
                     */
                     nodes[hid].edges.add(lastNewNodeIndex);
                     nodes[lastNewNodeIndex].edges.add(hid);
-                    if (isNaN(hit.c.x)) console.log(hit.c);
-                    entries.push(shrinkRay(constructRayEntry(i, nodes, hit.c), 0.001));
+                    const rayEntryHitNode = constructRayEntry(i, nodes, hit.c);
+                    if (rayEntryHitNode.zeroLength) {
+                        // console.log(
+                        //     'rayEntryHitNode is zero length\nNode',
+                        //     nodes[i],
+                        //     i,
+                        //     '\nHit: ',
+                        //     hit,
+                        //     '\nRay: ',
+                        //     ray
+                        // );
+                    } else {
+                        entries.push(rayEntryHitNode);
+                    }
+
                     //console.log(hit.c, entries[h-1].l)
                     return;
                 } else if (hit.t === 'wall') {
@@ -229,7 +256,8 @@ export function Raycast(
                     if (!hitpos) {
                         throw new Error('We both hit a wall and didnt hit one. wtf');
                     }
-                    if (_hook)
+                    if (_hook) {
+                        hook_calls++;
                         _hook({
                             type: HookDataType.HitWall,
                             entries: entriesForHook,
@@ -239,12 +267,31 @@ export function Raycast(
                             collisionPos: Object.assign({}, hitpos),
                             info: 'edges.forEach => we hit a wall',
                         });
+                    }
                     if (!hitpos) {
                         throw new Error('This shouldnt be possible and is a bug');
                     }
-                    if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
+                    // if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
 
-                    entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
+                    const rayEntryHitWall = constructRayEntry(i, nodes, hitpos);
+                    if (rayEntryHitWall.zeroLength) {
+                        /*console.log(
+                            'rayEntryHitWall is zero length\nNode: ',
+                            nodes[i],
+                            i,
+                            '\nHit: ',
+                            hit,
+                            '\nRay: ',
+                            ray,
+                            '\nHitpos: ',
+                            hitpos
+                        );*/
+                        // we are likely on the wall
+                        return;
+                    } else {
+                        entries.push(shrinkRay(rayEntryHitWall, 0.001));
+                    }
+                    // entries.push(shrinkRay(constructRayEntry(i, nodes, hitpos), 0.001));
 
                     // we hit a wall
                     return;
@@ -257,6 +304,8 @@ export function Raycast(
                     if (nodes[ray.ref].edges.has(hit.ref)) {
                         continue;
                     }
+
+                    iterated++;
                     // ray collision pos
                     const rayCollidePos = LLI(hit.l, ray.l);
 
@@ -267,24 +316,43 @@ export function Raycast(
                     }
                     // console.log(rayCollidePos)
 
-                    if (_hook)
+                    if (_hook) {
+                        hook_calls++;
                         _hook({
                             type: HookDataType.HitRay,
-                            entries: entriesForHook,
+                            entries: structuredClone(entries),
                             ray: Object.assign({}, ray),
                             hit: Object.assign({}, hit),
                             distance: distance(hit, node),
                             collisionPos: Object.assign({}, rayCollidePos),
                             info: 'edges.forEach => we hit a ray',
                         });
-
+                    }
                     // create new entry for such line
 
+                    /*
                     if (isNaN(rayCollidePos.x) || isNaN(rayCollidePos.y)) {
-                        console.log(lastNewNodeIndex, hit, ray.l);
+                        console.log(lastNewNodeIndex, hit, ray);
                     }
+                    */
 
-                    entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
+                    const rayEntryHitRay = constructRayEntry(i, nodes, rayCollidePos);
+                    if (rayEntryHitRay.zeroLength) {
+                        /*console.log(
+                            'rayEntryHitRay is zero length\nNode',
+                            nodes[i],
+                            i,
+                            '\nHit: ',
+                            hit,
+                            '\nRay: ',
+                            ray,
+                            '\nRayCollidePos: ',
+                            rayCollidePos
+                        );*/
+                    } else {
+                        entries.push(rayEntryHitRay);
+                    }
+                    // entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
 
                     // create a node at the collision, with entries for the nodes it connects to
                     // IDFK
@@ -316,13 +384,16 @@ export function Raycast(
                     const splitted = split(hit.l, rayCollidePos);
                     newR1.l = splitted[0];
                     newR2.l = splitted[1];
-                    newR2.ref =
-                        nodes.push({
-                            x: rayCollidePos.x,
-                            y: rayCollidePos.y,
-                            raycast: true,
-                            edges: new Set<number>(tedge),
-                        }) - 1;
+
+                    const newNode = {
+                        x: rayCollidePos.x,
+                        y: rayCollidePos.y,
+                        raycast: true,
+                        edges: new Set<number>(tedge),
+                    }
+
+                    if (nodes.filter(n => n.x == newNode.x && n.y == newNode.y).length > 0) continue;
+                    newR2.ref = nodes.push(newNode) - 1;
                     lastNewNodeIndex = newR2.ref;
                     const rid = entries.indexOf(hit);
                     if (rid != -1) {
@@ -330,8 +401,11 @@ export function Raycast(
                     } else {
                         throw new Error('unable to find ray...');
                     }
+
+                    // TODO Add zero length check to new node creation
                     entries.push(constructNodeEntry(lastNewNodeIndex, nodes));
-                    if (_hook)
+                    if (_hook) {
+                        hook_calls++;
                         _hook({
                             type: HookDataType.HitRayNewNode,
                             entries: entriesForHook,
@@ -342,7 +416,9 @@ export function Raycast(
                             distance: distance(hit, node),
                             collisionPos: Object.assign({}, rayCollidePos),
                         });
-                    entries.push(shrinkRay(newR1, 0.001), shrinkRay(newR2, 0.001));
+                    }
+                    // TODO Check this for zero length
+                    entries.push(newR1, newR2);
                     nodes[hit.ref].edges.add(lastNewNodeIndex);
                     if (hitsP.length > 0) {
                         const hitN = (hitsP[0] as NodeE).ref;
@@ -392,16 +468,17 @@ export function Raycast(
                     //     continue;
                 }
                 // console.log('uh this shouldnt run');
-            } while (hit?.t == 'ray');
+            } while (maxHits > iterated && hit?.t == 'ray');
         });
     });
 
-    if (_hook)
+    if (_hook) {
+        hook_calls++;
         _hook({
             type: HookDataType.Finished,
             info: 'finished',
             entries: structuredClone(entries),
         });
-
+    }
     return nodes;
 }
