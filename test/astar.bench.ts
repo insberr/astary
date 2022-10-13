@@ -6,9 +6,15 @@ const rng = (max: number) => Math.floor(Math.random() * max);
 const width = 5000;
 const height = 5000;
 
-let hundred = randomNodes2(100, width, height, 0, 0, 5);
-let thousand = randomNodes2(1000, width, height, 0, 0, 5);
-let tenthousand = randomNodes2(10000, width, height, 0, 0, 5);
+let hundred = randomNodes2(100, width, height, {
+    connections: 5
+});
+let thousand = randomNodes2(1000, width, height, {
+    connections: 5
+});
+let tenthousand = randomNodes2(10000, width, height, {
+    connections: 5
+});
 /*
 let Rhundred = randomNodes2(100, width, height, 0, 0, 1).map((n) => {
     return { ...n, edges: [] };
@@ -35,12 +41,18 @@ benchmarkSuite('astar', {
 
 benchmarkSuite('randomNodes', {
     hundred() {
-        randomNodes2(100, width, height, 0, 0, 5);
+        randomNodes2(100, width, height, {
+            connections: 5
+        });
     },
     thousand() {
-        randomNodes2(1000, width, height, 0, 0, 5);
+        randomNodes2(1000, width, height, {
+            connections: 5
+        });
     },
     tenthousand() {
-        randomNodes2(10000, width, height, 0, 0, 5);
+        randomNodes2(10000, width, height, {
+            connections: 5
+        });
     },
 });
