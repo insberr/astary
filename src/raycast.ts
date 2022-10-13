@@ -241,7 +241,7 @@ export function Raycast(
                             ray
                         );
                     } else {
-                        entries.push(shrinkRay(rayEntryHitNode, 0.001));
+                        entries.push(rayEntryHitNode);
                     }
 
                     //console.log(hit.c, entries[h-1].l)
@@ -313,7 +313,7 @@ export function Raycast(
                         hook_calls++;
                         _hook({
                             type: HookDataType.HitRay,
-                            entries: entriesForHook,
+                            entries: structuredClone(entries),
                             ray: Object.assign({}, ray),
                             hit: Object.assign({}, hit),
                             distance: distance(hit, node),
@@ -341,7 +341,7 @@ export function Raycast(
                             rayCollidePos
                         );
                     } else {
-                        entries.push(shrinkRay(rayEntryHitRay, 0.001));
+                        entries.push(rayEntryHitRay);
                     }
                     // entries.push(shrinkRay(constructRayEntry(i, nodes, rayCollidePos), 0.001));
 
@@ -406,7 +406,7 @@ export function Raycast(
                         });
                     }
                     // TODO Check this for zero length
-                    entries.push(shrinkRay(newR1, 0.001), shrinkRay(newR2, 0.001));
+                    entries.push(newR1, newR2);
                     nodes[hit.ref].edges.add(lastNewNodeIndex);
                     if (hitsP.length > 0) {
                         const hitN = (hitsP[0] as NodeE).ref;

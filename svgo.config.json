@@ -9,7 +9,8 @@
                     "cleanupIDs": false,
                     "removeMetadata": false,
                     "convertShapeToPath": false,
-                    "removeViewBox": false
+                    "removeViewBox": false,
+                    "removeEmptyContainers": false
                 }
             }
         }

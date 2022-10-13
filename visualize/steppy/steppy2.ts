@@ -2,47 +2,90 @@ import {
     HookData,
     Node,
     HookDataType,
-    randomNodes,
-    randomWalls,
+    randomNodes2,
+    randomWalls2,
     Raycast,
     Line,
     Point,
     RayE,
+    generateNodes,
+    svgToPaths,
 } from '../../src/astar';
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';
 import { clearG, createCircle, createLayer, createLine, createPath } from '../svgEdit';
 
-const drawSvg = document.getElementById('drawing-svg');
-let drawingLayer = document.getElementById('drawing-layer') as unknown as SVGGElement;
-if (drawingLayer === null) {
-    throw new Error('drawingLayer or drawSvg is null');
-}
-if (drawSvg === null) {
-    throw new Error('drawingLayer or drawSvg is null');
+// @ts-ignore
+import _dt from 'bundle-text:../maptest/BHS_Building_Map_SVG.svg';
+import { defaultFilterFunction, generateWalls } from '../../src/generateNodesFromSVG';
+
+function createElement(str: string): Element | null {
+    const temp = document.createElement('template');
+    str = str.trim();
+    temp.innerHTML = str;
+    return temp.content.firstElementChild;
 }
 
+const s = 30;
+let drawMap = false;
+let drawWalls = true;
+let drawText = true;
+let pathStart = 0;
+let pathEnd = s;
+
+const map_svg = createElement(_dt) as SVGSVGElement;
+if (map_svg === null) {
+    throw new Error('map_svg is null');
+}
+
+map_svg.id = 'drawing-svg';
+map_svg.setAttribute('width', '100%');
+map_svg.setAttribute('height', '');
+
+const drawSvg = document.getElementById('drawing-svg');
+let drawingLayer = document.getElementById('drawing-layer') as unknown as SVGGElement;
+if (drawSvg === null) {
+    throw new Error('drawSvg is null');
+}
+if (drawingLayer === null) {
+    new Error('drawingLayer is null, Attempting to create layer');
+    drawingLayer = createLayer(drawSvg, 'drawing-layer');
+}
 drawingLayer = drawingLayer as SVGGElement;
+
+
 
 const params = new URLSearchParams(window.location.search);
 const resetStorage = params.get('reset') === 'true';
 
-console.clear = () => {};
-const s = 16;
-const nodes: Node[] = !resetStorage
-    ? JSON.parse(
-          localStorage.getItem('nodes') ||
-              JSON.stringify(
-                  randomNodes(s, 1).map((e) => {
-                      return { ...e, edges: new Set<number>() };
-                  })
-              )
-      ).map((n: Node & { edges: number[] | Set<number> }) => {
-          // stupid JSON dont know how to store sets
-          n.edges = new Set((n.edges as number[]).length > 0 ? n.edges : []);
-          return n;
-      })
-    : randomNodes(s, 1);
+// console.clear = () => {};
+
+function getNodesFromStorage(): Node[] {
+    const nodes = localStorage.getItem('nodes');
+    if (nodes === null) {
+        const newNodes = randomNodes2(s, 512, 512, 5, 20, 1);
+        localStorage.setItem('nodes', JSON.stringify(newNodes));
+        return newNodes;
+    }
+    return JSON.parse(nodes).map((e: Node) => {
+        return { ...e, edges: new Set<number>() };
+    });
+}
+
+function getWallsFromStorage(): Line[] {
+    const walls = localStorage.getItem('walls');
+    if (walls === null) {
+        const newWalls = randomWalls2(Math.floor(s / 5), 512, 512, 10);
+        localStorage.setItem('nodes', JSON.stringify(newWalls));
+        return newWalls;
+    }
+    return JSON.parse(walls)
+}
+
+let nodes: Node[] = !resetStorage ? getNodesFromStorage() : randomNodes2(s, 512, 512, 5, 20, 1);
+let walls: Line[] = !resetStorage ? getWallsFromStorage() : randomWalls2(Math.floor(s / 5), 512, 512, 10);
+
+
 if (nodes.length != s) {
     localStorage.removeItem('nodes');
     location.reload();
@@ -59,16 +102,29 @@ const nh = Math.max.apply(
     nodes.map((y) => y.y)
 );
 
-const walls: Line[] = !resetStorage
-    ? JSON.parse(
-          localStorage.getItem('walls') || JSON.stringify(randomWalls(Math.floor(s / 2), nw, 4))
-      )
-    : randomWalls(Math.floor(s / 2), nw, 4);
-if (walls.length != s / 2) {
+if (walls.length != s / 5) {
     localStorage.removeItem('walls');
     location.reload();
 } else {
     localStorage.setItem('walls', JSON.stringify(walls));
+}
+
+function drawMapFn() {
+    document.getElementById('drawing-div').replaceChild(map_svg, document.getElementById('drawing-svg') as Element);
+    // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
+    const svgPaths = svgToPaths(_dt, defaultFilterFunction);
+    nodes = generateNodes(svgPaths);
+    walls = generateWalls(svgPaths);
+    reRaycast();
+    drawingLayer = createLayer(map_svg, 'drawing-layer', true);
+}
+function undrawMapFn() {
+    const newSvg = createElement('<svg width="512" height="512" viewBox="0 0 512 512" version="1.1" id="drawing-svg" xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><g id="drawing-layer"></g></svg>') as SVGSVGElement;
+    document.getElementById('drawing-div').replaceChild(newSvg, document.getElementById('drawing-svg') as HTMLElement);
+    nodes = getNodesFromStorage();
+    walls = getWallsFromStorage();
+    reRaycast();
+    drawingLayer = document.getElementById('drawing-layer') as SVGGElement;
 }
 
 const wh: number[] = [];
@@ -83,7 +139,7 @@ const h = Math.max.apply(null, [...wh, nh]);
 // drawSvg.setAttribute("width", nw'px');
 // drawSvg.setAttribute("height", nh+'px');
 
-const steps: HookData[] = [];
+let steps: HookData[] = [];
 let currentStep = 0;
 let autoplay = false;
 let autoplayTimer: NodeJS.Timeout;
@@ -99,6 +155,23 @@ let autoplayTimer: NodeJS.Timeout;
         clearInterval(autoplayTimer);
     }
 });
+
+const drawMapBtn = document.getElementById('draw-map-btn');
+if (drawMapBtn) {
+    drawMapBtn.innerText = drawMap ? 'Undraw Map' : 'Draw Map';
+
+    drawMapBtn.addEventListener('click', () => {
+        console.clear();
+        drawMap = !drawMap;
+        drawMapBtn.innerText = drawMap ? 'Undraw Map' : 'Draw Map';
+        if (drawMap) {
+            drawMapFn();
+        } else {
+            undrawMapFn();
+        }
+        clamp()
+    });
+}
 
 function clamp() {
     currentStep = Math.max(Math.min(currentStep, steps.length - 1), 0);
@@ -134,9 +207,17 @@ document.getElementById('last')?.addEventListener('click', () => {
     clamp();
 });
 
-const casted = Raycast(nodes, walls, (d, n, w) => {
+let casted = Raycast(nodes, walls, (d, n, w) => {
     steps.push(d);
 });
+
+function reRaycast() {
+    steps = [];
+    currentStep = 0;
+    casted = Raycast(nodes, walls, (d, n, w) => {
+        steps.push(d);
+    });
+}
 
 const dt = document.getElementById('info');
 if (dt) {
@@ -153,8 +234,8 @@ if (dt) {
 
 function drawLine(l: Line, style: string, strokeWidth: number = 1) {
     // ctx.beginPath();
-    const ss = { x: (l.sx / w) * 512, y: (l.sy / h) * 512 };
-    const se = { x: (l.ex / w) * 512, y: (l.ey / h) * 512 };
+    const ss = { x: l.sx, y: l.sy };
+    const se = { x: l.ex, y: l.ey };
     // ctx.strokeStyle = style;
     // ctx.lineWidth = strokeWidth;
     // ctx.moveTo(scaledS.x, scaledS.y);
@@ -171,13 +252,13 @@ function drawDot(p: Point, radius: number, style: string) {
     // ctx.arc((p.x / w) * 512, (p.y / h) * 512, radius, 0, 2 * Math.PI);
     // ctx.fill();
     // ctx.stroke();
-    createCircle(drawingLayer, (p.x / w) * 512, (p.y / h) * 512, style, radius);
+    createCircle(drawingLayer, p.x, p.y, style, radius);
 }
 
 function drawStep(st: HookData) {
     switch (st.type) {
         case HookDataType.RayConstructed:
-            console.clear();
+            // console.clear();
             drawLine(st.ray.l, 'lightblue');
             drawDot(nodes[st.ray.ref], 3, 'lightblue');
             break;
@@ -220,7 +301,7 @@ function drawStep(st: HookData) {
                 });
             });
             walls.forEach((w) => {
-                drawLine(w, 'yellow', 10);
+                drawLine(w, 'yellow');
             });
             break;
         case HookDataType.HitRay:
