@@ -9,15 +9,26 @@ function tryPos(generatedNodes: Node[], distance: number, x: number, y: number):
     })
 }
 // TODO: Optimize the if wall or node already exists there continue to something better, to reduce the amount of loops
+export type RandomNodesOptions = {
+    distance?: number;
+    padding?: number;
+    alignment?: number;
+    connections?: number;
+}
+// options used to be distance, alignment, connections
 export function randomNodes2(
     amount: number,
     width: number,
     height: number,
-    distance: number,
-    alignment?: number,
-    minConnections?: number,
+    options: RandomNodesOptions = {}
 ): Node[] {
     const generatedNodes: Node[] = [];
+
+    const distance = options.distance || 1;
+    const padding = options.padding || undefined;
+    const alignment = options.alignment || undefined;
+    const connections = options.connections || undefined;
+
 
     for (let i = 0; i < amount; null) {
         let randomX = Math.floor(Math.random() * width);
@@ -28,37 +39,33 @@ export function randomNodes2(
             randomY = Math.round(randomY / alignment) * alignment;
         }
 
-        
+        // Its supposed to keep nodes from being generated within the distance from the edges
+        if (padding) {
+            if (randomX < padding) {
+                randomX = randomX + padding;
+            } else if (randomX > width - padding) {
+                randomX = randomX - padding;
+            }
+            if (randomY < padding) {
+                randomY = randomY + padding;
+            } else if (randomY > height - padding) {
+                randomY = randomY - padding;
+            }
+        }
 
         const triedPos = tryPos(generatedNodes, distance, randomX, randomY);
         if (triedPos.length > 0) {
-            // this doesnt actually do what its supposed to do
-            if (randomX - distance < distance) {
-                randomX + distance;
-            } else if (randomX > width - distance) {
-                randomX - distance;
-            } else {
-                continue;
-            }
-            // this doesnt actually do what its supposed to do
-            if (randomY - distance < distance) {
-                randomY + distance;
-            } else if (randomY > height - distance) {
-                randomY - distance;
-            } else {
-                continue;
-            }
-            // randomX = randomX - distance;
-            // randomY = randomY - distance;
+            // bad for preformance
+            continue;
         }
         
         generatedNodes.push({ x: randomX, y: randomY, edges: new Set<number>() });
         i++;
     }
 
-    if (minConnections) {
+    if (connections) {
         for (let indux = 0; indux < amount; indux++) {
-            for (let ii = 0; ii < minConnections; ii++) {
+            for (let ii = 0; ii < connections; ii++) {
                 const pair = Math.floor(Math.random() * amount);
                 if (generatedNodes[indux].edges?.has(pair)) {
                     // ii--;
@@ -105,6 +112,13 @@ export function randomWalls2(
         } else {
             // horizontal
             randomEY = randomSY;
+        }
+
+        if (randomEX > width) {
+            randomEX = width;
+        }
+        if (randomEY > height) {
+            randomEY = height;
         }
 
         if (

@@ -23,7 +23,7 @@ function intParam(name: string, defaul: number): number{
     }
 }
 
-const amt = intParam('amt', 256);
+const amt = intParam('amt', 10);
 const count = intParam('count', 500);
 const w = intParam('w', 500);
 const h = intParam('h', 500);
@@ -72,7 +72,11 @@ let datas: any[] = [];
 
 async function doOP() {
     const t1 = performance.now();
-    const _nodes = randomNodes2(amt, w, h, 10, 10);
+    const _nodes = randomNodes2(amt, w, h, {
+        distance: 10,
+        padding: 20,
+        alignment: 10,
+    });
     console.log(_nodes.filter(n => n.x >= w || n.y >= h));
     const t2 = performance.now();
 

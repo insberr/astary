@@ -85,15 +85,27 @@ describe('stress test', () => {
 
 describe('random (canvas size 1000 x 1000)', () => {
     it('should generate random nodes (100 nodes, 10 connections)', () => {
-        const d = astar.randomNodes2(100, 1000, 1000, 5, 0, 10);
+        const d = astar.randomNodes2(100, 1000, 1000, {
+            distance: 5,
+            alignment: 0,
+            connections: 10
+        });
         expect(d).toHaveLength(100);
     });
     it('random graph pathable (100 nodes, 10 connections)', () => {
-        const d = astar.randomNodes2(100, 1000, 1000, 5, 0, 10);
+        const d = astar.randomNodes2(100, 1000, 1000, {
+            distance: 5,
+            alignment: 0,
+            connections: 10
+        });
         astar.AStar(0, 99, d);
     });
     it('should generate random nodes (1000 nodes, 10 connections)', () => {
-        const d = astar.randomNodes2(1000, 5000, 5000, 1, 0, 10);
+        const d = astar.randomNodes2(1000, 5000, 5000, {
+            distance: 5,
+            alignment: 0,
+            connections: 10
+        });
         expect(d).toHaveLength(1000);
     });
     describe('random walls', () => {

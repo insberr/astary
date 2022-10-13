@@ -61,7 +61,11 @@ const resetStorage = params.get('reset') === 'true';
 function getNodesFromStorage(): Node[] {
     const nodes = localStorage.getItem('nodes');
     if (nodes === null) {
-        const newNodes = randomNodes2(s, 512, 512, 5, 20, 1);
+        const newNodes = randomNodes2(s, 512, 512, {
+            distance: 5,
+            alignment: 20,
+            connections: 1
+        });
         localStorage.setItem('nodes', JSON.stringify(newNodes));
         return newNodes;
     }
@@ -129,7 +133,7 @@ function undrawMapFn() {
     nodes = getNodesFromStorage();
     walls = getWallsFromStorage();
     reRaycast();
-    drawingLayer = document.getElementById('drawing-layer') as SVGGElement;
+    drawingLayer = document.getElementById('drawing-layer') as unknown as SVGGElement;
 }
 
 const wh: number[] = [];
