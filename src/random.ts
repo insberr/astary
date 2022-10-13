@@ -1,6 +1,13 @@
 import type { Node } from './astar';
 import type { Line } from './col';
 
+function tryPos(generatedNodes: Node[], distance: number, x: number, y: number): Node[] {
+    return generatedNodes.filter((n) => {
+        if (n.x == x && n.y == y) return false;
+        if ((Math.abs(n.x - x) > distance) || (Math.abs(n.y - y) > distance)) return false;
+        return true;
+    })
+}
 // TODO: Optimize the if wall or node already exists there continue to something better, to reduce the amount of loops
 export function randomNodes2(
     amount: number,
@@ -8,7 +15,7 @@ export function randomNodes2(
     height: number,
     distance: number,
     alignment?: number,
-    mincon: number = 2
+    minConnections?: number,
 ): Node[] {
     const generatedNodes: Node[] = [];
 
@@ -16,51 +23,63 @@ export function randomNodes2(
         let randomX = Math.floor(Math.random() * width);
         let randomY = Math.floor(Math.random() * height);
 
-        if (alignment) {
+        if (alignment && alignment > 1) {
             randomX = Math.round(randomX / alignment) * alignment;
             randomY = Math.round(randomY / alignment) * alignment;
         }
-        if (
-            generatedNodes.filter((n) => {
-                if (n.x == randomX && n.y == randomY) false;
-                if (Math.abs(n.x - randomX) > distance || Math.abs(n.y - randomY) > distance)
-                    return false;
-                return true;
-            }).length !== 0
-        ) {
-            continue;
-        }
 
+        
+
+        const triedPos = tryPos(generatedNodes, distance, randomX, randomY);
+        if (triedPos.length > 0) {
+            // this doesnt actually do what its supposed to do
+            if (randomX - distance < distance) {
+                randomX + distance;
+            } else if (randomX > width - distance) {
+                randomX - distance;
+            } else {
+                continue;
+            }
+            // this doesnt actually do what its supposed to do
+            if (randomY - distance < distance) {
+                randomY + distance;
+            } else if (randomY > height - distance) {
+                randomY - distance;
+            } else {
+                continue;
+            }
+            // randomX = randomX - distance;
+            // randomY = randomY - distance;
+        }
+        
         generatedNodes.push({ x: randomX, y: randomY, edges: new Set<number>() });
         i++;
     }
 
-    return generatedNodes;
-}
+    if (minConnections) {
+        for (let indux = 0; indux < amount; indux++) {
+            for (let ii = 0; ii < minConnections; ii++) {
+                const pair = Math.floor(Math.random() * amount);
+                if (generatedNodes[indux].edges?.has(pair)) {
+                    // ii--;
+                    continue;
+                }
 
-export function randomNodes(amt: number, mincon: number = 2): Node[] {
-    const xy: { x: number; y: number; edges?: Set<number> }[] = [];
-    for (let index = 0; index < amt; index++) {
-        const rx = Math.floor(Math.random() * amt);
-        const ry = Math.floor(Math.random() * amt);
-        xy.push({
-            x: Math.floor(rx),
-            y: Math.floor(ry),
-        });
-    }
-    for (let indux = 0; indux < amt; indux++) {
-        for (let i = 0; i < mincon; i++) {
-            const pair = Math.floor(Math.random() * amt);
-            if (xy[indux].edges?.has(pair)) {
-                i--;
-                continue;
+                let gni = generatedNodes[indux];
+                let gnp = generatedNodes[pair];
+                if (gni.x === gnp.x || gni.y === gnp.y) {
+                    generatedNodes[indux].edges = new Set<number>([...(generatedNodes[indux].edges || []), pair]);
+                    generatedNodes[pair].edges = new Set<number>([...(generatedNodes[pair].edges || []), indux]);
+                } else {
+                    // ii--;
+                    continue;
+                }
+                //console.log(indux,"<=>",pair)
             }
-            xy[indux].edges = new Set<number>([...(xy[indux].edges || []), pair]);
-            xy[pair].edges = new Set<number>([...(xy[pair].edges || []), indux]);
-            //console.log(indux,"<=>",pair)
         }
     }
-    return xy.filter((r) => r.edges != undefined) as Node[];
+
+    return generatedNodes;
 }
 
 export function randomWalls2(
@@ -68,7 +87,8 @@ export function randomWalls2(
     width: number,
     height: number,
     distance: number,
-    direction?: number
+    length?: number,
+    direction?: number,
 ): Line[] {
     const generatedWalls: Line[] = [];
 
@@ -77,8 +97,8 @@ export function randomWalls2(
 
         let randomSX = Math.floor(Math.random() * width);
         let randomSY = Math.floor(Math.random() * height);
-        let randomEX = Math.floor(Math.random() * width);
-        let randomEY = Math.floor(Math.random() * height);
+        let randomEX = length ? randomSX + length : Math.floor(Math.random() * width);
+        let randomEY = length ? randomSY + length : Math.floor(Math.random() * height);
         if (dir === 1) {
             // vertical
             randomEX = randomSX;
@@ -113,20 +133,4 @@ export function randomWalls2(
     }
 
     return generatedWalls;
-}
-
-export function randomWalls(amt: number, space: number, length: number): Line[] {
-    const xy: { sx: number; sy: number; ex: number; ey: number }[] = [];
-    for (let index = 0; index < amt; index++) {
-        const rx = Math.floor(Math.random() * space);
-        const ry = Math.floor(Math.random() * space);
-        const d = Math.floor(Math.random() * 100) > 50 ? 1 : 0;
-        xy.push({
-            sx: rx,
-            sy: ry,
-            ex: d ? rx + length : rx,
-            ey: d ? ry : ry + length,
-        });
-    }
-    return xy;
 }

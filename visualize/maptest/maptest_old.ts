@@ -10,14 +10,17 @@ import {
 } from '../../src/astar';
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
-import { clearG, createCircle, createLayer, createLine, createPath } from '../svgEdit';
-//import eruda from "../eruda";
 
-// @ts-ignore
-import _dt from 'bundle-text:./BHS_Building_Map_SVG.svg';
+import { createCircle, createLayer, createLine, createPath } from '../svgEdit';
 
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';
+//import eruda from "../eruda";
+
+const _d = new URL('./BHS_Building_Map_SVG.svg', import.meta.url);
+// @ts-ignore
+import _dt from 'bundle-text:./BHS_Building_Map_SVG.svg';
+// (async () => { _dt = await fetch(_d.href).then((r) => { return r.text() }) })();
 
 function createElement(str: string): Element | null {
     const temp = document.createElement('template');
@@ -27,43 +30,36 @@ function createElement(str: string): Element | null {
 }
 
 const map_svg = createElement(_dt) as SVGSVGElement;
-if (map_svg === null) {
-    throw new Error('map_svg is null');
+if (map_svg) {
+    map_svg.id = 'map-svg';
+    map_svg.setAttribute('width', '100%');
+    map_svg.setAttribute('height', '');
+    document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
+    // document.getElementById('pathfinding').style.display = 'inline'
 }
-
-map_svg.id = 'map-svg';
-map_svg.setAttribute('width', '100%');
-map_svg.setAttribute('height', '');
-document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
-// document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
 
 const svgDrawLayer = createLayer(map_svg, 'svg-draw-layer', true);
 
-// Display options
-let highlightWalls = false;
-let showText = false;
-let makePath = [1, 4];
+// Silly mobile
+const dpi = window.devicePixelRatio <= 2.84 ? window.devicePixelRatio : 2.84;
+const w = 1920;
+const h = 1080;
+const padding = 42;
 
-const highlightWallsButton = document.getElementById('highlight-walls-btn');
-const showTextButton = document.getElementById('show-text-btn');
-if (highlightWallsButton) {
-    highlightWallsButton.innerText = highlightWalls ? 'Hide Walls' : 'Show Walls';
-
-    highlightWallsButton.addEventListener('click', () => {
-        highlightWalls = !highlightWalls;
-        highlightWallsButton.innerText = highlightWalls ? 'Hide Walls' : 'Show Walls';
-        render();
-    });
+const canva = document.getElementsByTagName('canvas')[0];
+if (!canva) {
+    throw new Error('of');
 }
-if (showTextButton) {
-    showTextButton.innerText = showText ? 'Hide Text' : 'Show Text';
 
-    showTextButton.addEventListener('click', () => {
-        showText = !showText;
-        showTextButton.innerText = showText ? 'Hide Text' : 'Show Text';
-        render();
-    });
-}
+const img = new Image();
+canva.id = 'display';
+canva.width = w * dpi;
+canva.height = h * dpi;
+
+canva.style.width = '100%';
+
+const ctx = canva.getContext('2d');
+ctx?.scale(dpi, dpi);
 
 // For the raycast
 let datas: any[] = [];
@@ -71,18 +67,18 @@ let walls: { sx: number; sy: number; ex: number; ey: number }[] = [];
 let nodes: Node[] = [];
 
 let debounce = false;
-
-const pt = (map_svg as SVGSVGElement).createSVGPoint(); // https://stackoverflow.com/a/42711775/13606260
+var pt = (map_svg as SVGSVGElement).createSVGPoint();
+if (map_svg === null) {
+    throw new Error('map_svg is null');
+}
 
 map_svg.addEventListener('click', function (e) {
     pt.x = e.clientX;
     pt.y = e.clientY;
 
-    // ====== https://stackoverflow.com/a/42711775/13606260
     // The cursor point, translated into svg coordinates
     var cursorpt = pt.matrixTransform(map_svg.getScreenCTM()?.inverse());
-    // console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
-    // ====== End
+    console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
     createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
     nodes.push({
         x: +cursorpt.x.toFixed(),
@@ -95,8 +91,53 @@ map_svg.addEventListener('click', function (e) {
     });
 });
 
+canva.addEventListener(
+    'click',
+    function (e) {
+        if (debounce) return;
+        debounce = true;
+
+        var rect = canva.getBoundingClientRect();
+        var x = ((e.clientX - rect.left) / (rect.right - rect.left)) * canva.width;
+        var y = ((e.clientY - rect.top) / (rect.bottom - rect.top)) * canva.height;
+
+        if (e.shiftKey) {
+            walls.push({
+                sx: x / dpi - 10,
+                sy: y / dpi - 10,
+                ex: x / dpi + 10,
+                ey: y / dpi - 10,
+            });
+            render().then(() => {
+                debounce = false;
+            });
+            return;
+        }
+
+        if (ctx === null) {
+            console.log('click, but ctx is null');
+            return;
+        }
+
+        // var rect = canva.getBoundingClientRect();
+        // var x = ((e.clientX  - rect.left) / (rect.right - rect.left) * canva.width);
+        // var y = ((e.clientY  - rect.top) / (rect.bottom  - rect.top) * canva.height);
+
+        // console.log(x, y)
+        nodes.push({
+            x: +(x / dpi).toFixed(),
+            y: +(y / dpi).toFixed(),
+            edges: new Set<number>(),
+        });
+
+        render().then(() => {
+            debounce = false;
+        });
+    },
+    false
+);
+
 function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
-    /*
     //console.log(HookDataType[data.type], data);
     // render(false);
     if (ctx === null) return;
@@ -110,11 +151,12 @@ function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
 
     ctx.fillStyle = 'white';
     ctx.fillText(data.info, 50, 10);
-    */
 }
 
 async function render(reRaycast: boolean = true) {
-    clearG(svgDrawLayer);
+    if (ctx === null) return;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0);
 
     if (reRaycast) {
         if (nodes.length == 0 || walls.length == 0) {
@@ -143,43 +185,38 @@ async function render(reRaycast: boolean = true) {
 
     // console.log("Nodes: ", nodes);
     // console.log("Walls: ", walls);
-    if (highlightWalls) {
-        walls.forEach((wall) => {
-            createPath(
-                svgDrawLayer,
-                `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`,
-                'orange',
-                2
-            );
-        });
-    }
+
+    walls.forEach((wall) => {
+        createPath(svgDrawLayer, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`, 'orange', 2);
+    });
 
     nodes.forEach((node, i) => {
+        // console.log(node,i)
+        ctx.moveTo(node.x, node.y);
         node.edges.forEach((edge) => {
             const lineColor = nodes[edge].raycast ? 'red' : 'green';
             createPath(
                 svgDrawLayer,
                 `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
                 lineColor,
-                3,
-                0.5
+                4
             );
 
             /*
-            // Some sort of text drawing that shows the node connections of the line
+            ctx.fillStyle = 'white';
             const dist = Math.sqrt(
                 Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
             );
             const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
             // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
-            // ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
+            //ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
             */
         });
     });
 
     nodes.forEach((node, i) => {
         const fillColor = node?.raycast ? 'red' : 'green';
-        const strokeColor = node?.raycast ? 'red' : 'green'; // TODO
+        const strokeColro = node?.raycast ? 'red' : 'green';
         createCircle(svgDrawLayer, node.x, node.y, fillColor, 2.5);
     });
 
@@ -196,16 +233,16 @@ async function render(reRaycast: boolean = true) {
             return;
         }
         */
-        /* // Add createText to svg drawer
+        // if (![42, 6, 86, 87, 88, 89, 90, 91, 92, 64].includes(i)) return;
+
         ctx.fillStyle = 'white'; // "gray";
         // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
         ctx.fillText(
-            // `${i} - [${node.x}, ${node.y}] : ${node.edges}`,
+            /* `${i} - [${node.x}, ${node.y}] : ${node.edges}`, */
             `${i}`,
             node.x, //,
             node.y // - 10
         );
-        */
     });
 
     try {
@@ -216,15 +253,37 @@ async function render(reRaycast: boolean = true) {
             })
         );
 
+        path.forEach((p) => {
+            const nnn = nodes[p];
+            const [nx, ny] = [nnn.x, nnn.y];
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = 'lightblue';
+            ctx.beginPath();
+            ctx.arc(nx, ny, 3, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        });
+
+        // let dPath = '';
         path.forEach((i, ii) => {
+            ctx.lineTo(nodes[i].x, nodes[i].y);
+
             if (nodes[path[ii + 1]]) {
                 const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${
                     nodes[path[ii + 1]].y
                 } Z`;
                 createPath(svgDrawLayer, dPath, 'lightblue', 2, 0.8);
             }
+            //createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', 4, 0.8);
 
-            createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', 2.5, 0.8);
+            /* // Might be easier
+            if (ii !== 0) {
+                dPath += `L${nodes[i].x} ${nodes[i].y} M${nodes[i].x} ${nodes[i].y} `;
+            } else {
+                dPath += `M${nodes[i].x} ${nodes[i].y} `;
+            }
+            */
         });
 
         const f = nodes[path[0]];
@@ -232,6 +291,23 @@ async function render(reRaycast: boolean = true) {
 
         createCircle(svgDrawLayer, f.x, f.y, 'yellow', 5, 0.5);
         createCircle(svgDrawLayer, end.x, end.y, 'yellow', 5, 0.5);
+
+        ctx.strokeStyle = 'yellow';
+        ctx.fillStyle = 'yellow';
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.moveTo(end.x, end.y);
+        ctx.arc(end.x, end.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.moveTo(f.x, f.y);
+        ctx.stroke();
+
+        // ctx.stroke();
+        // ctx.globalAlpha = 1;
+        // ctx.lineWidth = 1;
     } catch (e) {
         console.log(e);
     }
@@ -283,8 +359,6 @@ async function render(reRaycast: boolean = true) {
 }
 
 async function drawDatas(datas: { nodes: Node[]; walls: Line[]; data: HookData }[]) {
-    // someday add steppy to this
-    /*
     if (!ctx) return;
     // if (!speed) return;
     for (const step of datas) {
@@ -312,11 +386,13 @@ async function drawDatas(datas: { nodes: Node[]; walls: Line[]; data: HookData }
             setTimeout(r, 1);
         });
     }
-    */
 }
 
 async function main() {
-    render();
+    img.onload = function () {
+        render();
+    };
+    img.src = _d.href;
 }
 
 main();

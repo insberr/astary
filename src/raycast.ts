@@ -105,6 +105,7 @@ export type HookData =
 export function Raycast(
     nodes: Node[],
     walls: Line[],
+    maxHits?: number,
     _hook?: (data: HookData, nodes?: Node[], walls?: Line[]) => void
 ): Node[] {
     let hook_calls = 0;
@@ -190,6 +191,10 @@ export function Raycast(
             */
             let lastNewNodeIndex = i;
             let hit: Entry | undefined;
+            if (maxHits === 0 || maxHits === undefined) {
+                maxHits = Infinity;
+            }
+            let iterated = 0;
             do {
                 hit = hits.shift();
                 if (hit == undefined) {
@@ -231,15 +236,15 @@ export function Raycast(
                     nodes[lastNewNodeIndex].edges.add(hid);
                     const rayEntryHitNode = constructRayEntry(i, nodes, hit.c);
                     if (rayEntryHitNode.zeroLength) {
-                        console.log(
-                            'rayEntryHitNode is zero length\nNode',
-                            nodes[i],
-                            i,
-                            '\nHit: ',
-                            hit,
-                            '\nRay: ',
-                            ray
-                        );
+                        // console.log(
+                        //     'rayEntryHitNode is zero length\nNode',
+                        //     nodes[i],
+                        //     i,
+                        //     '\nHit: ',
+                        //     hit,
+                        //     '\nRay: ',
+                        //     ray
+                        // );
                     } else {
                         entries.push(rayEntryHitNode);
                     }
@@ -266,11 +271,11 @@ export function Raycast(
                     if (!hitpos) {
                         throw new Error('This shouldnt be possible and is a bug');
                     }
-                    if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
+                    // if (isNaN(hitpos.x) || isNaN(hitpos.y)) console.log(hitpos);
 
                     const rayEntryHitWall = constructRayEntry(i, nodes, hitpos);
                     if (rayEntryHitWall.zeroLength) {
-                        console.log(
+                        /*console.log(
                             'rayEntryHitWall is zero length\nNode: ',
                             nodes[i],
                             i,
@@ -280,7 +285,7 @@ export function Raycast(
                             ray,
                             '\nHitpos: ',
                             hitpos
-                        );
+                        );*/
                         // we are likely on the wall
                         return;
                     } else {
@@ -299,6 +304,8 @@ export function Raycast(
                     if (nodes[ray.ref].edges.has(hit.ref)) {
                         continue;
                     }
+
+                    iterated++;
                     // ray collision pos
                     const rayCollidePos = LLI(hit.l, ray.l);
 
@@ -323,13 +330,15 @@ export function Raycast(
                     }
                     // create new entry for such line
 
+                    /*
                     if (isNaN(rayCollidePos.x) || isNaN(rayCollidePos.y)) {
                         console.log(lastNewNodeIndex, hit, ray);
                     }
+                    */
 
                     const rayEntryHitRay = constructRayEntry(i, nodes, rayCollidePos);
                     if (rayEntryHitRay.zeroLength) {
-                        console.log(
+                        /*console.log(
                             'rayEntryHitRay is zero length\nNode',
                             nodes[i],
                             i,
@@ -339,7 +348,7 @@ export function Raycast(
                             ray,
                             '\nRayCollidePos: ',
                             rayCollidePos
-                        );
+                        );*/
                     } else {
                         entries.push(rayEntryHitRay);
                     }
@@ -375,13 +384,16 @@ export function Raycast(
                     const splitted = split(hit.l, rayCollidePos);
                     newR1.l = splitted[0];
                     newR2.l = splitted[1];
-                    newR2.ref =
-                        nodes.push({
-                            x: rayCollidePos.x,
-                            y: rayCollidePos.y,
-                            raycast: true,
-                            edges: new Set<number>(tedge),
-                        }) - 1;
+
+                    const newNode = {
+                        x: rayCollidePos.x,
+                        y: rayCollidePos.y,
+                        raycast: true,
+                        edges: new Set<number>(tedge),
+                    }
+
+                    if (nodes.filter(n => n.x == newNode.x && n.y == newNode.y).length > 0) continue;
+                    newR2.ref = nodes.push(newNode) - 1;
                     lastNewNodeIndex = newR2.ref;
                     const rid = entries.indexOf(hit);
                     if (rid != -1) {
@@ -456,7 +468,7 @@ export function Raycast(
                     //     continue;
                 }
                 // console.log('uh this shouldnt run');
-            } while (hit?.t == 'ray');
+            } while (maxHits > iterated && hit?.t == 'ray');
         });
     });
 

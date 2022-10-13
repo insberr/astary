@@ -18,7 +18,7 @@ export function createLayer(
     return g;
 }
 
-export function clearG(svg: SVGGElement) {
+export function clearG(svg: SVGGElement | HTMLElement) {
     svg.innerHTML = '';
 }
 
@@ -41,6 +41,29 @@ export function createText(
     textEl.setAttribute('opacity', opacity ? opacity.toString() : '1');
     textEl.innerHTML = text;
     svg.appendChild(textEl);
+}
+
+export function createRect(
+    svg: HTMLElement | SVGGElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    stroke: string,
+    fill?: string,
+    strokeWidth?: number,
+    opacity?: number
+) {
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x.toString());
+    rect.setAttribute('y', y.toString());
+    rect.setAttribute('width', width.toString());
+    rect.setAttribute('height', height.toString());
+    rect.setAttribute('fill', fill || 'none');
+    rect.setAttribute('stroke', stroke || 'black');
+    rect.setAttribute('stroke-width', strokeWidth ? strokeWidth.toString() : '1');
+    rect.setAttribute('opacity', opacity ? opacity.toString() : '1');
+    svg.appendChild(rect);
 }
 
 export function createCircle(
