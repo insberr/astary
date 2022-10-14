@@ -72,14 +72,17 @@ export function createCircle(
     y: number,
     color?: string,
     radius?: number,
-    opacity?: number
+    opacity?: number,
+    id?: string,
 ) {
+    const existingCircles = Array.from(svg.children).filter((child) => child.tagName === 'circle');
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circle.setAttribute('cx', x.toString());
     circle.setAttribute('cy', y.toString());
     circle.setAttribute('r', radius ? radius.toString() : (2.5).toString());
     circle.setAttribute('fill-opacity', opacity ? opacity.toString() : '1');
     circle.setAttribute('fill', color || 'red');
+    circle.setAttribute('id', 'circle-' + (id || existingCircles.length));
     svg.appendChild(circle);
 }
 

@@ -254,14 +254,14 @@ function drawLine(l: Line, style: string, strokeWidth: number = 1) {
     createPath(drawingLayer, `M${ss.x} ${ss.y} L${se.x} ${se.y}`, style, strokeWidth);
 }
 
-function drawDot(p: Point, radius: number, style: string) {
+function drawDot(p: Point, radius: number, style: string, id: string | number) {
     // ctx.beginPath();
     // ctx.strokeStyle = style;
     // ctx.fillStyle = style;
     // ctx.arc((p.x / w) * 512, (p.y / h) * 512, radius, 0, 2 * Math.PI);
     // ctx.fill();
     // ctx.stroke();
-    createCircle(drawingLayer, p.x, p.y, style, radius);
+    createCircle(drawingLayer, p.x, p.y, style, radius, 1, id+"");
 }
 
 function drawStep(st: HookData) {
@@ -269,19 +269,19 @@ function drawStep(st: HookData) {
         case HookDataType.RayConstructed:
             // console.clear();
             drawLine(st.ray.l, 'lightblue');
-            drawDot(nodes[st.ray.ref], 3, 'lightblue');
+            drawDot(nodes[st.ray.ref], 3, 'lightblue', st.ray.ref);
             break;
         case HookDataType.RayHits:
             console.log(st.hits);
             drawLine(st.ray.l, 'blue');
-            drawDot(nodes[st.ray.ref], 3, 'blue');
+            drawDot(nodes[st.ray.ref], 3, 'blue', st.ray.ref);
             st.hits.forEach((h) => {
                 if (h.ref == st.ray.ref) {
                     return;
                 }
                 switch (h.t) {
                     case 'node':
-                        drawDot(h.c, 3, 'blue');
+                        drawDot(h.c, 3, 'blue', h.ref);
                         break;
                     case 'wall':
                         drawLine(h.ref, 'blue');
@@ -293,7 +293,7 @@ function drawStep(st: HookData) {
             });
             break;
         case HookDataType.HitNode:
-            drawDot(nodes[st.hit.ref as number], 3, 'green');
+            drawDot(nodes[st.hit.ref as number], 3, 'green', st.ray.ref+'ray');
             drawLine(st.ray.l, 'green');
             break;
         case HookDataType.HitWall:
@@ -303,8 +303,8 @@ function drawStep(st: HookData) {
         case HookDataType.Finished:
             // ctx.clearRect(0, 0, canvas.width, canvas.height);
             clearG(drawingLayer);
-            casted.forEach((c) => {
-                drawDot(c, 3, c.raycast ? 'orange' : 'green');
+            casted.forEach((c, iii) => {
+                drawDot(c, 3, c.raycast ? 'orange' : 'green', iii);
                 c.edges.forEach((ed) => {
                     drawLine({ sx: c.x, sy: c.y, ex: nodes[ed].x, ey: nodes[ed].y }, 'green');
                 });
@@ -320,7 +320,7 @@ function drawStep(st: HookData) {
         case HookDataType.HitRayNewNode:
             drawLine((st.hit as RayE).l, 'green');
             drawLine(st.ray.l, 'green');
-            drawDot(st.newNode, 3, 'green');
+            drawDot(st.newNode, 3, 'green', nodes.indexOf(st.newNode));
             break;
     }
 }
@@ -354,7 +354,7 @@ function draw() {
     cstep.entries.forEach((t) => {
         switch (t.t) {
             case 'node':
-                drawDot(t.c, 2, nodes[t.ref].raycast ? 'orange' : 'red');
+                drawDot(t.c, 2, nodes[t.ref].raycast ? 'orange' : 'red', t.ref);
                 break;
             case 'wall':
                 drawLine(t.ref, 'yellow');

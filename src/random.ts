@@ -59,7 +59,7 @@ export function randomNodes2(
             continue;
         }
         
-        generatedNodes.push({ x: randomX, y: randomY, edges: new Set<number>() });
+        generatedNodes.push({ x: randomX, y: randomY, edges: new Set<number>(), addlWeight: Math.floor(Math.random() * 100) });
         i++;
     }
 

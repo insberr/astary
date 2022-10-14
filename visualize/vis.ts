@@ -23,7 +23,7 @@ function intParam(name: string, defaul: number): number{
     }
 }
 
-const amt = intParam('amt', 10);
+const amt = intParam('amt', 50);
 const count = intParam('count', 500);
 const w = intParam('w', 500);
 const h = intParam('h', 500);
@@ -77,13 +77,13 @@ async function doOP() {
         padding: 20,
         alignment: 10,
     });
-    console.log(_nodes.filter(n => n.x >= w || n.y >= h));
+    // console.log(_nodes.filter(n => n.x >= w || n.y >= h));
     const t2 = performance.now();
 
     const walls = randomWalls2(20, w, h, 5, 100);
     const t6 = performance.now();
 
-    const raycastNodes = await Raycast(_nodes, walls, 2);
+    const raycastNodes = await Raycast(_nodes, walls);
 
     const t7 = performance.now();
     clearG(draw);
