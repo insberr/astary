@@ -1,6 +1,6 @@
 import type { Node } from './astar';
 import structuredClone from '@ungap/structured-clone';
-import { Line, Entry, Point, RayE, NodeE, WallE, fastDist } from './col';
+import { Line, Entry, Point, RayE, NodeE, WallE, fastDist, betterDistance } from './col';
 import {
     constructNodeEntry,
     constructWallEntry,
@@ -168,9 +168,9 @@ export function Raycast(
             // begin absolute chonker of a line
             const hits = entries
                 .filter((e) => {
-                    return e.ref !== i && collide(ray, e);
+                    return (e.t !== 'wall' ? (e.ref !== i) : true) && collide(ray, e);
                 })
-                .sort((a, b) => distance(a, node) - distance(b, node));
+                .sort((a, b) => betterDistance(ray, a) - betterDistance(ray, b));
 
             if (_hook) {
                 hook_calls++;

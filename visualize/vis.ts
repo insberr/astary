@@ -25,8 +25,8 @@ function intParam(name: string, defaul: number): number{
 
 const amt = intParam('amt', 50);
 const count = intParam('count', 500);
-const w = intParam('w', 500);
-const h = intParam('h', 500);
+const w = intParam('w', 1000);
+const h = intParam('h', 1000);
 
 const conAmt = 1;
 const ele = document.getElementById('mes');
@@ -83,7 +83,7 @@ async function doOP() {
     const walls = randomWalls2(20, w, h, 5, 100);
     const t6 = performance.now();
 
-    const raycastNodes = await Raycast(_nodes, walls);
+    const raycastNodes = _nodes;//await Raycast(_nodes, walls);
 
     const t7 = performance.now();
     clearG(draw);

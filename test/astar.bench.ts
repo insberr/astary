@@ -3,8 +3,8 @@ import { benchmarkSuite } from 'jest-bench';
 import { AStar, randomNodes2, Raycast } from '../src/astar';
 const rng = (max: number) => Math.floor(Math.random() * max);
 
-const width = 5000;
-const height = 5000;
+const width = 50000;
+const height = 50000;
 
 let hundred = randomNodes2(100, width, height, {
     connections: 5

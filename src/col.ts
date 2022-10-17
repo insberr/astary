@@ -156,6 +156,29 @@ export function distance(entry: Entry, p: Point): number {
     }
 }
 
+export function betterPointLineDistance(ray: RayE, line: Line): number {
+    // find intersect point
+    const intersect = LLI(ray.l, line);
+
+    // do point to point distnace
+    if (intersect === false) {
+        return 0;
+    }
+
+    return fastDist(ray.l.sx, ray.l.sy, intersect.x, intersect.y);
+}
+export function betterDistance(ray: RayE, entry: Entry): number {
+    if (entry.t == 'node') {
+        return fastDist(entry.c.x, entry.c.y, ray.l.sx, ray.l.sy);
+    } else if (entry.t == 'wall') {
+        return betterPointLineDistance(ray, entry.ref);
+    } else if (entry.t == 'ray') {
+        return betterPointLineDistance(ray, entry.l);
+    } else {
+        throw new Error('Unknown entry: ' + entry);
+    }
+}
+
 export function collide(entry1: Entry, entry2: Entry): boolean {
     // This function could probably be optimized but idgaf
     if (entry1.t == 'node') {
