@@ -1,12 +1,18 @@
-import type { Node } from './astar';
+import type { NewNode, Node } from './astar';
 import type { Line } from './col';
 
-function tryPos(generatedNodes: Node[], distance: number, x: number, y: number): Node[] {
-    return generatedNodes.filter((n) => {
+function tryPos(
+    generatedNodes: NewNode[] | Node[],
+    distance: number,
+    x: number,
+    y: number
+): NewNode[] | Node[] {
+    // bad
+    return (generatedNodes as NewNode[]).filter((n: NewNode | Node) => {
         if (n.x == x && n.y == y) return false;
-        if ((Math.abs(n.x - x) > distance) || (Math.abs(n.y - y) > distance)) return false;
+        if (Math.abs(n.x - x) > distance || Math.abs(n.y - y) > distance) return false;
         return true;
-    })
+    });
 }
 // TODO: Optimize the if wall or node already exists there continue to something better, to reduce the amount of loops
 export type RandomNodesOptions = {
@@ -14,7 +20,7 @@ export type RandomNodesOptions = {
     padding?: number;
     alignment?: number;
     connections?: number;
-}
+};
 // options used to be distance, alignment, connections
 export function randomNodes2(
     amount: number,
@@ -28,7 +34,6 @@ export function randomNodes2(
     const padding = options.padding || undefined;
     const alignment = options.alignment || undefined;
     const connections = options.connections || undefined;
-
 
     for (let i = 0; i < amount; null) {
         let randomX = Math.floor(Math.random() * width);
@@ -58,8 +63,13 @@ export function randomNodes2(
             // bad for preformance
             continue;
         }
-        
-        generatedNodes.push({ x: randomX, y: randomY, edges: new Set<number>(), addlWeight: Math.floor(Math.random() * 100) });
+
+        generatedNodes.push({
+            x: randomX,
+            y: randomY,
+            edges: new Set<number>(),
+            addlWeight: Math.floor(Math.random() * 100),
+        });
         i++;
     }
 
@@ -75,8 +85,14 @@ export function randomNodes2(
                 let gni = generatedNodes[indux];
                 let gnp = generatedNodes[pair];
                 if (gni.x === gnp.x || gni.y === gnp.y) {
-                    generatedNodes[indux].edges = new Set<number>([...(generatedNodes[indux].edges || []), pair]);
-                    generatedNodes[pair].edges = new Set<number>([...(generatedNodes[pair].edges || []), indux]);
+                    generatedNodes[indux].edges = new Set<number>([
+                        ...(generatedNodes[indux].edges || []),
+                        pair,
+                    ]);
+                    generatedNodes[pair].edges = new Set<number>([
+                        ...(generatedNodes[pair].edges || []),
+                        indux,
+                    ]);
                 } else {
                     // ii--;
                     continue;
@@ -89,13 +105,66 @@ export function randomNodes2(
     return generatedNodes;
 }
 
+export function randomNodes3(
+    amount: number,
+    width: number,
+    height: number,
+    options: RandomNodesOptions = {}
+): NewNode[] {
+    const generatedNodes: NewNode[] = [];
+
+    const distance = options.distance || 1;
+    const padding = options.padding || undefined;
+    const alignment = options.alignment || undefined;
+
+    for (let i = 0; i < amount; null) {
+        let randomX = Math.floor(Math.random() * width);
+        let randomY = Math.floor(Math.random() * height);
+
+        if (alignment && alignment > 1) {
+            randomX = Math.round(randomX / alignment) * alignment;
+            randomY = Math.round(randomY / alignment) * alignment;
+        }
+
+        // Its supposed to keep nodes from being generated within the distance from the edges
+        if (padding) {
+            if (randomX < padding) {
+                randomX = randomX + padding;
+            } else if (randomX > width - padding) {
+                randomX = randomX - padding;
+            }
+            if (randomY < padding) {
+                randomY = randomY + padding;
+            } else if (randomY > height - padding) {
+                randomY = randomY - padding;
+            }
+        }
+
+        const triedPos = tryPos(generatedNodes, distance, randomX, randomY);
+        if (triedPos.length > 0) {
+            // bad for preformance
+            continue;
+        }
+
+        generatedNodes.push({
+            x: randomX,
+            y: randomY,
+            edges: {},
+            weight: Math.floor(Math.random() * 100),
+        });
+        i++;
+    }
+
+    return generatedNodes;
+}
+
 export function randomWalls2(
     amount: number,
     width: number,
     height: number,
     distance: number,
     length?: number,
-    direction?: number,
+    direction?: number
 ): Line[] {
     const generatedWalls: Line[] = [];
 

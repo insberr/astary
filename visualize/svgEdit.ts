@@ -30,7 +30,8 @@ export function createText(
     color?: string,
     size?: number,
     font?: string,
-    opacity?: number
+    opacity?: number,
+    id?: string
 ) {
     const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     textEl.setAttribute('x', x.toString());
@@ -39,6 +40,7 @@ export function createText(
     textEl.setAttribute('font-size', size ? size.toString() : '12');
     textEl.setAttribute('font-family', font || 'Arial');
     textEl.setAttribute('opacity', opacity ? opacity.toString() : '1');
+    textEl.setAttribute('id', id || 'made-up-id');
     textEl.innerHTML = text;
     svg.appendChild(textEl);
 }
@@ -73,7 +75,7 @@ export function createCircle(
     color?: string,
     radius?: number,
     opacity?: number,
-    id?: string,
+    id?: string
 ) {
     const existingCircles = Array.from(svg.children).filter((child) => child.tagName === 'circle');
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -94,7 +96,8 @@ export function createLine(
     y2: number,
     width?: number,
     color?: string,
-    opacity?: number
+    opacity?: number,
+    id?: string
 ) {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1.toString());
@@ -104,6 +107,7 @@ export function createLine(
     line.setAttribute('stroke', color || 'red');
     line.setAttribute('stroke-width', width ? width.toString() : '1');
     line.setAttribute('stroke-opacity', opacity ? opacity.toString() : '1');
+    line.setAttribute('id', id || 'line-' + Math.random());
 
     svg.appendChild(line);
 }
@@ -123,6 +127,11 @@ export function createPath(
     pathEl.setAttribute('stroke-opacity', opacity ? opacity.toString() : '1');
     pathEl.setAttribute('stroke-linejoin', 'round');
     svg.appendChild(pathEl);
+}
+
+export function deleteDraw(svg: SVGGElement, id: string) {
+    const el = document.getElementById(id);
+    if (el) svg.removeChild(el);
 }
 
 export class SvgDraw {

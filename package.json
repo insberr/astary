@@ -39,14 +39,16 @@
         "format": "prettier --write .",
         "postinstall": "husky install",
         "postpack": "pinst --enable",
-        "upgrade:latest": "yarn up \"*\" \"@*/*\""
+        "upgrade:latest": "yarn up \"*\" \"@*/*\"",
+        "rewritetest": "ts-node test/rewrite.ts"
     },
     "dependencies": {
         "@ungap/structured-clone": "^1.0.1",
         "heap-js": "^2.2.0",
         "json-viewer-js": "^1.0.8",
         "svg-parser": "^2.0.4",
-        "svg-path-parser": "^1.1.0"
+        "svg-path-parser": "^1.1.0",
+        "ts-node": "^10.9.1"
     },
     "targets": {
         "main": {
