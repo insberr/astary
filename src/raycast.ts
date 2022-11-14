@@ -140,6 +140,7 @@ export type LineSegment = {
 export type NewNode = {
     x: number;
     y: number;
+    createdByRaycast?: boolean;
     edges: {
         [key: number]: Set<number>;
     };
@@ -191,34 +192,26 @@ export function createPointsAtRayLineIntersections(
     // when a node is created, add it to the hits of both rays
     for (const ray of rays) {
         if (ray.used) continue;
-        let raysHit = rays.map((r) => {
-            if (r.used) return null;
+        const raysHit: { ray: LineRay; collisionPos: Point }[] = [];
+        for (const r of rays) {
+            if (r.used) continue;
             // ! change this to box collision for margin
             const p = findLineSegmentsIntersect({ s: r.s, e: r.e }, { s: ray.s, e: ray.e });
-            if (!p) return null;
-            return { ray: r, collisionPos: p };
-        });
-        // probably not efficient
-        const newRaysHit = raysHit.filter((r) => r !== null);
+            if (!p) continue;
+            raysHit.push({ ray: r, collisionPos: p });
+        }
 
         if (raysHit.length === 0) continue;
         let connectionsMade = 0;
-        for (const hitRay of newRaysHit) {
-            if (connectionsMade >= maxConnections) break;
-            if (hitRay === null) {
-                console.log(
-                    new Error(
-                        'This is impossible: hitRay is null in createPointsAtRayLineIntersections'
-                    )
-                );
-                continue;
-            }
+        for (const hitRay of raysHit) {
+            if (maxConnections !== -1 && connectionsMade >= maxConnections) break;
             const hitP = hitRay.collisionPos;
             const hitR = hitRay.ray;
 
             const newNode = {
-                x: hitP.x,
-                y: hitP.y,
+                x: +hitP.x.toPrecision(4),
+                y: +hitP.y.toPrecision(4),
+                createdByRaycast: true,
                 edges: {},
                 weight: 0,
             };
@@ -242,10 +235,10 @@ export function createPointsAtRayLineIntersections(
                 ),
                 collisionPos: hitP,
             });
-            hitR.used = true;
-        }
 
-        ray.used = true;
+            hitR.used = true;
+            ray.used = true;
+        }
     }
     return nodes;
 }
@@ -389,6 +382,8 @@ function createLineRays(
 
     const rays: LineRay[] = [];
     for (const node of nodes) {
+        // maybe add an option for this...
+        if (node.createdByRaycast) continue;
         for (const direction of directions) {
             const ray: LineRay = {
                 s: { x: node.x, y: node.y },
@@ -462,6 +457,7 @@ export function Raycast(
     options?: {
         _hook?: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => void;
         margin?: number;
+        minDistance?: number;
         directions?: Direction[];
         // including these will speed up the code a bit
         width?: number;
@@ -469,8 +465,10 @@ export function Raycast(
         // just connect the points, dont create any points where rays collide
         justConnect?: boolean;
         maxConnections?: number;
+        rays?: LineRay[];
+        forceRayRecreation?: boolean;
     }
-): [NewNode[], LineRay[]] {
+): { nodes: NewNode[]; rays: LineRay[] } {
     const directions: Direction[] = options?.directions || [
         { x: 0, y: 1 }, // up
         { x: 0, y: -1 }, // down
@@ -487,23 +485,29 @@ export function Raycast(
             : findWithHeight(nodes, walls);
 
     // all nodes cast rays in all specified directions; store those rays in a new value.
-    const rays: LineRay[] = createLineRays(nodes, walls, directions, options?.margin || 0, {
-        width: width,
-        height: height,
-    });
+    const rays: LineRay[] =
+        options?.rays && options.rays.length > 0
+            ? options.rays.map((r) => {
+                  r.used = false;
+                  return r;
+              })
+            : createLineRays(nodes, walls, directions, options?.margin || 0, {
+                  width: width,
+                  height: height,
+              });
 
     // console.dir(rays, { depth: 50 });
 
     // create nodes at all points where rays intersect, store those nodes in a seperate new value.
 
     // CURRENTLY CREATES SO MANY EXTRA NODES FOR SOME REASON
-    // const nodesAtRayIntersections: NewNode[] = createPointsAtRayLineIntersections(
-    //     rays,
-    //     nodes,
-    //     walls,
-    //     options?.margin || 0,
-    //     options?.maxConnections || 2
-    // );
+    const nodesAtRayIntersections: NewNode[] = createPointsAtRayLineIntersections(
+        rays,
+        nodes,
+        walls,
+        options?.margin || 0,
+        options?.maxConnections || -1
+    );
     // console.log(nodesAtRayIntersections);
 
     // Create new value thats the original and created points combined.
@@ -513,5 +517,5 @@ export function Raycast(
     // - use point connection algor to connect every point correctly smh
     // done, should solve a lot of problems if its done that way.
     // forgot to include walls damn it. ill update this for walls later
-    return [allNodes, rays];
+    return { nodes: allNodes, rays: rays };
 }

@@ -219,13 +219,14 @@ async function render(reRaycast: boolean = true) {
         } else {
             datas = [];
             const perRaycastStart = performance.now();
-            let [n, r] = await Raycast(nodes, walls, {
+            let { nodes: n, rays: r } = await Raycast(nodes, walls, {
                 _hook: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => {
                     datas.push({ data });
                 },
                 width: width,
                 height: height,
                 maxConnections: 2,
+                // rays: rays,
             });
             const perRaycastEnd = performance.now();
             perRaycast.push(perRaycastEnd - perRaycastStart);
@@ -233,19 +234,6 @@ async function render(reRaycast: boolean = true) {
             rays = r;
         }
     }
-
-    // console.log("Nodes: ", nodes);
-    // console.log("Walls: ", walls);
-    // if (highlightWalls) {
-    //     walls.forEach((wall) => {
-    //         createPath(
-    //             svgDrawLayer,
-    //             `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`,
-    //             'orange',
-    //             2
-    //         );
-    //     });
-    // }
 
     // nodes.forEach((node, i) => {
     //     node.edges.forEach((edge) => {

@@ -150,7 +150,7 @@ export function randomNodes3(
             x: randomX,
             y: randomY,
             edges: {},
-            weight: Math.floor(Math.random() * 100),
+            weight: 0,
         });
         i++;
     }
