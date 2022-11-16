@@ -235,6 +235,9 @@ export function createPointsAtRayLineIntersections(
             };
 
             if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
+
+            // if point already exists.
+            // ADD MAKING IT STILL ADD THE COLLISION TO THE NODE TO THE RAY OOPS
             if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
 
             connectionsMade++;
@@ -492,6 +495,8 @@ export function connectHitNodesAlgorithm(
                 );
             }
 
+            
+
             // only does the first hit pain
 
             // ray.referenceNode.edges.datas.push({
@@ -513,6 +518,7 @@ export function connectHitNodesAlgorithm(
             //     },
             // });
             (hit.object as NewNode).edges.indexes.add(lastNodeIndex);
+            if (!(hit.object as NewNode).createdByRaycast) break;
             lastNode = hit.object as NewNode;
             // add loop
         }
