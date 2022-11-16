@@ -257,7 +257,7 @@ export function createPointsAtRayLineIntersections(
             connectionsMade++;
             const existingNode = nodes.find((n) => n.x === newNode.x && n.y === newNode.y);
             if (existingNode === undefined) nodes.push(newNode);
-            if (!existingNode.createdByRaycast) break;
+            if (existingNode !== undefined && !existingNode.createdByRaycast) break;
             
             
 
