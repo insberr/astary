@@ -1,19 +1,20 @@
 import Heap from 'heap-js';
 //import { makeNodes, makeUint8ClampedArray } from "./makeNodes";
 import { generateNodes, generateWalls, svgToPaths } from './generateNodesFromSVG';
+import { NewNode } from './raycast';
 
-export type Node = {
-    x: number;
-    y: number;
-    // o[x|y] is the original x or y value
-    dx?: number;
-    dy?: number;
-    ox?: number;
-    oy?: number;
-    addlWeight?: number;
-    raycast?: boolean;
-    edges: Set<number>;
-};
+export type Node = NewNode; // {
+//     x: number;
+//     y: number;
+//     // o[x|y] is the original x or y value
+//     dx?: number;
+//     dy?: number;
+//     ox?: number;
+//     oy?: number;
+//     addlWeight?: number;
+//     raycast?: boolean;
+//     edges: Set<number>;
+// };
 
 /* from wikipedia
 // https://en.wikipedia.org/wiki/A*_search_algorithm
@@ -83,7 +84,7 @@ function reconstruct_path(cameFrom: Map<number, number>, current: number): numbe
 }
 
 function edgeW(current: number, nei: number, nodes: Node[]): number {
-    const w = (nodes[current].addlWeight || 0) + (nodes[nei].addlWeight || 0);
+    const w = (nodes[current].weight || 0) + (nodes[nei].weight || 0);
     return (
         w +
         Math.sqrt(
@@ -125,7 +126,7 @@ function AStar(start: number, goal: number, nodes: Node[]): number[] {
         }
         //console.log("visited", current)
         openSet.remove(current);
-        for (const neighbor of nodes[current].edges) {
+        for (const neighbor of nodes[current].edges.indexes) {
             const tentative_gScore = gInfinite(gScore, current) + edgeW(current, neighbor, nodes);
             //console.log(gScore)
             //console.log("tentative_gScore", tentative_gScore, "gScore", gInfinite(gScore,neighbor))

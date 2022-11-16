@@ -74,13 +74,13 @@ Amount of Nodes: ${amount} \
 // map_svg.setAttribute('height', '');
 // document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
 // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
-const width = 50;
-const height = 50;
-const amount = 10;
-const genRandom: boolean = false;
-const overideRenderTimeout: number | null = 10;
+const width = 500;
+const height = 500;
+const amount = 50;
+const genRandom: boolean = true;
+const overideRenderTimeout: number | null = null;
 const stressTest = false;
-const size = 1;
+const size = 2;
 
 const drawSvg = document.getElementById('drawing-svg');
 if (drawSvg === null) {
@@ -97,11 +97,11 @@ drawSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 let originalNodes: NewNode[] = genRandom
     ? randomNodes3(amount, width, height, { padding: 10, distance: 5, alignment: 5 })
     : [
-          { x: 5, y: 5, edges: {} },
-          { x: 10, y: 2, edges: {} },
-          { x: 20, y: 10, edges: {} },
-          { x: 2, y: 10, edges: {} },
-          { x: 20, y: 25, edges: {} },
+          { x: 5, y: 5, edges: { indexes: [], datas: [] } },
+          { x: 10, y: 2, edges: { indexes: [], datas: [] } },
+          { x: 20, y: 10, edges: { indexes: [], datas: [] } },
+          { x: 2, y: 10, edges: { indexes: [], datas: [] } },
+          { x: 20, y: 25, edges: { indexes: [], datas: [] } },
       ];
 let nodes: NewNode[] = _.cloneDeep(originalNodes);
 // @ts-ignore
@@ -253,7 +253,7 @@ async function render(reRaycast: boolean = true) {
             let { nodes: n, rays: r } = await Raycast(_.cloneDeep(originalNodes), walls, {
                 width: width,
                 height: height,
-                // maxConnections: 2,
+                maxConnections: -1,
             });
             const perRaycastEnd = performance.now();
             perRaycast.push(perRaycastEnd - perRaycastStart);

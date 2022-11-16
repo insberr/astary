@@ -12,7 +12,7 @@ import {
 } from '../../src/astar';
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
-import { clearG, createCircle, createLayer, createLine, createPath } from '../svgEdit';
+import { clearG, createCircle, createLayer, createLine, createPath, createText } from '../svgEdit';
 //import eruda from "../eruda";
 
 // @ts-ignore
@@ -54,7 +54,7 @@ if (highlightWallsButton) {
     highlightWallsButton.addEventListener('click', () => {
         highlightWalls = !highlightWalls;
         highlightWallsButton.innerText = highlightWalls ? 'Hide Walls' : 'Show Walls';
-        render();
+        render(true);
     });
 }
 if (showTextButton) {
@@ -63,7 +63,7 @@ if (showTextButton) {
     showTextButton.addEventListener('click', () => {
         showText = !showText;
         showTextButton.innerText = showText ? 'Hide Text' : 'Show Text';
-        render();
+        render(true);
     });
 }
 
@@ -86,13 +86,16 @@ map_svg.addEventListener('click', function (e) {
     // console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
     // ====== End
     createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
-    nodes.push({
+    // nodes.push();
+
+    render(true, {
         x: +cursorpt.x.toFixed(),
         y: +cursorpt.y.toFixed(),
-        edges: {},
-    });
-
-    render().then(() => {
+        edges: {
+            indexes: new Set<number>(),
+            datas: [],
+        },
+    }).then(() => {
         debounce = false;
     });
 });
@@ -115,7 +118,7 @@ function raycastHook(nodes: Node[], walls: Line[], data: HookData) {
     */
 }
 
-async function render(reRaycast: boolean = true) {
+async function render(reRaycast: boolean = true, pushNode?: NewNode) {
     clearG(svgDrawLayer);
 
     if (reRaycast) {
@@ -125,19 +128,22 @@ async function render(reRaycast: boolean = true) {
             walls = await generateWalls(svgPaths);
 
             const { nodes: n, rays: r } = await Raycast(await generateNodes(svgPaths), walls, {
-                hook: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => {
-                    datas.push({ nodes, walls, data });
-                },
+                width: 1920,
+                height: 1080,
             });
             nodes = n;
+            // console.log(n);
         } else {
             datas = [];
-            const { nodes: n, rays: r } = await Raycast(nodes, walls, {
-                hook: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => {
-                    datas.push({ nodes, walls, data });
-                },
+            const svgPaths = await svgToPaths(_dt, defaultFilterFunction);
+            const p = await generateNodes(svgPaths);
+            if (pushNode) p.push(pushNode);
+            const { nodes: n, rays: r } = await Raycast(p, walls, {
+                width: 1920,
+                height: 1080,
             });
             nodes = n;
+            // console.log(n);
         }
     }
 
@@ -154,33 +160,34 @@ async function render(reRaycast: boolean = true) {
         });
     }
 
-    // nodes.forEach((node, i) => {
-    //     node.edges.forEach((edge) => {
-    //         const lineColor = nodes[edge].raycast ? 'red' : 'green';
-    //         createPath(
-    //             svgDrawLayer,
-    //             `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
-    //             lineColor,
-    //             3,
-    //             0.5
-    //         );
+    nodes.forEach((node, i) => {
+        node.edges.indexes.forEach((edge) => {
+            const lineColor = nodes[edge].createdByRaycast ? 'red' : 'green';
+            createPath(
+                svgDrawLayer,
+                `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
+                lineColor,
+                3,
+                0.5
+            );
 
-    //         /*
-    //         // Some sort of text drawing that shows the node connections of the line
-    //         const dist = Math.sqrt(
-    //             Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
-    //         );
-    //         const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
-    //         // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
-    //         // ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
-    //         */
-    //     });
-    // });
+            /*
+            // Some sort of text drawing that shows the node connections of the line
+            const dist = Math.sqrt(
+                Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
+            );
+            const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
+            // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
+            // ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
+            */
+        });
+    });
 
     nodes.forEach((node, i) => {
         const fillColor = node.createdByRaycast ? 'red' : 'green';
         // const strokeColor = node?.raycast ? 'red' : 'green'; // TODO
         createCircle(svgDrawLayer, node.x, node.y, fillColor, 2.5);
+        createText(svgDrawLayer, node.x, node.y, `${i}`, 'white', 10);
     });
 
     nodes.forEach((node, i) => {
@@ -210,11 +217,12 @@ async function render(reRaycast: boolean = true) {
 
     try {
         const path = await AStar(22, 29, nodes);
-        console.log(
-            path.map((p, ppi) => {
-                return { p: p, e: nodes[p].edges };
-            })
-        );
+        // console.log(
+        //     path.map((p, ppi) => {
+        //         return { p: p, e: nodes[p].edges };
+        //     })
+        // );
+        console.log(path);
 
         path.forEach((i, ii) => {
             if (nodes[path[ii + 1]]) {

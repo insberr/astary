@@ -149,7 +149,10 @@ export function randomNodes3(
         generatedNodes.push({
             x: randomX,
             y: randomY,
-            edges: {},
+            edges: {
+                indexes: new Set<number>(),
+                datas: [],
+            },
             weight: 0,
         });
         i++;

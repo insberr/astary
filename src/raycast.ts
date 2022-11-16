@@ -137,12 +137,26 @@ export type LineSegment = {
     s: Point;
     e: Point;
 };
+export enum NodeEdgeDirectionType {
+    Normal,
+    opposite,
+    Opposite,
+}
+export type NodeEdge = {
+    node: NewNode;
+    index: number;
+    direction: {
+        type: NodeEdgeDirectionType;
+        direction: Direction;
+    };
+};
 export type NewNode = {
     x: number;
     y: number;
     createdByRaycast?: boolean;
     edges: {
-        [key: number]: Set<number>;
+        indexes: Set<number>;
+        datas: NodeEdge[];
     };
     weight?: number;
 };
@@ -213,7 +227,10 @@ export function createPointsAtRayLineIntersections(
                 x: +hitP.x.toPrecision(4),
                 y: +hitP.y.toPrecision(4),
                 createdByRaycast: true,
-                edges: {},
+                edges: {
+                    indexes: new Set<number>(),
+                    datas: [],
+                },
                 weight: 0,
             };
 
@@ -454,12 +471,53 @@ function createLineRays(
     return rays;
 }
 
-export function connectHitNodesAlgorithm(rays: LineRay[], nodes: NewNode[]) {
-    const connectedNodes: NewNode[] = [];
+export function connectHitNodesAlgorithm(
+    rays: LineRay[],
+    nodes: NewNode[],
+    directions: Direction[]
+) {
     for (const ray of rays) {
-        // do connection here
+        ray.hits.sort((a, b) => a.distance - b.distance);
+        const hitNodes: LineRay_Hit[] = ray.hits.filter((hit) => hit.type === HitType.NewNode);
+        if (hitNodes.length === 0) continue;
+        let lastNode = ray.referenceNode;
+        for (const [index, hit] of hitNodes.entries()) {
+            // ADD CHECK TO MAKE STOP IF IT HITS A NON RAYCASTED NODE (CONNECT TO IT BUT STOP AFTER)
+            const nodesIndex = nodes.indexOf(hit.object as NewNode);
+            const lastNodeIndex = nodes.indexOf(lastNode);
+            // const rayDirectionIndex = directions.indexOf(ray.direction);
+            if (nodesIndex === -1) {
+                throw new Error(
+                    'Hit node does not exist in nodes array. Not sure how this would happen.'
+                );
+            }
+
+            // only does the first hit pain
+
+            // ray.referenceNode.edges.datas.push({
+            //     node: nodes[nodesIndex],
+            //     index: nodesIndex,
+            //     direction: {
+            //         type: NodeEdgeDirectionType.Normal,
+            //         direction: directions[rayDirectionIndex],
+            //     },
+            // });
+            lastNode.edges.indexes.add(nodesIndex);
+
+            // (hit.object as NewNode).edges.datas.push({
+            //     node: nodes[rayRefNodeIndex],
+            //     index: rayRefNodeIndex,
+            //     direction: {
+            //         type: NodeEdgeDirectionType.Opposite,
+            //         direction: directions[rayDirectionIndex],
+            //     },
+            // });
+            (hit.object as NewNode).edges.indexes.add(lastNodeIndex);
+            lastNode = hit.object as NewNode;
+            // add loop
+        }
     }
-    return connectedNodes;
+    return nodes;
 }
 
 export function Raycast(
@@ -525,7 +583,11 @@ export function Raycast(
     );
     // console.log(nodesAtRayIntersections);
 
-    const hitNodesConnected: NewNode[] = connectHitNodesAlgorithm(rays, nodesAtRayIntersections);
+    const hitNodesConnected: NewNode[] = connectHitNodesAlgorithm(
+        rays,
+        nodesAtRayIntersections,
+        directions
+    );
     // Create new value thats the original and created points combined.
     const allNodes: NewNode[] = nodes; //nodesAtRayIntersections;
 

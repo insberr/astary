@@ -128,7 +128,10 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
             x: path.x,
             y: path.y,
             weight: nodeColorWeights?.find((cw) => cw[0] === path.fill)?.[1] || 0,
-            edges: {},
+            edges: {
+                indexes: new Set<number>(),
+                datas: [],
+            },
         };
         nodes.push(node);
     }
