@@ -238,26 +238,37 @@ export function createPointsAtRayLineIntersections(
 
             // if point already exists.
             // ADD MAKING IT STILL ADD THE COLLISION TO THE NODE TO THE RAY OOPS
-            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
-
+            if (ray.hits.find(h => h.type === HitType.NewNode && h.object.x === newNode.x && h.object.y === newNode.y) === undefined) {
+                ray.hits.push({
+                    type: HitType.NewNode,
+                    object: newNode,
+                    distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
+                    collisionPos: hitP,
+                });
+            }
+            if (hitR.hits.find(h => h.type === HitType.NewNode && h.object.x === newNode.x && h.object.y === newNode.y) === undefined) {
+                hitR.hits.push({
+                    type: HitType.NewNode,
+                    object: newNode,
+                    distance:  Math.pow(hitR.s.x - hitP.x, 2) + Math.pow(hitR.s.y - hitP.y, 2),
+                    collisionPos: hitP,
+                })
+            }
             connectionsMade++;
-            nodes.push(newNode);
+            const existingNode = nodes.find((n) => n.x === newNode.x && n.y === newNode.y);
+            if (existingNode === undefined) nodes.push(newNode);
+            if (!existingNode.createdByRaycast) break;
+            
+            
 
-            ray.hits.push({
-                type: HitType.NewNode,
-                object: newNode,
-                distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
-                collisionPos: hitP,
-            });
-
-            hitR.hits.push({
-                type: HitType.NewNode,
-                object: newNode,
-                distance: Math.sqrt(
-                    Math.pow(hitR.s.x - hitP.x, 2) + Math.pow(hitR.s.y - hitP.y, 2)
-                ),
-                collisionPos: hitP,
-            });
+            //hitR.hits.push({
+                //type: HitType.NewNode,
+                //object: newNode,
+                //distance: Math.sqrt(
+                    //Math.pow(hitR.s.x - hitP.x, 2) + Math.pow(hitR.s.y - hitP.y, 2)
+                //),
+                //collisionPos: hitP,
+            //});
 
             // hitR.used = true;
             // ray.used = true;
