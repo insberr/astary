@@ -19,6 +19,8 @@ import {
     createText,
     deleteDraw,
 } from '../svgEdit';
+
+import * as _ from 'lodash';
 //import eruda from "../eruda";
 
 // @ts-ignore
@@ -72,12 +74,13 @@ Amount of Nodes: ${amount} \
 // map_svg.setAttribute('height', '');
 // document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
 // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
-const width = 30;
-const height = 30;
+const width = 50;
+const height = 50;
 const amount = 10;
 const genRandom: boolean = false;
-const overideRenderTimeout: number | null = null;
+const overideRenderTimeout: number | null = 10;
 const stressTest = false;
+const size = 1;
 
 const drawSvg = document.getElementById('drawing-svg');
 if (drawSvg === null) {
@@ -91,7 +94,7 @@ if (svgDrawLayer === null) {
 drawSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
 // For the raycast
-let nodes: NewNode[] = genRandom
+let originalNodes: NewNode[] = genRandom
     ? randomNodes3(amount, width, height, { padding: 10, distance: 5, alignment: 5 })
     : [
           { x: 5, y: 5, edges: {} },
@@ -100,8 +103,14 @@ let nodes: NewNode[] = genRandom
           { x: 2, y: 10, edges: {} },
           { x: 20, y: 25, edges: {} },
       ];
+let nodes: NewNode[] = _.cloneDeep(originalNodes);
+// @ts-ignore
+window.nodes = nodes;
 let datas: any[] = [];
-let walls: NewWall[] = [{ s: { x: 15, y: 0 }, e: { x: 15, y: 15 } }];
+let walls: NewWall[] = [
+    { s: { x: 15, y: 0 }, e: { x: 15, y: 15 } },
+    // { s: { x: 1, y: 17 }, e: { x: 12, y: 17 } },
+];
 let rays: LineRay[] = [];
 
 let debounce = false;
@@ -136,7 +145,7 @@ drawSvg.addEventListener('mousemove', function (e) {
         cursorpt.y,
         `x: ${cursorpt.x.toFixed(2)}, y: ${cursorpt.y.toFixed(2)}`,
         'orange',
-        1,
+        2,
         '',
         0.5,
         'cursor-follow'
@@ -219,14 +228,10 @@ async function render(reRaycast: boolean = true) {
         } else {
             datas = [];
             const perRaycastStart = performance.now();
-            let { nodes: n, rays: r } = await Raycast(nodes, walls, {
-                _hook: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => {
-                    datas.push({ data });
-                },
+            let { nodes: n, rays: r } = await Raycast(_.cloneDeep(originalNodes), walls, {
                 width: width,
                 height: height,
-                maxConnections: 2,
-                // rays: rays,
+                // maxConnections: 2,
             });
             const perRaycastEnd = performance.now();
             perRaycast.push(perRaycastEnd - perRaycastStart);
@@ -263,16 +268,16 @@ async function render(reRaycast: boolean = true) {
             svgDrawLayer,
             `M${wall.s.x} ${wall.s.y} L${wall.e.x} ${wall.e.y} Z`,
             'orange',
-            0.5,
+            size,
             0.5
         );
     });
 
     nodes.forEach((node, i) => {
-        const fillColor = 'black'; // node?.raycast ? 'red' : 'green';
+        const fillColor = node.createdByRaycast ? 'red' : 'black';
         // const strokeColor = node?.raycast ? 'red' : 'green'; // TODO
-        createCircle(svgDrawLayer, node.x, node.y, fillColor, 1, 0.5);
-        createText(svgDrawLayer, node.x - 1, node.y, `${i}`, 'grey', 1, '', 0.5);
+        createCircle(svgDrawLayer, node.x, node.y, fillColor, size, 0.5);
+        createText(svgDrawLayer, node.x - 1, node.y, `${i}`, 'grey', size, '', 0.5);
     });
 
     rays.forEach((ray, ri) => {
@@ -294,7 +299,7 @@ async function render(reRaycast: boolean = true) {
         // }
         ray.hits.forEach((hit) => {
             // console.log(ri, hit);
-            createCircle(svgDrawLayer, hit.collisionPos.x, hit.collisionPos.y, 'purple', 0.5, 0.5);
+            createCircle(svgDrawLayer, hit.collisionPos.x, hit.collisionPos.y, 'purple', size, 0.5);
             // createText(
             //     svgDrawLayer,
             //     hit.collisionPos.x,
@@ -311,7 +316,7 @@ async function render(reRaycast: boolean = true) {
             svgDrawLayer,
             `M${ray.s.x} ${ray.s.y} L${ray.e.x} ${ray.e.y} Z`,
             color,
-            color === 'lightgrey' ? 0.2 : 0.5,
+            color === 'lightgrey' ? size / 2 : size,
             color === 'lightgrey' ? 0.1 : 0.5
         );
         // createText(
@@ -427,6 +432,8 @@ async function render(reRaycast: boolean = true) {
     perRender.push(perRenderEnd - perRenderStart);
     createMes();
 }
+// @ts-ignore
+window.render = render;
 
 async function drawDatas(datas: { nodes: NewNode[]; walls: NewWall[]; data: HookData }[]) {
     // someday add steppy to this

@@ -194,8 +194,9 @@ export function createPointsAtRayLineIntersections(
         if (ray.used) continue;
         const raysHit: { ray: LineRay; collisionPos: Point }[] = [];
         for (const r of rays) {
-            if (r.used) continue;
+            // if (r.used) continue;
             // ! change this to box collision for margin
+            if (r.referenceNode === ray.referenceNode) continue;
             const p = findLineSegmentsIntersect({ s: r.s, e: r.e }, { s: ray.s, e: ray.e });
             if (!p) continue;
             raysHit.push({ ray: r, collisionPos: p });
@@ -215,8 +216,10 @@ export function createPointsAtRayLineIntersections(
                 edges: {},
                 weight: 0,
             };
+
             if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
-            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y)) break;
+            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
+
             connectionsMade++;
             nodes.push(newNode);
 
@@ -236,8 +239,8 @@ export function createPointsAtRayLineIntersections(
                 collisionPos: hitP,
             });
 
-            hitR.used = true;
-            ray.used = true;
+            // hitR.used = true;
+            // ray.used = true;
         }
     }
     return nodes;
@@ -451,6 +454,14 @@ function createLineRays(
     return rays;
 }
 
+export function connectHitNodesAlgorithm(rays: LineRay[], nodes: NewNode[]) {
+    const connectedNodes: NewNode[] = [];
+    for (const ray of rays) {
+        // do connection here
+    }
+    return connectedNodes;
+}
+
 export function Raycast(
     nodes: NewNode[],
     walls: NewWall[],
@@ -476,7 +487,7 @@ export function Raycast(
         { x: -1, y: 0 }, // left
         // { x: 0, y: 2 }, // test: up right
         // { x: -5, y: 1 }, // test: slope
-        // { x: 5, y: 5 }, // test: slope
+        { x: 5, y: 5 }, // test: slope
     ];
     // Find the width and height
     const [width, height] =
@@ -510,6 +521,7 @@ export function Raycast(
     );
     // console.log(nodesAtRayIntersections);
 
+    const hitNodesConnected: NewNode[] = connectHitNodesAlgorithm(rays, nodesAtRayIntersections);
     // Create new value thats the original and created points combined.
     const allNodes: NewNode[] = nodes; //nodesAtRayIntersections;
 
