@@ -487,7 +487,7 @@ export function Raycast(
         { x: -1, y: 0 }, // left
         // { x: 0, y: 2 }, // test: up right
         // { x: -5, y: 1 }, // test: slope
-        { x: 5, y: 5 }, // test: slope
+        // { x: 5, y: 5 }, // test: slope
     ];
     // Find the width and height
     const [width, height] =

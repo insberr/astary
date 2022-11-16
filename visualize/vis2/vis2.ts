@@ -184,6 +184,16 @@ drawSvg.addEventListener('mousemove', function (e) {
     debounce = false;
 });
 
+async function addDrawPoint(x: number, y: number) {
+    if (x === undefined || y === undefined) {
+        // @ts-ignore
+        var cursorpt = pt.matrixTransform(drawSvg.getScreenCTM()?.inverse());
+        x = cursorpt.x;
+        y = cursorpt.y;
+    }
+    savePoint = { x: x, y: y };
+    createCircle(svgDrawLayer, x, y, 'orange', 0.5, 0.5);
+}
 drawSvg.addEventListener('mouseup', function (e) {
     // deleteDraw(svgDrawLayer, 'cursor-follow');
     pt.x = e.clientX;
@@ -191,13 +201,25 @@ drawSvg.addEventListener('mouseup', function (e) {
 
     // @ts-ignore
     var cursorpt = pt.matrixTransform(drawSvg.getScreenCTM()?.inverse());
-    savePoint = { x: +cursorpt.x.toFixed(2), y: +cursorpt.y.toFixed(2) };
-    createCircle(svgDrawLayer, +cursorpt.x.toFixed(2), +cursorpt.y.toFixed(2), 'orange', 0.5, 0.5);
+    // savePoint = { x: +cursorpt.x.toFixed(2), y: +cursorpt.y.toFixed(2) };
+    // createCircle(svgDrawLayer, +cursorpt.x.toFixed(2), +cursorpt.y.toFixed(2), 'orange', 0.5, 0.5);
+    addDrawPoint(+cursorpt.x.toFixed(2), +cursorpt.y.toFixed(2));
 });
+
+async function escapeDraw() {
+    savePoint = null;
+    deleteDraw(svgDrawLayer, 'cursor-follow-line');
+    walls.pop();
+    render();
+}
+// @ts-ignore
+window.escapeDraw = escapeDraw;
+// @ts-ignore
+window.addDrawPoint = addDrawPoint;
 
 window.addEventListener('keyup', function (e) {
     if (e.key === 'Escape') {
-        savePoint = null;
+        escapeDraw();
     }
 });
 
@@ -299,7 +321,14 @@ async function render(reRaycast: boolean = true) {
         // }
         ray.hits.forEach((hit) => {
             // console.log(ri, hit);
-            createCircle(svgDrawLayer, hit.collisionPos.x, hit.collisionPos.y, 'purple', size, 0.5);
+            createCircle(
+                svgDrawLayer,
+                hit.collisionPos.x,
+                hit.collisionPos.y,
+                'purple',
+                size / 2,
+                0.5
+            );
             // createText(
             //     svgDrawLayer,
             //     hit.collisionPos.x,
