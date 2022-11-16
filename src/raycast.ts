@@ -466,9 +466,13 @@ export function Raycast(
     nodes: NewNode[],
     walls: NewWall[],
     options?: {
-        _hook?: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => void;
+        hook?: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => void;
         margin?: number;
+
+        // the minimum distance that a node can be from another
+        // might jus tend up being the same as margin by default
         minDistance?: number;
+
         directions?: Direction[];
         // including these will speed up the code a bit
         width?: number;

@@ -7,6 +7,8 @@ import {
     AStar,
     HookData,
     HookDataType,
+    NewNode,
+    NewWall,
 } from '../../src/astar';
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
@@ -67,8 +69,8 @@ if (showTextButton) {
 
 // For the raycast
 let datas: any[] = [];
-let walls: { sx: number; sy: number; ex: number; ey: number }[] = [];
-let nodes: Node[] = [];
+let walls: NewWall[] = [];
+let nodes: NewNode[] = [];
 
 let debounce = false;
 
@@ -87,7 +89,7 @@ map_svg.addEventListener('click', function (e) {
     nodes.push({
         x: +cursorpt.x.toFixed(),
         y: +cursorpt.y.toFixed(),
-        edges: new Set<number>(),
+        edges: {},
     });
 
     render().then(() => {
@@ -122,24 +124,20 @@ async function render(reRaycast: boolean = true) {
 
             walls = await generateWalls(svgPaths);
 
-            nodes = await Raycast(
-                await generateNodes(svgPaths),
-                walls,
-                0,
-                (data: HookData, nodes?: Node[], walls?: Line[]) => {
+            const { nodes: n, rays: r } = await Raycast(await generateNodes(svgPaths), walls, {
+                hook: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => {
                     datas.push({ nodes, walls, data });
-                }
-            );
+                },
+            });
+            nodes = n;
         } else {
             datas = [];
-            nodes = await Raycast(
-                nodes,
-                walls,
-                0,
-                (data: HookData, nodes?: Node[], walls?: Line[]) => {
-                    datas.push({ data });
-                }
-            );
+            const { nodes: n, rays: r } = await Raycast(nodes, walls, {
+                hook: (data: HookData, nodes?: NewNode[], walls?: NewWall[]) => {
+                    datas.push({ nodes, walls, data });
+                },
+            });
+            nodes = n;
         }
     }
 
@@ -149,38 +147,38 @@ async function render(reRaycast: boolean = true) {
         walls.forEach((wall) => {
             createPath(
                 svgDrawLayer,
-                `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey} Z`,
+                `M${wall.s.x} ${wall.s.y} L${wall.e.x} ${wall.e.y} Z`,
                 'orange',
                 2
             );
         });
     }
 
-    nodes.forEach((node, i) => {
-        node.edges.forEach((edge) => {
-            const lineColor = nodes[edge].raycast ? 'red' : 'green';
-            createPath(
-                svgDrawLayer,
-                `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
-                lineColor,
-                3,
-                0.5
-            );
+    // nodes.forEach((node, i) => {
+    //     node.edges.forEach((edge) => {
+    //         const lineColor = nodes[edge].raycast ? 'red' : 'green';
+    //         createPath(
+    //             svgDrawLayer,
+    //             `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
+    //             lineColor,
+    //             3,
+    //             0.5
+    //         );
 
-            /*
-            // Some sort of text drawing that shows the node connections of the line
-            const dist = Math.sqrt(
-                Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
-            );
-            const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
-            // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
-            // ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
-            */
-        });
-    });
+    //         /*
+    //         // Some sort of text drawing that shows the node connections of the line
+    //         const dist = Math.sqrt(
+    //             Math.pow(nodes[edge].x - node.x, 2) + Math.pow(nodes[edge].y - node.y, 2)
+    //         );
+    //         const dir = Math.atan2(nodes[edge].y - node.y, nodes[edge].x - node.x);
+    //         // draw the text between the two connecting nodes and somehow also make the text not draw over already drawn text by using the direction to slightly offset the text closer to the node it started from
+    //         // ctx.fillText(`N ${i}, E ${edge}`, node.x + (Math.cos(dir) * dist / 2) + 5 + (Math.cos(dir) === -1 || Math.cos(dir) === 1 ? 10 : 0), node.y + (Math.sin(dir) * dist / 2) + (Math.sin(dir) === 0 || Math.sin(dir) === -1 ? 10 : 0));
+    //         */
+    //     });
+    // });
 
     nodes.forEach((node, i) => {
-        const fillColor = node?.raycast ? 'red' : 'green';
+        const fillColor = node.createdByRaycast ? 'red' : 'green';
         // const strokeColor = node?.raycast ? 'red' : 'green'; // TODO
         createCircle(svgDrawLayer, node.x, node.y, fillColor, 2.5);
     });
@@ -284,7 +282,7 @@ async function render(reRaycast: boolean = true) {
     });
 }
 
-async function drawDatas(datas: { nodes: Node[]; walls: Line[]; data: HookData }[]) {
+async function drawDatas(datas: { nodes: NewNode[]; walls: NewWall[]; data: HookData }[]) {
     // someday add steppy to this
     /*
     if (!ctx) return;

@@ -8,6 +8,7 @@ import {
     HookData,
     HookDataType,
     Point,
+    LineSegment,
 } from '../../src/astar';
 
 import {
@@ -25,7 +26,6 @@ import * as _ from 'lodash';
 
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';
-import { LineSegment } from '../../dist/astar';
 
 function createElement(str: string): Element | null {
     const temp = document.createElement('template');
