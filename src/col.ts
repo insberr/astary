@@ -74,6 +74,14 @@ function reduceEnd(line: Line, r: number) {
     // if (isNaN(dx)) { console.log(line); dx = 0; }
     // if (isNaN(dy)) { console.log(line); dy = 0; }
     var mag = Math.hypot(dx, dy);
+    if (isNaN(mag) && !isNaN(line.sx) && !isNaN(line.sy) && !isNaN(line.ex) && !isNaN(line.ey)) {
+        console.log('mag is NaN', line);
+    }
+    // temporary fix for NaN
+    if (mag === 0) {
+        console.log(mag, line);
+        mag = 1;
+    }
     return {
         x: line.ex - (r * dx) / mag,
         y: line.ey - (r * dy) / mag,
@@ -130,6 +138,7 @@ export type RayE = {
     t: 'ray';
     ref: number;
     l: Line;
+    zeroLength: boolean;
 };
 export type Point = {
     x: number;
@@ -142,6 +151,29 @@ export function distance(entry: Entry, p: Point): number {
         return pointLineDist(p.x, p.y, entry.ref);
     } else if (entry.t == 'ray') {
         return pointLineDist(p.x, p.y, entry.l);
+    } else {
+        throw new Error('Unknown entry: ' + entry);
+    }
+}
+
+export function betterPointLineDistance(ray: RayE, line: Line): number {
+    // find intersect point
+    const intersect = LLI(ray.l, line);
+
+    // do point to point distnace
+    if (intersect === false) {
+        return 0;
+    }
+
+    return fastDist(ray.l.sx, ray.l.sy, intersect.x, intersect.y);
+}
+export function betterDistance(ray: RayE, entry: Entry): number {
+    if (entry.t == 'node') {
+        return fastDist(entry.c.x, entry.c.y, ray.l.sx, ray.l.sy);
+    } else if (entry.t == 'wall') {
+        return betterPointLineDistance(ray, entry.ref);
+    } else if (entry.t == 'ray') {
+        return betterPointLineDistance(ray, entry.l);
     } else {
         throw new Error('Unknown entry: ' + entry);
     }
@@ -195,13 +227,20 @@ export function constructWallEntry(wall: Line): WallE {
 }
 
 export function constructRayEntry(nid: number, nodes: Node[], dest: Point): RayE {
-    if (nid === 50) console.log(nodes[nid], dest);
+    if (isNaN(dest.x) || isNaN(dest.y)) {
+        console.log('dest is NaN', dest, '\nnode: ', nodes[nid]);
+    }
     const d = nodes[nid];
+    if (d.x == dest.x && d.y == dest.y) {
+        //console.log('0 length ray ', nid, d, dest);
+        // return null
+    }
     //console.log(d)
     return {
         t: 'ray',
         ref: nid,
         l: { sx: d.x, sy: d.y, ex: dest.x, ey: dest.y },
+        zeroLength: d.x == dest.x && d.y == dest.y ? true : false,
     };
 }
 
@@ -216,6 +255,9 @@ export function setRayEnd(entry: RayE, end: Point): RayE {
     };
 }
 export function shrinkRay(ray: RayE, amt: number): RayE {
+    if (ray.zeroLength) {
+        return ray;
+    }
     const sPoint = reduceEnd(ray.l, amt);
     return setRayEnd(ray, sPoint);
 }

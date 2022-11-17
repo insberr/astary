@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
         <link rel="stylesheet" href="steppy.css" />
+        <link rel="stylesheet" href="../style.css" />
         <link
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css"
@@ -24,8 +25,20 @@
     </head>
     <body>
         <h1 class="center">Steppy</h1>
-        <div class="center mt" style="border: 5px white">
-            <canvas id="canva" width="512" height="512"></canvas>
+        <div id="drawing-div" class="center mt" style="border: 5px white">
+            <svg
+                width="512"
+                height="512"
+                viewBox="0 0 512 512"
+                version="1.1"
+                id="drawing-svg"
+                xml:space="preserve"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:svg="http://www.w3.org/2000/svg"
+            >
+                <g id="drawing-layer"></g>
+            </svg>
         </div>
         <div class="center controls mt">
             <button id="first" class="btn btn-primary">
@@ -50,6 +63,9 @@
         </div>
         <div class="center controls mt">
             <input type="checkbox" id="displ" />&nbsp;<label for="displ">Autoplay</label>
+        </div>
+        <div class="center controls mt">
+            <button id="draw-map-btn" class="btn btn-sm btn-primary">Draw Map</button>
         </div>
         <div class="center info mt" id="info">Loading...</div>
         <div class="center mt" id="cstepInfo"></div>

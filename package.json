@@ -1,33 +1,32 @@
 {
     "name": "astary",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "packageManager": "yarn@3.2.3",
     "source": "src/astar.ts",
     "main": "dist/astar.js",
     "types": "dist/astar.d.ts",
     "module": "dist/astar.esm.js",
     "devDependencies": {
-        "@parcel/optimizer-data-url": "2.7.0",
-        "@parcel/packager-ts": "2.7.0",
-        "@parcel/transformer-inline-string": "2.7.0",
-        "@parcel/transformer-typescript-types": "2.7.0",
-        "@types/jest": "^29.0.3",
+        "@parcel/optimizer-data-url": "^2.8.0",
+        "@parcel/packager-ts": "^2.8.0",
+        "@parcel/transformer-inline-string": "^2.8.0",
+        "@parcel/transformer-typescript-types": "^2.8.0",
+        "@types/jest": "^29.2.3",
         "@types/svg-parser": "^2.0.3",
         "@types/svg-path-parser": "^1.1.3",
         "@types/ungap__structured-clone": "^0.3.0",
         "benchmark": "^2.1.4",
-        "buffer": "^6.0.3",
-        "husky": "^8.0.1",
-        "jest": "^29.0.3",
+        "husky": "^8.0.2",
+        "jest": "^29.3.1",
         "jest-bench": "^28.1.3",
-        "parcel": "^2.7.0",
+        "parcel": "^2.8.0",
         "parcel-reporter-exec": "^0.0.7",
         "pinst": "^3.0.0",
-        "prettier": "2.7.1",
+        "prettier": "^2.7.1",
         "pretty-quick": "^3.1.3",
         "source-map-support": "^0.5.21",
-        "ts-jest": "^29.0.2",
-        "typescript": "4.7.3"
+        "ts-jest": "^29.0.3",
+        "typescript": "~4.7"
     },
     "scripts": {
         "build": "parcel build",
@@ -39,14 +38,19 @@
         "vis:build": "parcel build visualize/index.html --target vis",
         "format": "prettier --write .",
         "postinstall": "husky install",
-        "postpack": "pinst --enable"
+        "postpack": "pinst --enable",
+        "upgrade:latest": "yarn up \"*\" \"@*/*\"",
+        "rewritetest": "ts-node test/rewrite.ts"
     },
     "dependencies": {
+        "@types/lodash": "^4.14.189",
         "@ungap/structured-clone": "^1.0.1",
         "heap-js": "^2.2.0",
-        "mathjs": "^11.2.1",
+        "json-viewer-js": "^1.0.8",
+        "lodash": "^4.17.21",
         "svg-parser": "^2.0.4",
-        "svg-path-parser": "^1.1.0"
+        "svg-path-parser": "^1.1.0",
+        "ts-node": "^10.9.1"
     },
     "targets": {
         "main": {
@@ -59,5 +63,8 @@
             "distDir": "visdist",
             "context": "browser"
         }
+    },
+    "resolutions": {
+        "json-viewer-js@^1.0.8": "patch:json-viewer-js@npm%3A1.0.8#./.yarn/patches/json-viewer-js-npm-1.0.8-b18345308b.patch"
     }
 }

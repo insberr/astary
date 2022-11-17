@@ -1,4 +1,4 @@
-import { Node } from './astar';
+import { NewNode, NewWall, Node } from './astar';
 import { ElementNode, parse, RootNode } from 'svg-parser';
 import { Node as SVGNode } from 'svg-parser';
 import {
@@ -121,14 +121,17 @@ export function svgToPaths(svgAsString: string, filterFn: (svgElement: SVGNode) 
     return filterFn(svgElement);
 }
 
-export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][]): Node[] {
-    const nodes: Node[] = [];
+export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][]): NewNode[] {
+    const nodes: NewNode[] = [];
     for (const path of paths.circles) {
         const node = {
             x: path.x,
             y: path.y,
-            addlWeight: nodeColorWeights?.find((cw) => cw[0] === path.fill)?.[1] || 0,
-            edges: new Set<number>(),
+            weight: nodeColorWeights?.find((cw) => cw[0] === path.fill)?.[1] || 0,
+            edges: {
+                indexes: new Set<number>(),
+                datas: [],
+            },
         };
         nodes.push(node);
     }
@@ -136,14 +139,18 @@ export function generateNodes(paths: Paths, nodeColorWeights?: [string, number][
     return nodes;
 }
 
-export function generateWalls(paths: Paths): Line[] {
-    const lines: Line[] = [];
+export function generateWalls(paths: Paths): NewWall[] {
+    const lines: NewWall[] = [];
     for (const path of paths.lines) {
         const line = {
-            sx: path.sx,
-            sy: path.sy,
-            ex: path.ex,
-            ey: path.ey,
+            s: {
+                x: path.sx,
+                y: path.sy,
+            },
+            e: {
+                x: path.ex,
+                y: path.ey,
+            },
         };
 
         lines.push(line);
