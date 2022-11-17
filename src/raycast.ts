@@ -242,19 +242,6 @@ export function createPointsAtRayLineIntersections(
                 weight: 0,
             };
 
-            if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
-            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
-
-            connectionsMade++;
-            nodes.push(newNode);
-
-            ray.hits.push({
-                type: HitType.NewNode,
-                object: newNode,
-                distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
-                collisionPos: hitP,
-            });
-
             hitR.hits.push({
                 type: HitType.NewNode,
                 object: newNode,
@@ -263,6 +250,21 @@ export function createPointsAtRayLineIntersections(
                 ),
                 collisionPos: hitP,
             });
+
+            if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
+
+            ray.hits.push({
+                type: HitType.NewNode,
+                object: newNode,
+                distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
+                collisionPos: hitP,
+            });
+            // grrrrrrr
+
+            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
+
+            connectionsMade++;
+            nodes.push(newNode);
 
             // hitR.used = true;
             // ray.used = true;
@@ -298,32 +300,81 @@ export function findLineSegmentsIntersect(line1: LineSegment, line2: LineSegment
     // TODO: PLESASE DO ABLOVE SOON :TM:
     // TODO: DO IT VERY SOON
     // ! LIKE ITS URGENT
+
+    // * Lets try this
+    // ======= Credit To https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+    // Javascript program to check if two given line segments intersect
+
+    // Given three collinear points p, q, r, the function checks if
+    // point q lies on line segment 'pr'
+    function onSegment(p, q, r) {
+        if (
+            q.x <= Math.max(p.x, r.x) &&
+            q.x >= Math.min(p.x, r.x) &&
+            q.y <= Math.max(p.y, r.y) &&
+            q.y >= Math.min(p.y, r.y)
+        )
+            return true;
+
+        return false;
+    }
+
+    // To find orientation of ordered triplet (p, q, r).
+    // The function returns following values
+    // 0 --> p, q and r are collinear
+    // 1 --> Clockwise
+    // 2 --> Counterclockwise
+    function orientation(p, q, r) {
+        // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
+        // for details of below formula.
+        let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+
+        if (val == 0) return 0; // collinear
+
+        return val > 0 ? 1 : 2; // clock or counterclock wise
+    }
+
     const llifn = LLI(
         { sx: line1.s.x, sy: line1.s.y, ex: line1.e.x, ey: line1.e.y },
         { sx: line2.s.x, sy: line2.s.y, ex: line2.e.x, ey: line2.e.y }
     );
 
     if (llifn === false) {
-        // might need to add line 1 too?
-        const s2 = isPointOnLineSegment(line1, line2.s);
-        const e2 = isPointOnLineSegment(line1, line2.e);
-        const s1 = isPointOnLineSegment(line2, line1.s);
-        const e1 = isPointOnLineSegment(line2, line1.e);
-        if (s2) {
-            return line2.s;
-        }
-        if (e2) {
-            return line2.e;
-        }
-        if (s1) {
-            return line1.s;
-        }
-        if (e1) {
-            return line1.e;
-        }
         return null;
     }
-    return { x: llifn.x, y: llifn.y };
+    return llifn; // Doesn't fall in any of the above cases
+
+    // This code is contributed by avanitrachhadiya2155
+    // ======= End
+
+    // const llifn = LLI(
+    //     { sx: line1.s.x, sy: line1.s.y, ex: line1.e.x, ey: line1.e.y },
+    //     { sx: line2.s.x, sy: line2.s.y, ex: line2.e.x, ey: line2.e.y }
+    // );
+
+    // if (llifn === false) {
+    //     // might need to add line 1 too?
+    //     // const s2 = isPointOnLineSegment(line1, line2.s);
+    //     // const e2 = isPointOnLineSegment(line1, line2.e);
+    //     // const s1 = isPointOnLineSegment(line2, line1.s);
+    //     // const e1 = isPointOnLineSegment(line2, line1.e);
+    //     // console.log(`s2: ${s2}, e2: ${e2}\ns1: ${s1}, e1: ${e1}`);
+    //     // if (s2) {
+    //     //     return line2.s;
+    //     // }
+    //     // if (e2) {
+    //     //     return line2.e;
+    //     // }
+    //     // if (s1) {
+    //     //     return line1.s;
+    //     // }
+    //     // if (e1) {
+    //     //     return line1.e;
+    //     // }
+
+    //     return null;
+    // }
+    // return { x: llifn.x, y: llifn.y };
 }
 
 export function findLineHitGraphEdgePoint(
@@ -486,7 +537,7 @@ function createLineRays(
                 if (closestWallHit === null || closestWallHit.distance > closestNodeHit.distance) {
                     ray.hits = [closestNodeHit];
                     ray.e = closestNodeHit.collisionPos;
-                } else if (closestWallHit.distance <= closestNodeHit.distance) {
+                } else if (closestWallHit.distance < closestNodeHit.distance) {
                     ray.hits = [closestWallHit, closestNodeHit];
                 }
             }
@@ -495,6 +546,13 @@ function createLineRays(
 
             rays.push(ray);
         }
+    }
+    if (rays.length * directions.length !== nodes.length * directions.length) {
+        console.log(
+            'createLineRays: rays.length * directions.length !== nodes.length * directions.length',
+            nodes,
+            rays
+        );
     }
     return rays;
 }
@@ -505,11 +563,17 @@ export function connectHitNodesAlgorithm(
     directions: Direction[]
 ) {
     for (const ray of rays) {
-        ray.hits.sort((a, b) => a.distance - b.distance);
         const hitNodes: LineRay_Hit[] = ray.hits.filter((hit) => hit.type === HitType.NewNode);
+        hitNodes.sort((a, b) => a.distance - b.distance);
+
         if (hitNodes.length === 0) continue;
+        const refI = nodes.indexOf(ray.referenceNode);
+        console.log(ray, refI, hitNodes);
         let lastNode = ray.referenceNode;
         for (const [index, hit] of hitNodes.entries()) {
+            if (refI === 4) {
+                console.log(hit);
+            }
             // ADD CHECK TO MAKE STOP IF IT HITS A NON RAYCASTED NODE (CONNECT TO IT BUT STOP AFTER)
             const nodesIndex = nodes.indexOf(hit.object as NewNode);
             const lastNodeIndex = nodes.indexOf(lastNode);
@@ -542,7 +606,6 @@ export function connectHitNodesAlgorithm(
             // });
             (hit.object as NewNode).edges.indexes.add(lastNodeIndex);
             lastNode = hit.object as NewNode;
-            // add loop
         }
     }
     return nodes;

@@ -128,8 +128,7 @@ async function render(reRaycast: boolean = true, pushNode?: NewNode) {
             walls = await generateWalls(svgPaths);
 
             const { nodes: n, rays: r } = await Raycast(await generateNodes(svgPaths), walls, {
-                width: 1920,
-                height: 1080,
+                maxConnections: 3,
             });
             nodes = n;
             console.log(n);
@@ -139,8 +138,7 @@ async function render(reRaycast: boolean = true, pushNode?: NewNode) {
             const p = await generateNodes(svgPaths);
             if (pushNode) p.push(pushNode);
             const { nodes: n, rays: r } = await Raycast(p, walls, {
-                width: 1920,
-                height: 1080,
+                maxConnections: 3,
             });
             nodes = n;
             // console.log(n);
@@ -201,30 +199,30 @@ async function render(reRaycast: boolean = true, pushNode?: NewNode) {
         createText(svgDrawLayer, node.x, node.y, `${i}`, 'white', 10);
     });
 
-    nodes.forEach((node, i) => {
-        /*
-        if (node.raycast) {
-            ctx.fillStyle = 'black';
-            ctx.fillText(
-                 // `${i} - [${node.x}, ${node.y}] : ${node.edges}`,
-                `${i}`,
-                node.x - 4, // + 10,
-                node.y + 2 //
-            );
-            return;
-        }
-        */
-        /* // Add createText to svg drawer
-        ctx.fillStyle = 'white'; // "gray";
-        // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
-        ctx.fillText(
-            // `${i} - [${node.x}, ${node.y}] : ${node.edges}`,
-            `${i}`,
-            node.x, //,
-            node.y // - 10
-        );
-        */
-    });
+    // nodes.forEach((node, i) => {
+    //     /*
+    //     if (node.raycast) {
+    //         ctx.fillStyle = 'black';
+    //         ctx.fillText(
+    //              // `${i} - [${node.x}, ${node.y}] : ${node.edges}`,
+    //             `${i}`,
+    //             node.x - 4, // + 10,
+    //             node.y + 2 //
+    //         );
+    //         return;
+    //     }
+    //     */
+    //     /* // Add createText to svg drawer
+    //     ctx.fillStyle = 'white'; // "gray";
+    //     // ctx.strokeText(i + ';' +node.x + ', ' + node.y + ':' + node.edges, 5 + node.x, 5+ node.y)
+    //     ctx.fillText(
+    //         // `${i} - [${node.x}, ${node.y}] : ${node.edges}`,
+    //         `${i}`,
+    //         node.x, //,
+    //         node.y // - 10
+    //     );
+    //     */
+    // });
 
     try {
         const path = await AStar(22, 29, nodes);
