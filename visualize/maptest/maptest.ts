@@ -225,7 +225,7 @@ async function render(reRaycast: boolean = true, pushNode?: NewNode) {
     // });
 
     try {
-        const path = await AStar(22, 29, nodes);
+        const path = await AStar(22, 9, nodes);
         // console.log(
         //     path.map((p, ppi) => {
         //         return { p: p, e: nodes[p].edges };

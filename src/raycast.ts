@@ -218,7 +218,11 @@ export function createPointsAtRayLineIntersections(
         for (const r of rays) {
             // if (r.used) continue;
             // ! change this to box collision for margin
-            if (r.referenceNode === ray.referenceNode) continue;
+            if (
+                r.referenceNode.x === ray.referenceNode.x &&
+                r.referenceNode.y === ray.referenceNode.y
+            )
+                continue;
             const p = findLineSegmentsIntersect({ s: r.s, e: r.e }, { s: ray.s, e: ray.e });
             if (!p) continue;
             raysHit.push({ ray: r, collisionPos: p });
@@ -243,11 +247,30 @@ export function createPointsAtRayLineIntersections(
             };
 
             // ! NEED TO FIX ALL OF THIS
-            // if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
+            if (hitR.referenceNode.x === newNode.x && hitR.referenceNode.y === newNode.y) {
+                ray.hits.push({
+                    type: HitType.NewNode,
+                    object: hitR.referenceNode, // newNode,
+                    distance: Math.sqrt(
+                        Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)
+                    ),
+                    collisionPos: hitP,
+                });
+                continue;
+            }
 
-            // grrrrrrr
-
-            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
+            const node = nodes.find((n) => n.x === newNode.x && n.y === newNode.y);
+            if (node !== undefined) {
+                ray.hits.push({
+                    type: HitType.NewNode,
+                    object: node,
+                    distance: Math.sqrt(
+                        Math.pow(ray.s.x - node.x, 2) + Math.pow(ray.s.y - node.y, 2)
+                    ),
+                    collisionPos: hitP,
+                });
+                continue;
+            }
 
             connectionsMade++;
             nodes.push(newNode);
@@ -301,51 +324,16 @@ export function findLineSegmentsIntersect(line1: LineSegment, line2: LineSegment
     // TODO: DO IT VERY SOON
     // ! LIKE ITS URGENT
 
-    // * Lets try this
-    // ======= Credit To https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
-    // Javascript program to check if two given line segments intersect
-
-    // Given three collinear points p, q, r, the function checks if
-    // point q lies on line segment 'pr'
-    function onSegment(p, q, r) {
-        if (
-            q.x <= Math.max(p.x, r.x) &&
-            q.x >= Math.min(p.x, r.x) &&
-            q.y <= Math.max(p.y, r.y) &&
-            q.y >= Math.min(p.y, r.y)
-        )
-            return true;
-
-        return false;
-    }
-
-    // To find orientation of ordered triplet (p, q, r).
-    // The function returns following values
-    // 0 --> p, q and r are collinear
-    // 1 --> Clockwise
-    // 2 --> Counterclockwise
-    function orientation(p, q, r) {
-        // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
-        // for details of below formula.
-        let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-
-        if (val == 0) return 0; // collinear
-
-        return val > 0 ? 1 : 2; // clock or counterclock wise
-    }
-
     const llifn = LLI(
         { sx: line1.s.x, sy: line1.s.y, ex: line1.e.x, ey: line1.e.y },
         { sx: line2.s.x, sy: line2.s.y, ex: line2.e.x, ey: line2.e.y }
     );
 
     if (llifn === false) {
+        // ! PAIN
         return null;
     }
-    return llifn; // Doesn't fall in any of the above cases
-
-    // This code is contributed by avanitrachhadiya2155
-    // ======= End
+    return llifn;
 
     // const llifn = LLI(
     //     { sx: line1.s.x, sy: line1.s.y, ex: line1.e.x, ey: line1.e.y },
@@ -670,7 +658,7 @@ export function Raycast(
         directions
     );
     // Create new value thats the original and created points combined.
-    const allNodes: NewNode[] = nodes; //nodesAtRayIntersections;
+    const allNodes: NewNode[] = hitNodesConnected; //nodesAtRayIntersections;
 
     // For every ray, turn it into a rect (for margin) and get all points inside it.
     // - use point connection algor to connect every point correctly smh
