@@ -132,7 +132,7 @@ async function render(reRaycast: boolean = true, pushNode?: NewNode) {
                 height: 1080,
             });
             nodes = n;
-            // console.log(n);
+            console.log(n);
         } else {
             datas = [];
             const svgPaths = await svgToPaths(_dt, defaultFilterFunction);
@@ -162,14 +162,25 @@ async function render(reRaycast: boolean = true, pushNode?: NewNode) {
 
     nodes.forEach((node, i) => {
         node.edges.indexes.forEach((edge) => {
-            const lineColor = nodes[edge].createdByRaycast ? 'red' : 'green';
-            createPath(
-                svgDrawLayer,
-                `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
-                lineColor,
-                3,
-                0.5
-            );
+            const conNode = nodes[edge];
+            const lineColor = conNode.createdByRaycast ? 'red' : 'green';
+            if (conNode.edges.indexes.has(i)) {
+                createPath(
+                    svgDrawLayer,
+                    `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
+                    lineColor,
+                    3,
+                    0.5
+                );
+            } else {
+                // createPath(
+                //     svgDrawLayer,
+                //     `M${node.x} ${node.y} L${nodes[edge].x} ${nodes[edge].y} Z`,
+                //     lineColor,
+                //     3,
+                //     0.5
+                // );
+            }
 
             /*
             // Some sort of text drawing that shows the node connections of the line

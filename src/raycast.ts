@@ -156,7 +156,7 @@ export type NewNode = {
     createdByRaycast?: boolean;
     edges: {
         indexes: Set<number>;
-        datas: NodeEdge[];
+        datas?: NodeEdge[];
     };
     weight?: number;
 };
@@ -168,18 +168,26 @@ export function findWithHeight(nodes: NewNode[], walls: NewWall[]): [number, num
     // start with x values (width)
     copyNodes.sort((a, b) => b.x - a.x);
     const width1 = copyNodes[0].x;
-    copyWalls.sort((a, b) => b.s.x - a.s.x);
-    const width2 = copyWalls[0].s.x;
-    copyWalls.sort((a, b) => b.e.x - a.e.x);
-    const width3 = copyWalls[0].e.x;
+    let width2 = 0;
+    let width3 = 0;
+    if (walls.length > 0) {
+        copyWalls.sort((a, b) => b.s.x - a.s.x);
+        width2 = copyWalls[0].s.x;
+        copyWalls.sort((a, b) => b.e.x - a.e.x);
+        width3 = copyWalls[0].e.x;
+    }
 
     // then y values (height)
     copyNodes.sort((a, b) => b.y - a.y);
     const height1 = copyNodes[0].y;
-    copyWalls.sort((a, b) => b.s.y - a.s.y);
-    const height2 = copyWalls[0].s.y;
-    copyWalls.sort((a, b) => b.e.y - a.e.y);
-    const height3 = copyWalls[0].e.y;
+    let height2 = 0;
+    let height3 = 0;
+    if (walls.length > 0) {
+        copyWalls.sort((a, b) => b.s.y - a.s.y);
+        height2 = copyWalls[0].s.y;
+        copyWalls.sort((a, b) => b.e.y - a.e.y);
+        height3 = copyWalls[0].e.y;
+    }
 
     const width = Math.max(width1, width2, width3);
     const height = Math.max(height1, height2, height3);
@@ -235,40 +243,26 @@ export function createPointsAtRayLineIntersections(
             };
 
             if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
+            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
 
-            // if point already exists.
-            // ADD MAKING IT STILL ADD THE COLLISION TO THE NODE TO THE RAY OOPS
-            if (ray.hits.find(h => h.type === HitType.NewNode && h.object.x === newNode.x && h.object.y === newNode.y) === undefined) {
-                ray.hits.push({
-                    type: HitType.NewNode,
-                    object: newNode,
-                    distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
-                    collisionPos: hitP,
-                });
-            }
-            if (hitR.hits.find(h => h.type === HitType.NewNode && h.object.x === newNode.x && h.object.y === newNode.y) === undefined) {
-                hitR.hits.push({
-                    type: HitType.NewNode,
-                    object: newNode,
-                    distance:  Math.pow(hitR.s.x - hitP.x, 2) + Math.pow(hitR.s.y - hitP.y, 2),
-                    collisionPos: hitP,
-                })
-            }
             connectionsMade++;
-            const existingNode = nodes.find((n) => n.x === newNode.x && n.y === newNode.y);
-            if (existingNode === undefined) nodes.push(newNode);
-            if (existingNode !== undefined && !existingNode.createdByRaycast) break;
-            
-            
+            nodes.push(newNode);
 
-            //hitR.hits.push({
-                //type: HitType.NewNode,
-                //object: newNode,
-                //distance: Math.sqrt(
-                    //Math.pow(hitR.s.x - hitP.x, 2) + Math.pow(hitR.s.y - hitP.y, 2)
-                //),
-                //collisionPos: hitP,
-            //});
+            ray.hits.push({
+                type: HitType.NewNode,
+                object: newNode,
+                distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
+                collisionPos: hitP,
+            });
+
+            hitR.hits.push({
+                type: HitType.NewNode,
+                object: newNode,
+                distance: Math.sqrt(
+                    Math.pow(hitR.s.x - hitP.x, 2) + Math.pow(hitR.s.y - hitP.y, 2)
+                ),
+                collisionPos: hitP,
+            });
 
             // hitR.used = true;
             // ray.used = true;
@@ -299,33 +293,37 @@ export function isPointOnLineSegment(line: LineSegment | LineRay, point: Point):
 }
 
 export function findLineSegmentsIntersect(line1: LineSegment, line2: LineSegment): Point | null {
+    // ! PLEASE DO SOON
+    // TODO: NEED TO ADD POINT ON LINE TEST TO LINE LINE INTERSECT SO WE CAN GET PARARELL LINES ON TOP OF EACH OTHER
+    // TODO: PLESASE DO ABLOVE SOON :TM:
+    // TODO: DO IT VERY SOON
+    // ! LIKE ITS URGENT
     const llifn = LLI(
         { sx: line1.s.x, sy: line1.s.y, ex: line1.e.x, ey: line1.e.y },
         { sx: line2.s.x, sy: line2.s.y, ex: line2.e.x, ey: line2.e.y }
     );
 
-    if (llifn === false) return null;
-    return { x: llifn.x, y: llifn.y };
-
-    const point1 = line1.s;
-    const point2 = line1.e;
-    const point3 = line2.s;
-    const point4 = line2.e;
-
-    const s =
-        ((point4.x - point3.x) * (point1.y - point3.y) -
-            (point4.y - point3.y) * (point1.x - point3.x)) /
-        ((point4.y - point3.y) * (point2.x - point1.x) -
-            (point4.x - point3.x) * (point2.y - point1.y));
-
-    const x = point1.x + s * (point2.x - point1.x);
-    const y = point1.y + s * (point2.y - point1.y);
-    if (isNaN(x) || isNaN(y)) {
-        // console.log('NaN was returned for x or y in lines intersect ', { x, y });
+    if (llifn === false) {
+        // might need to add line 1 too?
+        const s2 = isPointOnLineSegment(line1, line2.s);
+        const e2 = isPointOnLineSegment(line1, line2.e);
+        const s1 = isPointOnLineSegment(line2, line1.s);
+        const e1 = isPointOnLineSegment(line2, line1.e);
+        if (s2) {
+            return line2.s;
+        }
+        if (e2) {
+            return line2.e;
+        }
+        if (s1) {
+            return line1.s;
+        }
+        if (e1) {
+            return line1.e;
+        }
         return null;
     }
-
-    return { x, y };
+    return { x: llifn.x, y: llifn.y };
 }
 
 export function findLineHitGraphEdgePoint(
@@ -450,18 +448,20 @@ function createLineRays(
             }
 
             // make ray until it hits a wall if it hits any
-            const wallsHit = ray.hits.filter((hit) => hit.type === HitType.NewWall);
-            if (wallsHit.length > 0) {
-                const closestWallHit = wallsHit.reduce((prev, current) =>
+            // const wallsHit = ray.hits.filter((hit) => hit.type === HitType.NewWall);
+            let closestWallHit: LineRay_Hit | null = null;
+            if (ray.hits.length > 0) {
+                closestWallHit = ray.hits.reduce((prev, current) =>
                     prev.distance < current.distance ? prev : current
                 );
                 ray.e = closestWallHit.collisionPos;
                 ray.hits = [closestWallHit];
             }
 
-            // find the nodes and walls this ray hits
+            // find the nodes ray hits
             for (const otherNode of nodes) {
                 if (otherNode === node) continue;
+                // I LEFT OFF HERE AND DID STUFF REMEMBER !!!!!!!!!!!
                 if (isPointOnLineSegment(ray, otherNode)) {
                     ray.hits.push({
                         type: HitType.NewNode,
@@ -474,6 +474,20 @@ function createLineRays(
                         ),
                         collisionPos: { x: otherNode.x, y: otherNode.y },
                     });
+                }
+            }
+
+            const nodesHit = ray.hits.filter((hit) => hit.type === HitType.NewNode);
+            if (nodesHit.length > 0) {
+                const closestNodeHit = nodesHit.reduce((prev, current) =>
+                    prev.distance < current.distance ? prev : current
+                );
+                ray.e = closestNodeHit.collisionPos;
+                if (closestWallHit === null || closestWallHit.distance > closestNodeHit.distance) {
+                    ray.hits = [closestNodeHit];
+                    ray.e = closestNodeHit.collisionPos;
+                } else if (closestWallHit.distance <= closestNodeHit.distance) {
+                    ray.hits = [closestWallHit, closestNodeHit];
                 }
             }
 
@@ -506,8 +520,6 @@ export function connectHitNodesAlgorithm(
                 );
             }
 
-            
-
             // only does the first hit pain
 
             // ray.referenceNode.edges.datas.push({
@@ -529,7 +541,6 @@ export function connectHitNodesAlgorithm(
             //     },
             // });
             (hit.object as NewNode).edges.indexes.add(lastNodeIndex);
-            if (!(hit.object as NewNode).createdByRaycast) break;
             lastNode = hit.object as NewNode;
             // add loop
         }

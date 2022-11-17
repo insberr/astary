@@ -1,14 +1,13 @@
 import {
     Raycast,
-    randomNodes3,
+    randomNodes,
     LineRay,
     NewNode,
     NewWall,
-    AStar,
-    HookData,
-    HookDataType,
     Point,
     LineSegment,
+    AStar,
+    randomWalls,
 } from '../../src/astar';
 
 import {
@@ -19,6 +18,8 @@ import {
     createPath,
     createText,
     deleteDraw,
+    editItemById,
+    itemExists,
 } from '../svgEdit';
 
 import * as _ from 'lodash';
@@ -52,16 +53,6 @@ Amount of Nodes: ${amount} \
 \nRender: ${avg(perRender)}ms \
 \nRaycast: ${avg(perRaycast)}ms\
 \nUser Drawing: ${avg(perRenderDrawing)}ms`;
-    // msg += `Func randomNodes2: ${average(timeNodes).toFixed(5)}ms \n`;
-    // msg += `Func randomWalls2: ${average(timeNodes).toFixed(5)}ms \n`;
-    // msg += 'Raycast: ' + average(rayTimes).toFixed(5) + 'ms; \n';
-    // msg += 'Pathfind: ' + average(timePathfind).toFixed(5) + 'ms; \n';
-    // msg += 'Raycast Created Nodes: ' + average(extraNodes).toFixed(5) + '; \n';
-    // msg += 'Average Path Length: ' + average(pathLengths).toFixed(5) + '; \n';
-    // msg += `Runs: ${average([
-    //     timeNodes.length,
-    //     timePathfind.length,
-    // ])}/${count} & ${failedRuns} Failed \n`;
     if (ele) {
         ele.innerText = msg;
     } else {
@@ -74,13 +65,13 @@ Amount of Nodes: ${amount} \
 // map_svg.setAttribute('height', '');
 // document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
 // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
-const width = 500;
-const height = 500;
+const width = 20;
+const height = 20;
 const amount = 50;
-const genRandom: boolean = true;
-const overideRenderTimeout: number | null = null;
-const stressTest = false;
-const size = 2;
+const genRandom: boolean = false;
+const overrideRenderTimeout: number | null = null;
+const size = 0.5;
+const connections = 10;
 
 const drawSvg = document.getElementById('drawing-svg');
 if (drawSvg === null) {
@@ -95,22 +86,37 @@ drawSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
 // For the raycast
 let originalNodes: NewNode[] = genRandom
-    ? randomNodes3(amount, width, height, { padding: 10, distance: 5, alignment: 5 })
+    ? randomNodes({ amount, width, height, distance: 2, padding: 2 })
     : [
-          { x: 5, y: 5, edges: { indexes: [], datas: [] } },
-          { x: 10, y: 2, edges: { indexes: [], datas: [] } },
-          { x: 20, y: 10, edges: { indexes: [], datas: [] } },
-          { x: 2, y: 10, edges: { indexes: [], datas: [] } },
-          { x: 20, y: 25, edges: { indexes: [], datas: [] } },
+          //   { x: 5, y: 5, edges: { indexes: new Set<number>(), datas: [] } },
+          //   { x: 10, y: 2, edges: { indexes: new Set<number>(), datas: [] } },
+          //   { x: 20, y: 10, edges: { indexes: new Set<number>(), datas: [] } },
+          //   { x: 2, y: 10, edges: { indexes: new Set<number>(), datas: [] } },
+          //   { x: 20, y: 25, edges: { indexes: new Set<number>(), datas: [] } },
+          //   { x: 30, y: 30, edges: { indexes: new Set<number>(), datas: [] } },
+          //   { x: 7, y: 41, edges: { indexes: new Set<number>(), datas: [] } },
+
+          //   { x: 0, y: 2, edges: { indexes: new Set([1]) } },
+          //   { x: 1, y: 2, edges: { indexes: new Set([0, 2]) } },
+          //   { x: 2, y: 2, edges: { indexes: new Set([1, 3]) } },
+          //   { x: 3, y: 2, edges: { indexes: new Set([2, 4]) } },
+          //   { x: 4, y: 2, edges: { indexes: new Set([3, 5]) } },
+          //   { x: 5, y: 2, edges: { indexes: new Set([4]) } },
+          { x: 1, y: 1, edges: { indexes: new Set() } },
+          { x: 5, y: 6, edges: { indexes: new Set() } },
+          { x: 10, y: 1, edges: { indexes: new Set() } },
       ];
 let nodes: NewNode[] = _.cloneDeep(originalNodes);
 // @ts-ignore
 window.nodes = nodes;
 let datas: any[] = [];
-let walls: NewWall[] = [
-    { s: { x: 15, y: 0 }, e: { x: 15, y: 15 } },
-    // { s: { x: 1, y: 17 }, e: { x: 12, y: 17 } },
-];
+let walls: NewWall[] = genRandom
+    ? randomWalls({ amount: amount / 2, width, height, length: width / 5, distance: 2 })
+    : [
+          //{ s: { x: 15, y: 0 }, e: { x: 15, y: 15 } },
+          // { s: { x: 1, y: 17 }, e: { x: 12, y: 17 } },
+          { s: { x: 5, y: 5 }, e: { x: 5, y: -5 } },
+      ];
 let rays: LineRay[] = [];
 
 let debounce = false;
@@ -118,70 +124,100 @@ let renderDebounce = false;
 // @ts-ignore
 const pt = (drawSvg as SVGSVGElement).createSVGPoint(); // https://stackoverflow.com/a/42711775/13606260
 let savePoint: Point | null = null;
+let popWallsClicked = false;
 drawSvg.addEventListener('mousemove', function (e) {
+    const perUserDrawingStart = performance.now();
     if (debounce) return;
     debounce = true;
-    deleteDraw(svgDrawLayer, 'cursor-follow');
-    deleteDraw(svgDrawLayer, 'cursor-follow-line');
+
     pt.x = e.clientX;
     pt.y = e.clientY;
 
-    //     // ====== https://stackoverflow.com/a/42711775/13606260
-    //     // The cursor point, translated into svg coordinates
+    // ====== https://stackoverflow.com/a/42711775/13606260
+    // The cursor point, translated into svg coordinates
     // @ts-ignore
     var cursorpt = pt.matrixTransform(drawSvg.getScreenCTM()?.inverse());
-    //     // console.log('(' + cursorpt.x + ', ' + cursorpt.y + ')');
-    //     // ====== End
-    //     createCircle(svgDrawLayer, cursorpt.x, cursorpt.y, 'purple', 2.5, 0.5);
-    //     nodes.push({
-    //         x: +cursorpt.x.toFixed(),
-    //         y: +cursorpt.y.toFixed(),
-    //         edges: new Set<number>(),
-    //     });
+    // ======
 
-    createText(
-        svgDrawLayer,
-        cursorpt.x,
-        cursorpt.y,
-        `x: ${cursorpt.x.toFixed(2)}, y: ${cursorpt.y.toFixed(2)}`,
-        'orange',
-        2,
-        '',
-        0.5,
-        'cursor-follow'
-    );
-    if (savePoint !== null) {
-        createLine(
+    const editF = editItemById(svgDrawLayer, 'cursor-follow', [
+        {
+            attr: 'x',
+            value: cursorpt.x + 50 / width,
+        },
+        {
+            attr: 'y',
+            value: cursorpt.y + 50 / height,
+        },
+        {
+            attr: 'text',
+            value: `(${cursorpt.x.toFixed(2)}, ${cursorpt.y.toFixed(2)})`,
+        },
+    ]);
+
+    if (editF === false) {
+        createText(
             svgDrawLayer,
-            savePoint.x,
-            savePoint.y,
-            cursorpt.x,
-            cursorpt.y,
-            0.5,
+            cursorpt.x + 5,
+            cursorpt.y + 5,
+            `(${cursorpt.x.toFixed(2)}, ${cursorpt.y.toFixed(2)})`,
             'orange',
+            2,
+            '',
             0.5,
-            'cursor-follow-line'
+            'cursor-follow'
         );
-        const existing = walls.filter((w) => w.s.x === savePoint?.x && w.s.y === savePoint?.y);
-        if (existing.length !== 0) {
+    }
+
+    if (savePoint !== null) {
+        const editL = editItemById(svgDrawLayer, 'cursor-follow-line', [
+            {
+                attr: 'x2',
+                value: cursorpt.x,
+            },
+            {
+                attr: 'y2',
+                value: cursorpt.y,
+            },
+        ]);
+
+        if (editL === false) {
+            createLine(
+                svgDrawLayer,
+                savePoint.x,
+                savePoint.y,
+                cursorpt.x,
+                cursorpt.y,
+                0.5,
+                'orange',
+                0.5,
+                'cursor-follow-line'
+            );
+        }
+
+        if (!popWallsClicked) {
             walls.pop();
+        } else {
+            popWallsClicked = false;
         }
         walls.push({ s: savePoint, e: { x: cursorpt.x, y: cursorpt.y } });
         if (!renderDebounce) {
-            renderDebounce = true;
-            const perUserDrawingStart = performance.now();
             render().then(() => {
-                const perUserDrawingEnd = performance.now();
-                perRenderDrawing.push(perUserDrawingEnd - perUserDrawingStart);
-                createMes();
-                setTimeout(() => {
-                    renderDebounce = false;
-                    // render();
-                }, overideRenderTimeout || 10 * (nodes.length * 0.5));
+                renderDebounce = false;
             });
+            // renderDebounce = true;
         }
+        createMes();
+        // setTimeout(() => {
+        // renderDebounce = false;
+        // render(false);
+        // }, overrideRenderTimeout || 10 * (nodes.length * 0.5));
+        // });
+        // }
     }
     debounce = false;
+
+    const perUserDrawingEnd = performance.now();
+    perRenderDrawing.push(perUserDrawingEnd - perUserDrawingStart);
 });
 
 async function addDrawPoint(x: number, y: number) {
@@ -192,6 +228,7 @@ async function addDrawPoint(x: number, y: number) {
         y = cursorpt.y;
     }
     savePoint = { x: x, y: y };
+    popWallsClicked = true;
     createCircle(svgDrawLayer, x, y, 'orange', 0.5, 0.5);
 }
 drawSvg.addEventListener('mouseup', function (e) {
@@ -207,9 +244,15 @@ drawSvg.addEventListener('mouseup', function (e) {
 });
 
 async function escapeDraw() {
-    savePoint = null;
+    // @ts-ignore
+    var cursorpt = pt.matrixTransform(drawSvg.getScreenCTM()?.inverse());
+
+    if (savePoint?.x === cursorpt.x && savePoint?.y === cursorpt.y) {
+    } else {
+        walls.pop();
+    }
     deleteDraw(svgDrawLayer, 'cursor-follow-line');
-    walls.pop();
+    savePoint = null;
     render();
 }
 // @ts-ignore
@@ -223,17 +266,12 @@ window.addEventListener('keyup', function (e) {
     }
 });
 
-function raycastHook(nodes: NewNode[], walls: NewWall[], data: HookData) {
-    // pointless
-    return;
-}
-
 async function render(reRaycast: boolean = true) {
     const perRenderStart = performance.now();
     clearG(svgDrawLayer);
 
     if (reRaycast) {
-        if (nodes.length == 0 || walls.length == 0) {
+        if (nodes.length == 0) {
             throw new Error('TEMPORARY: nodes or walls is empty');
             // const svgPaths = await svgToPaths(_dt, defaultFilterFunction);
 
@@ -248,19 +286,21 @@ async function render(reRaycast: boolean = true) {
             //     }
             // );
         } else {
-            datas = [];
             const perRaycastStart = performance.now();
-            let { nodes: n, rays: r } = await Raycast(_.cloneDeep(originalNodes), walls, {
+            let { nodes: n } = await Raycast(_.cloneDeep(originalNodes), walls, {
                 width: width,
                 height: height,
-                maxConnections: -1,
+                maxConnections: connections,
             });
             const perRaycastEnd = performance.now();
             perRaycast.push(perRaycastEnd - perRaycastStart);
             nodes = n;
-            rays = r;
+            // rays = r;
+            // @ts-ignore
+            // window.nodes = nodes;
         }
     }
+    // console.log('after cast: ', performance.now() - perRenderStart);
 
     // nodes.forEach((node, i) => {
     //     node.edges.forEach((edge) => {
@@ -305,9 +345,9 @@ async function render(reRaycast: boolean = true) {
     rays.forEach((ray, ri) => {
         // if (ray.hits.length > 0) console.log(ri, nodes.indexOf(ray.referenceNode), ray);
         let color = 'lightgrey';
-        if (ray.hits.filter((h) => (h.object as LineSegment).s !== undefined).length > 0) {
-            color = 'green';
-        }
+        // if (ray.hits.filter((h) => (h.object as LineSegment).s !== undefined).length > 0) {
+        //     color = 'green';
+        // }
 
         // if (ray.hits.length > 1) {
         //     createCircle(
@@ -319,33 +359,33 @@ async function render(reRaycast: boolean = true) {
         //         0.4
         //     );
         // }
-        ray.hits.forEach((hit) => {
-            // console.log(ri, hit);
-            createCircle(
-                svgDrawLayer,
-                hit.collisionPos.x,
-                hit.collisionPos.y,
-                'purple',
-                size / 2,
-                0.5
-            );
-            // createText(
-            //     svgDrawLayer,
-            //     hit.collisionPos.x,
-            //     hit.collisionPos.y - 1,
-            //     'rn:' + nodes.indexOf(ray.referenceNode).toString(),
-            //     'purple',
-            //     1,
-            //     '',
-            //     0.3
-            // );
-        });
+        // ray.hits.forEach((hit) => {
+        //     // console.log(ri, hit);
+        //     createCircle(
+        //         svgDrawLayer,
+        //         hit.collisionPos.x,
+        //         hit.collisionPos.y,
+        //         'purple',
+        //         size / 2.5,
+        //         0.5
+        //     );
+        //     // createText(
+        //     //     svgDrawLayer,
+        //     //     hit.collisionPos.x,
+        //     //     hit.collisionPos.y - 1,
+        //     //     'rn:' + nodes.indexOf(ray.referenceNode).toString(),
+        //     //     'purple',
+        //     //     1,
+        //     //     '',
+        //     //     0.3
+        //     // );
+        // });
 
         createPath(
             svgDrawLayer,
             `M${ray.s.x} ${ray.s.y} L${ray.e.x} ${ray.e.y} Z`,
             color,
-            color === 'lightgrey' ? size / 2 : size,
+            color === 'lightgrey' ? 0.5 : 0.5,
             color === 'lightgrey' ? 0.1 : 0.5
         );
         // createText(
@@ -385,33 +425,34 @@ async function render(reRaycast: boolean = true) {
     //     */
     // });
 
-    // try {
-    //     const path = await AStar(22, 29, nodes);
-    //     console.log(
-    //         path.map((p, ppi) => {
-    //             return { p: p, e: nodes[p].edges };
-    //         })
-    //     );
+    try {
+        const path = await AStar(0, 5, nodes);
+        // console.log(
+        //     path.map((p, ppi) => {
+        //         return { p: p, e: nodes[p].edges.indexes };
+        //     })
+        // );
+        console.log(path);
 
-    //     path.forEach((i, ii) => {
-    //         if (nodes[path[ii + 1]]) {
-    //             const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${
-    //                 nodes[path[ii + 1]].y
-    //             } Z`;
-    //             createPath(svgDrawLayer, dPath, 'lightblue', 2, 0.8);
-    //         }
+        path.forEach((i, ii) => {
+            if (nodes[path[ii + 1]]) {
+                const dPath = `M${nodes[i].x} ${nodes[i].y} L${nodes[path[ii + 1]].x} ${
+                    nodes[path[ii + 1]].y
+                } Z`;
+                createPath(svgDrawLayer, dPath, 'lightblue', size / 2, 0.8);
+            }
 
-    //         createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', 2.5, 0.8);
-    //     });
+            createCircle(svgDrawLayer, nodes[i].x, nodes[i].y, 'lightblue', size / 2, 0.8);
+        });
 
-    //     const f = nodes[path[0]];
-    //     const end = nodes[path[path.length - 1]];
+        const f = nodes[path[0]];
+        const end = nodes[path[path.length - 1]];
 
-    //     createCircle(svgDrawLayer, f.x, f.y, 'yellow', 5, 0.5);
-    //     createCircle(svgDrawLayer, end.x, end.y, 'yellow', 5, 0.5);
-    // } catch (e) {
-    //     console.log(e);
-    // }
+        createCircle(svgDrawLayer, f.x, f.y, 'yellow', size / 1.5, 0.5);
+        createCircle(svgDrawLayer, end.x, end.y, 'yellow', size / 1.5, 0.5);
+    } catch (e) {
+        console.log(e);
+    }
 
     // grid, great for debugging
     /*
@@ -447,16 +488,16 @@ async function render(reRaycast: boolean = true) {
         (_key, value) => (value instanceof Set ? [...value] : value)
     );
     */
-    (document.getElementById('data') as HTMLDivElement).innerHTML = '';
-    new JsonViewer({
-        container: document.getElementById('data'),
-        data: JSON.stringify(nodes, (key, value) => {
-            // fix the problem where entries is blank. cause this lib doesnt know how to convert a set to an array
-            return value instanceof Set ? [...value] : value;
-        }),
-        theme: 'dark',
-        expand: false,
-    });
+    // (document.getElementById('data') as HTMLDivElement).innerHTML = '';
+    // new JsonViewer({
+    //     container: document.getElementById('data'),
+    //     data: JSON.stringify(nodes, (key, value) => {
+    //         // fix the problem where entries is blank. cause this lib doesnt know how to convert a set to an array
+    //         return value instanceof Set ? [...value] : value;
+    //     }),
+    //     theme: 'dark',
+    //     expand: false,
+    // });
     const perRenderEnd = performance.now();
     perRender.push(perRenderEnd - perRenderStart);
     createMes();

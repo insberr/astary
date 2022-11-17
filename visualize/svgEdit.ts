@@ -134,6 +134,27 @@ export function deleteDraw(svg: SVGGElement, id: string) {
     if (el) svg.removeChild(el);
 }
 
+export function editItemById(
+    svg: SVGGElement,
+    id: string,
+    attrs: { attr: string; value: string | number }[]
+): boolean {
+    const el = document.getElementById(id);
+    if (el) {
+        for (const a of attrs) {
+            if (a.attr === 'text') el.innerHTML = a.value as string;
+            el.setAttribute(a.attr, a.value.toString());
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+export function itemExists(svg: SVGGElement, id: string) {
+    const el = document.getElementById(id);
+    return el ? true : false;
+}
+
 export class SvgDraw {
     el;
     constructor(layerElemnet: HTMLElement) {
