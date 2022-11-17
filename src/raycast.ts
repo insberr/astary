@@ -243,7 +243,7 @@ export function createPointsAtRayLineIntersections(
             };
 
             // ! NEED TO FIX ALL OF THIS
-            if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
+            // if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
 
             // grrrrrrr
 
@@ -547,13 +547,7 @@ function createLineRays(
             rays.push(ray);
         }
     }
-    if (rays.length * directions.length !== nodes.length * directions.length) {
-        console.log(
-            'createLineRays: rays.length * directions.length !== nodes.length * directions.length',
-            nodes,
-            rays
-        );
-    }
+
     return rays;
 }
 
@@ -567,13 +561,9 @@ export function connectHitNodesAlgorithm(
         hitNodes.sort((a, b) => a.distance - b.distance);
 
         if (hitNodes.length === 0) continue;
-        const refI = nodes.indexOf(ray.referenceNode);
-        console.log(ray, refI, hitNodes);
+
         let lastNode = ray.referenceNode;
-        for (const [index, hit] of hitNodes.entries()) {
-            if (refI === 4) {
-                console.log(hit);
-            }
+        for (const hit of hitNodes) {
             // ADD CHECK TO MAKE STOP IF IT HITS A NON RAYCASTED NODE (CONNECT TO IT BUT STOP AFTER)
             const nodesIndex = nodes.indexOf(hit.object as NewNode);
             const lastNodeIndex = nodes.indexOf(lastNode);
