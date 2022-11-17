@@ -287,7 +287,7 @@ async function render(reRaycast: boolean = true) {
             // );
         } else {
             const perRaycastStart = performance.now();
-            let { nodes: n } = await Raycast(_.cloneDeep(originalNodes), walls, {
+            let { nodes: n, rays: r } = await Raycast(_.cloneDeep(originalNodes), walls, {
                 width: width,
                 height: height,
                 maxConnections: connections,
@@ -295,7 +295,7 @@ async function render(reRaycast: boolean = true) {
             const perRaycastEnd = performance.now();
             perRaycast.push(perRaycastEnd - perRaycastStart);
             nodes = n;
-            // rays = r;
+            rays = r;
             // @ts-ignore
             // window.nodes = nodes;
         }
@@ -426,7 +426,7 @@ async function render(reRaycast: boolean = true) {
     // });
 
     try {
-        const path = await AStar(0, 5, nodes);
+        const path = await AStar(0, 2, nodes);
         // console.log(
         //     path.map((p, ppi) => {
         //         return { p: p, e: nodes[p].edges.indexes };
