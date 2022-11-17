@@ -1,8 +1,8 @@
 import {
-    randomNodes2,
+    randomNodes,
     AStar,
     Raycast,
-    randomWalls2,
+    randomWalls,
     Node,
     Line,
     Entry,
@@ -11,10 +11,17 @@ import {
     HookData,
 } from '../src/astar';
 
-import { clearG, createCircle, createLayer, createLine, createPath, createRect } from './svgEdit';
+import {
+    clearG,
+    createCircle,
+    createLayer,
+    createLine,
+    createPath,
+    createRect,
+} from '../src/svgEdit';
 
 const params = new URLSearchParams(window.location.search);
-function intParam(name: string, defaul: number): number{
+function intParam(name: string, defaul: number): number {
     const o = params.get(name);
     if (o == null) {
         return defaul;
@@ -46,7 +53,10 @@ function createMes() {
     msg += 'Pathfind: ' + average(timePathfind).toFixed(5) + 'ms; \n';
     msg += 'Raycast Created Nodes: ' + average(extraNodes).toFixed(5) + '; \n';
     msg += 'Average Path Length: ' + average(pathLengths).toFixed(5) + '; \n';
-    msg += `Runs: ${average([timeNodes.length, timePathfind.length])}/${count} & ${failedRuns} Failed \n`;
+    msg += `Runs: ${average([
+        timeNodes.length,
+        timePathfind.length,
+    ])}/${count} & ${failedRuns} Failed \n`;
     return msg;
 }
 
@@ -56,7 +66,9 @@ if (svg === null) {
     throw new Error('SVG does not exist');
 }
 
-let draw = document.getElementById('drawing-layer') as unknown as SVGGElement || createLayer(svg, 'drawing-layer');
+let draw =
+    (document.getElementById('drawing-layer') as unknown as SVGGElement) ||
+    createLayer(svg, 'drawing-layer');
 if (draw === null) {
     throw new Error('drawing layer does not exist');
 }
@@ -65,14 +77,15 @@ svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
 svg.setAttribute('width', '50%');
 svg.setAttribute('height', '50%');
 
-
-
 const dt = document.getElementById('data');
 let datas: any[] = [];
 
 async function doOP() {
     const t1 = performance.now();
-    const _nodes = randomNodes2(amt, w, h, {
+    const _nodes = randomNodes({
+        amount: amt,
+        width: w,
+        height: h,
         distance: 10,
         padding: 20,
         alignment: 10,
@@ -80,29 +93,33 @@ async function doOP() {
     // console.log(_nodes.filter(n => n.x >= w || n.y >= h));
     const t2 = performance.now();
 
-    const walls = randomWalls2(20, w, h, 5, 100);
+    const walls = randomWalls({ amount: 20, width: w, height: h, distance: 5, length: 100 });
     const t6 = performance.now();
 
-    const raycastNodes = _nodes;//await Raycast(_nodes, walls);
+    const raycastNodes = _nodes; //await Raycast(_nodes, walls);
 
     const t7 = performance.now();
     clearG(draw);
     createRect(draw, 0, 0, w, h, 'black', 'none', 6);
 
     walls.forEach((wall) => {
-        createPath(draw, `M${wall.sx} ${wall.sy} L${wall.ex} ${wall.ey}`, 'black', 2);
+        createPath(draw, `M${wall.s.x} ${wall.s.y} L${wall.e.x} ${wall.e.y}`, 'black', 2);
     });
 
     raycastNodes.forEach((node, i) => {
         const [nx, ny] = [node.x, node.y];
-        let fillColor = node.raycast ? 'white' : 'lime';
+        let fillColor = node.createdByRaycast ? 'white' : 'lime';
 
         createCircle(draw, nx, ny, fillColor, 5);
     });
 
     raycastNodes.forEach((node) => {
-        node.edges.forEach((edge) => {
-            createPath(draw, `M${node.x} ${node.y} L${raycastNodes[edge].x} ${raycastNodes[edge].y} Z`, 'red');
+        node.edges.indexes.forEach((edge) => {
+            createPath(
+                draw,
+                `M${node.x} ${node.y} L${raycastNodes[edge].x} ${raycastNodes[edge].y} Z`,
+                'red'
+            );
         });
     });
 
@@ -128,9 +145,9 @@ async function doOP() {
 
         path.forEach((i, ii) => {
             if (raycastNodes[path[ii + 1]]) {
-                const dPath = `M${raycastNodes[i].x} ${raycastNodes[i].y} L${raycastNodes[path[ii + 1]].x} ${
-                    raycastNodes[path[ii + 1]].y
-                } Z`;
+                const dPath = `M${raycastNodes[i].x} ${raycastNodes[i].y} L${
+                    raycastNodes[path[ii + 1]].x
+                } ${raycastNodes[path[ii + 1]].y} Z`;
                 createPath(draw, dPath, 'lightblue', 2, 0.8);
             }
 
@@ -179,7 +196,7 @@ async function dof() {
 async function main() {
     settings();
     if (speed) {
-        document.body.addEventListener("keydown", (e) => {
+        document.body.addEventListener('keydown', (e) => {
             if (e.code == 'ArrowRight') {
                 dof();
             }
@@ -202,3 +219,4 @@ async function main() {
     }
 }
 main();
+

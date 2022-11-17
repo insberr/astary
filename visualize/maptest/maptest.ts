@@ -12,7 +12,14 @@ import {
 } from '../../src/astar';
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
-import { clearG, createCircle, createLayer, createLine, createPath, createText } from '../svgEdit';
+import {
+    clearG,
+    createCircle,
+    createLayer,
+    createLine,
+    createPath,
+    createText,
+} from '../../src/svgEdit';
 //import eruda from "../eruda";
 
 // @ts-ignore

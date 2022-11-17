@@ -1,19 +1,20 @@
 import {
     HookData,
-    Node,
     HookDataType,
-    randomNodes2,
-    randomWalls2,
+    randomNodes,
+    randomWalls,
     Raycast,
     Line,
     Point,
     RayE,
     generateNodes,
     svgToPaths,
+    NewWall,
+    NewNode,
 } from '../../src/astar';
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';
-import { clearG, createCircle, createLayer, createLine, createPath } from '../svgEdit';
+import { clearG, createCircle, createLayer, createLine, createPath } from '../../src/svgEdit';
 
 // @ts-ignore
 import _dt from 'bundle-text:../maptest/BHS_Building_Map_SVG.svg';
@@ -58,13 +59,16 @@ const resetStorage = params.get('reset') === 'true';
 
 // console.clear = () => {};
 
-function getNodesFromStorage(): Node[] {
+function getNodesFromStorage(): NewNode[] {
     const nodes = localStorage.getItem('nodes');
     if (nodes === null) {
-        const newNodes = randomNodes2(s, 512, 512, {
+        const newNodes = randomNodes({
+            amount: s,
+            width: 512,
+            height: 512,
             distance: 5,
             alignment: 20,
-            connections: 1
+            connections: 1,
         });
         localStorage.setItem('nodes', JSON.stringify(newNodes));
         return newNodes;
@@ -74,20 +78,27 @@ function getNodesFromStorage(): Node[] {
     });
 }
 
-function getWallsFromStorage(): Line[] {
+function getWallsFromStorage(): NewWall[] {
     const walls = localStorage.getItem('walls');
     if (walls === null) {
-        const newWalls = randomWalls2(Math.floor(s / 5), 512, 512, 10);
+        const newWalls = randomWalls({
+            amount: Math.floor(s / 5),
+            width: 512,
+            height: 512,
+            distance: 10,
+        });
         localStorage.setItem('nodes', JSON.stringify(newWalls));
         return newWalls;
     }
     return JSON.parse(walls);
 }
 
-let nodes: Node[] = !resetStorage ? getNodesFromStorage() : randomNodes2(s, 512, 512, 5, 20, 1);
-let walls: Line[] = !resetStorage
+let nodes: NewNode[] = !resetStorage
+    ? getNodesFromStorage()
+    : randomNodes({ amount: s, width: 512, height: 512, distance: 5, padding: 20, alignment: 1 });
+let walls: NewWall[] = !resetStorage
     ? getWallsFromStorage()
-    : randomWalls2(Math.floor(s / 5), 512, 512, 10);
+    : randomWalls({ amount: Math.floor(s / 5), width: 512, height: 512, distance: 10 });
 
 if (nodes.length != s) {
     localStorage.removeItem('nodes');
@@ -113,9 +124,12 @@ if (walls.length != s / 5) {
 }
 
 function drawMapFn() {
-    document
-        .getElementById('drawing-div')
-        .replaceChild(map_svg, document.getElementById('drawing-svg') as Element);
+    const drawing_div = document.getElementById('drawing-div');
+    if (drawing_div === null) {
+        throw new Error('drawing_div is null');
+    }
+
+    drawing_div.replaceChild(map_svg, document.getElementById('drawing-svg') as Element);
     // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
     const svgPaths = svgToPaths(_dt, defaultFilterFunction);
     nodes = generateNodes(svgPaths);
@@ -127,9 +141,11 @@ function undrawMapFn() {
     const newSvg = createElement(
         '<svg width="512" height="512" viewBox="0 0 512 512" version="1.1" id="drawing-svg" xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><g id="drawing-layer"></g></svg>'
     ) as SVGSVGElement;
-    document
-        .getElementById('drawing-div')
-        .replaceChild(newSvg, document.getElementById('drawing-svg') as HTMLElement);
+    const drawing_div = document.getElementById('drawing-div');
+    if (drawing_div === null) {
+        throw new Error('drawing_div is null');
+    }
+    drawing_div.replaceChild(newSvg, document.getElementById('drawing-svg') as HTMLElement);
     nodes = getNodesFromStorage();
     walls = getWallsFromStorage();
     reRaycast();
@@ -139,8 +155,8 @@ function undrawMapFn() {
 const wh: number[] = [];
 const ww: number[] = [];
 walls.forEach((element) => {
-    ww.push(element.sx, element.ex);
-    wh.push(element.sy, element.ey);
+    ww.push(element.s.x, element.e.x);
+    wh.push(element.s.y, element.e.y);
 });
 const w = Math.max.apply(null, [...ww, nw]);
 const h = Math.max.apply(null, [...wh, nh]);
@@ -216,15 +232,19 @@ document.getElementById('last')?.addEventListener('click', () => {
     clamp();
 });
 
-let casted = Raycast(nodes, walls, 0, (d, n, w) => {
-    steps.push(d);
+let casted = Raycast(nodes, walls, {
+    hook: (d, n, w) => {
+        steps.push(d);
+    },
 });
 
 function reRaycast() {
     steps = [];
     currentStep = 0;
-    casted = Raycast(nodes, walls, 0, (d, n, w) => {
-        steps.push(d);
+    casted = Raycast(nodes, walls, {
+        hook: (d, n, w) => {
+            steps.push(d);
+        },
     });
 }
 
@@ -233,7 +253,7 @@ if (dt) {
     dt.innerText =
         s +
         ' nodes; ' +
-        casted.length +
+        casted.nodes.length +
         ' after cast; ' +
         steps.length +
         ' steps (0-' +
@@ -241,10 +261,10 @@ if (dt) {
         ');';
 }
 
-function drawLine(l: Line, style: string, strokeWidth: number = 1) {
+function drawLine(l: NewWall, style: string, strokeWidth: number = 1) {
     // ctx.beginPath();
-    const ss = { x: l.sx, y: l.sy };
-    const se = { x: l.ex, y: l.ey };
+    const ss = l.s;
+    const se = l.e;
     // ctx.strokeStyle = style;
     // ctx.lineWidth = strokeWidth;
     // ctx.moveTo(scaledS.x, scaledS.y);
@@ -261,19 +281,19 @@ function drawDot(p: Point, radius: number, style: string, id: string | number) {
     // ctx.arc((p.x / w) * 512, (p.y / h) * 512, radius, 0, 2 * Math.PI);
     // ctx.fill();
     // ctx.stroke();
-    createCircle(drawingLayer, p.x, p.y, style, radius, 1, id+"");
+    createCircle(drawingLayer, p.x, p.y, style, radius, 1, id + '');
 }
 
 function drawStep(st: HookData) {
     switch (st.type) {
         case HookDataType.RayConstructed:
             // console.clear();
-            drawLine(st.ray.l, 'lightblue');
+            // ! drawLine(st.ray.l, 'lightblue');
             drawDot(nodes[st.ray.ref], 3, 'lightblue', st.ray.ref);
             break;
         case HookDataType.RayHits:
             console.log(st.hits);
-            drawLine(st.ray.l, 'blue');
+            // ! drawLine(st.ray.l, 'blue');
             drawDot(nodes[st.ray.ref], 3, 'blue', st.ray.ref);
             st.hits.forEach((h) => {
                 if (h.ref == st.ray.ref) {
@@ -284,29 +304,29 @@ function drawStep(st: HookData) {
                         drawDot(h.c, 3, 'blue', h.ref);
                         break;
                     case 'wall':
-                        drawLine(h.ref, 'blue');
+                        // ! drawLine(h.ref, 'blue');
                         break;
                     case 'ray':
-                        drawLine(h.l, 'blue');
+                        // ! drawLine(h.l, 'blue');
                         break;
                 }
             });
             break;
         case HookDataType.HitNode:
-            drawDot(nodes[st.hit.ref as number], 3, 'green', st.ray.ref+'ray');
-            drawLine(st.ray.l, 'green');
+            drawDot(nodes[st.hit.ref as number], 3, 'green', st.ray.ref + 'ray');
+            // ! drawLine(st.ray.l, 'green');
             break;
         case HookDataType.HitWall:
-            drawLine(st.hit.ref as Line, 'green');
-            drawLine(st.ray.l, 'green');
+            // ! drawLine(st.hit.ref as Line, 'green');
+            // ! drawLine(st.ray.l, 'green');
             break;
         case HookDataType.Finished:
             // ctx.clearRect(0, 0, canvas.width, canvas.height);
             clearG(drawingLayer);
-            casted.forEach((c, iii) => {
-                drawDot(c, 3, c.raycast ? 'orange' : 'green', iii);
-                c.edges.forEach((ed) => {
-                    drawLine({ sx: c.x, sy: c.y, ex: nodes[ed].x, ey: nodes[ed].y }, 'green');
+            casted.nodes.forEach((c, iii) => {
+                drawDot(c, 3, c.createdByRaycast ? 'orange' : 'green', iii);
+                c.edges.indexes.forEach((ed) => {
+                    // ! drawLine({ sx: c.x, sy: c.y, ex: nodes[ed].x, ey: nodes[ed].y }, 'green');
                 });
             });
             walls.forEach((w) => {
@@ -314,12 +334,12 @@ function drawStep(st: HookData) {
             });
             break;
         case HookDataType.HitRay:
-            drawLine((st.hit as RayE).l, 'green');
-            drawLine(st.ray.l, 'green');
+            // ! drawLine((st.hit as RayE).l, 'green');
+            // ! drawLine(st.ray.l, 'green');
             break;
         case HookDataType.HitRayNewNode:
-            drawLine((st.hit as RayE).l, 'green');
-            drawLine(st.ray.l, 'green');
+            // ! drawLine((st.hit as RayE).l, 'green');
+            // ! drawLine(st.ray.l, 'green');
             drawDot(st.newNode, 3, 'green', nodes.indexOf(st.newNode));
             break;
     }
@@ -354,13 +374,13 @@ function draw() {
     cstep.entries.forEach((t) => {
         switch (t.t) {
             case 'node':
-                drawDot(t.c, 2, nodes[t.ref].raycast ? 'orange' : 'red', t.ref);
+                drawDot(t.c, 2, nodes[t.ref].createdByRaycast ? 'orange' : 'red', t.ref);
                 break;
             case 'wall':
-                drawLine(t.ref, 'yellow');
+                // ! drawLine(t.ref, 'yellow');
                 break;
             case 'ray':
-                drawLine(t.l, 'purple');
+                // ! drawLine(t.l, 'purple');
                 break;
         }
     });

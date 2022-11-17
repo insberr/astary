@@ -11,7 +11,7 @@ import {
 import { Line } from '../../src/col';
 import { defaultFilterFunction } from '../../src/generateNodesFromSVG';
 
-import { createCircle, createLayer, createLine, createPath } from '../svgEdit';
+import { createCircle, createLayer, createLine, createPath } from '../../src/svgEdit';
 
 // @ts-ignore
 import JsonViewer from 'json-viewer-js';

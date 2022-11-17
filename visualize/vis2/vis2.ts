@@ -5,7 +5,6 @@ import {
     NewNode,
     NewWall,
     Point,
-    LineSegment,
     AStar,
     randomWalls,
 } from '../../src/astar';
@@ -19,8 +18,7 @@ import {
     createText,
     deleteDraw,
     editItemById,
-    itemExists,
-} from '../svgEdit';
+} from '../../src/svgEdit';
 
 import * as _ from 'lodash';
 //import eruda from "../eruda";
@@ -65,10 +63,10 @@ Amount of Nodes: ${amount} \
 // map_svg.setAttribute('height', '');
 // document.body.replaceChild(map_svg, document.getElementById('map-svg') as Element);
 // document.getElementById('pathfinding').style.display = 'inline'; // Show the pathfinding drawings
-const width = 20;
-const height = 20;
+const width = 100;
+const height = 100;
 const amount = 50;
-const genRandom: boolean = false;
+const genRandom: boolean = true;
 const overrideRenderTimeout: number | null = null;
 const size = 0.5;
 const connections = 10;
@@ -296,8 +294,6 @@ async function render(reRaycast: boolean = true) {
             perRaycast.push(perRaycastEnd - perRaycastStart);
             nodes = n;
             rays = r;
-            // @ts-ignore
-            // window.nodes = nodes;
         }
     }
     // console.log('after cast: ', performance.now() - perRenderStart);
@@ -501,41 +497,6 @@ async function render(reRaycast: boolean = true) {
     const perRenderEnd = performance.now();
     perRender.push(perRenderEnd - perRenderStart);
     createMes();
-}
-// @ts-ignore
-window.render = render;
-
-async function drawDatas(datas: { nodes: NewNode[]; walls: NewWall[]; data: HookData }[]) {
-    // someday add steppy to this
-    /*
-    if (!ctx) return;
-    // if (!speed) return;
-    for (const step of datas) {
-        if (step.data.type == HookDataType.Finished) {
-            continue;
-        }
-        if (step.data.ray) {
-            if (!(step.nodes.indexOf(step.data.node) === 17)) continue;
-            //console.log(HookDataType[step.data.type], step.data)
-            if (step.data.type !== HookDataType.HitWall) continue;
-            if (!step.data.collisionPos) {
-                console.log('collision pos is false, how? idk: ', step.data.collisionPos);
-                continue;
-            }
-            ctx.beginPath();
-            ctx.strokeStyle = 'purple';
-            ctx.lineWidth = 1;
-            ctx.globalAlpha = 0.5;
-            ctx.moveTo(step.data.node.x, step.data.node.y);
-            ctx.lineTo(step.data.collisionPos.x, step.data.collisionPos.y);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-        }
-        await new Promise((r) => {
-            setTimeout(r, 1);
-        });
-    }
-    */
 }
 
 async function main() {
