@@ -242,6 +242,21 @@ export function createPointsAtRayLineIntersections(
                 weight: 0,
             };
 
+            // ! NEED TO FIX ALL OF THIS
+            if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
+
+            // grrrrrrr
+
+            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
+
+            connectionsMade++;
+            nodes.push(newNode);
+            ray.hits.push({
+                type: HitType.NewNode,
+                object: newNode,
+                distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
+                collisionPos: hitP,
+            });
             hitR.hits.push({
                 type: HitType.NewNode,
                 object: newNode,
@@ -250,21 +265,6 @@ export function createPointsAtRayLineIntersections(
                 ),
                 collisionPos: hitP,
             });
-
-            if (ray.referenceNode.x === newNode.x && ray.referenceNode.y === newNode.y) continue;
-
-            ray.hits.push({
-                type: HitType.NewNode,
-                object: newNode,
-                distance: Math.sqrt(Math.pow(ray.s.x - hitP.x, 2) + Math.pow(ray.s.y - hitP.y, 2)),
-                collisionPos: hitP,
-            });
-            // grrrrrrr
-
-            if (nodes.find((n) => n.x === newNode.x && n.y === newNode.y) !== undefined) continue;
-
-            connectionsMade++;
-            nodes.push(newNode);
 
             // hitR.used = true;
             // ray.used = true;
